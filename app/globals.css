@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Calibrated Dual-Theme (Light / Late-Night Study Dark Mode) Surface & Contrast Architecture */
+html.dark {
+  color-scheme: dark;
+  background-color: #0B1120;
+  color: #F8FAFC;
+}
+
+/* Primary & Secondary Neutral Surfaces in Dark Mode */
+html.dark .bg-\[\#F8FAFC\] {
+  background-color: #0B1120;
+}
+
+html.dark .bg-\[\#F8FAFC\]\/80 {
+  background-color: rgba(15, 23, 42, 0.85);
+}
+
+html.dark .bg-white {
+  background-color: #111827;
+}
+
+html.dark .bg-white\/95 {
+  background-color: rgba(17, 24, 39, 0.95);
+}
+
+html.dark .bg-white\/90 {
+  background-color: rgba(15, 23, 42, 0.92);
+}
+
+html.dark .bg-\[\#F1F5F9\],
+html.dark .bg-\[\#F1F5F9\]\/80 {
+  background-color: #1E293B;
+}
+
+/* Semantic Tinted Callout & Highlight Surfaces in Dark Mode */
+html.dark .bg-\[\#F0F9FF\] {
+  background-color: rgba(12, 74, 110, 0.35);
+}
+
+html.dark .bg-\[\#E0F2FE\] {
+  background-color: rgba(3, 105, 161, 0.42);
+}
+
+html.dark .bg-\[\#ECFDF5\],
+html.dark .bg-\[\#ECFDF5\]\/80 {
+  background-color: rgba(6, 78, 59, 0.38);
+}
+
+html.dark .bg-\[\#FFFBEB\],
+html.dark .bg-\[\#FEF3C7\],
+html.dark .bg-\[\#FEF3C7\]\/60 {
+  background-color: rgba(120, 53, 15, 0.36);
+}
+
+html.dark .bg-\[\#FEF2F2\] {
+  background-color: rgba(127, 29, 29, 0.38);
+}
+
+/* Borders & Dividers in Dark Mode */
+html.dark .border-\[\#E2E8F0\] {
+  border-color: #1E293B;
+}
+
+html.dark .border-\[\#CBD5E1\] {
+  border-color: #334155;
+}
+
+/* Typography Hierarchy & Contrast in Dark Mode (WCAG AA/AAA) */
+html.dark .text-\[\#0F172A\] {
+  color: #F8FAFC;
+}
+
+html.dark .text-\[\#1E293B\],
+html.dark .text-\[\#334155\] {
+  color: #E2E8F0;
+}
+
+html.dark .text-\[\#475569\] {
+  color: #CBD5E1;
+}
+
+html.dark .text-\[\#64748B\] {
+  color: #94A3B8;
+}
+
+html.dark .text-\[\#0369A1\] {
+  color: #38BDF8;
+}
+
+html.dark .text-\[\#065F46\] {
+  color: #34D399;
+}
+
+html.dark .text-\[\#92400E\],
+html.dark .text-\[\#B45309\] {
+  color: #FBBF24;
+}
+
+html.dark .text-\[\#991B1B\] {
+  color: #FCA5A5;
+}
+
+/* Form Controls & KaTeX Math Rendering in Dark Mode */
+html.dark select,
+html.dark input[type="text"],
+html.dark input[type="number"],
+html.dark input[type="password"],
+html.dark textarea {
+  background-color: #0F172A;
+  color: #F8FAFC;
+  border-color: #334155;
+}
+
+html.dark .katex {
+  color: inherit;
+}
