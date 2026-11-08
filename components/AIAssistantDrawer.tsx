@@ -5,7 +5,6 @@ import {
   AISettings,
   ChatMessageItem,
   DEFAULT_AI_SETTINGS,
-  GEMINI_AVAILABLE_MODELS,
   OPENAI_COMPATIBLE_PRESETS,
   OpenAICompatiblePresetId,
   buildOpenAIChatCompletionsUrl,
@@ -28,6 +27,9 @@ import {
   Check,
   Plus,
   ArrowDown,
+  Eye,
+  EyeOff,
+  KeyRound,
 } from 'lucide-react';
 
 interface AIAssistantDrawerProps {
@@ -81,7 +83,20 @@ export default function AIAssistantDrawer({
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY_SETTINGS);
       if (saved) {
-        return { ...DEFAULT_AI_SETTINGS, ...JSON.parse(saved) };
+        const parsed = { ...DEFAULT_AI_SETTINGS, ...JSON.parse(saved) };
+        // Migration: Gemini used to be a standalone provider card; it now
+        // lives as a preset inside the OpenAI-compatible configuration.
+        if (parsed.provider === 'gemini') {
+          const geminiPreset =
+            OPENAI_COMPATIBLE_PRESETS.find((p) => p.id === 'gemini')!;
+          return {
+            ...parsed,
+            provider: 'openai_compatible',
+            presetId: 'gemini',
+            customBaseUrl: geminiPreset.baseUrl,
+          };
+        }
+        return parsed;
       }
     } catch {
       // Ignore storage read errors
@@ -109,6 +124,7 @@ export default function AIAssistantDrawer({
   });
   const [streamingText, setStreamingText] = useState<string | null>(null);
   const [streamingModel, setStreamingModel] = useState<string | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -283,6 +299,7 @@ export default function AIAssistantDrawer({
           thinkingLevel: settings.thinkingLevel,
           includeModuleContext: settings.includeModuleContext,
           customSystemPrompt: settings.customSystemPrompt,
+          apiKey: settings.apiKey.trim(),
           moduleContext,
           stream: true,
           messages: updatedHistory
@@ -414,31 +431,12 @@ export default function AIAssistantDrawer({
     }));
   };
 
-  const handleProviderSwitch = (provider: 'gemini' | 'openai_compatible') => {
-    if (provider === 'gemini') {
-      setSettings((prev) => ({
-        ...prev,
-        provider: 'gemini',
-        model: GEMINI_AVAILABLE_MODELS.some((m) => m.id === prev.model)
-          ? prev.model
-          : 'gemini-3.8-flash',
-      }));
-    } else {
-      const preset =
-        OPENAI_COMPATIBLE_PRESETS.find((p) => p.id === settings.presetId) ||
-        OPENAI_COMPATIBLE_PRESETS[0];
-      setSettings((prev) => ({
-        ...prev,
-        provider: 'openai_compatible',
-        customBaseUrl: prev.customBaseUrl || preset.baseUrl,
-        model:
-          prev.provider === 'gemini' ? preset.defaultModel : prev.model,
-      }));
-    }
-  };
-
-  const isServerReady =
-    serverStatus.openAICompatibleKeyConfigured || serverStatus.geminiReady;
+  // A credential is available when the user entered a key in the settings
+  // UI, or the server has an environment key as a fallback.
+  const hasCredential =
+    settings.apiKey.trim().length > 0 ||
+    serverStatus.openAICompatibleKeyConfigured ||
+    serverStatus.geminiReady;
 
   const quickPrompts = [
     `یک مثال امتحانی از مبحث «${moduleContext.subtopicTitle}» با حل کاملاً تشریحی و بدون حذف محاسبات پایه بده.`,
@@ -483,16 +481,14 @@ export default function AIAssistantDrawer({
                 <span
                   className={`inline-block h-2 w-2 rounded-full ${
                     serverStatus.checked
-                      ? isServerReady
+                      ? hasCredential
                         ? 'bg-ok'
                         : 'bg-warn'
                       : 'bg-ink-4'
                   }`}
                 />
                 <span dir="auto" className="truncate">
-                  {settings.provider === 'gemini'
-                    ? `Google Gemini · ${settings.model}`
-                    : `OpenAI-Compatible · ${settings.model}`}
+                  {activePreset.label} · {settings.model}
                 </span>
               </div>
             </div>
@@ -702,16 +698,6 @@ export default function AIAssistantDrawer({
                       <RotateCcw className="h-3 w-3" />
                       تلاش مجدد
                     </button>
-                    {settings.provider === 'openai_compatible' &&
-                      serverStatus.geminiReady && (
-                        <button
-                          type="button"
-                          onClick={() => handleProviderSwitch('gemini')}
-                          className="rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-2 transition-colors hover:border-accent hover:text-accent"
-                        >
-                          امتحان Google Gemini
-                        </button>
-                      )}
                   </div>
                 </div>
               )}
@@ -794,12 +780,14 @@ export default function AIAssistantDrawer({
         ) : (
           /* ══════════════════ SETTINGS ══════════════════ */
           <div className="flex-1 space-y-5 overflow-y-auto bg-paper p-4 sm:p-6">
-            {/* Provider selection */}
-            <div className="rounded-xl border border-line bg-surface p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-bold text-ink">
+            {/* Provider configuration — one panel, presets include Gemini */}
+            <div className="space-y-4 rounded-xl border border-line bg-surface p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
                   <Cpu className="h-4 w-4 text-accent" />
-                  <span>۱. انتخاب ارائه‌دهنده هوش مصنوعی</span>
+                  <span className="text-sm font-bold text-ink">
+                    ۱. پیکربندی ارائه‌دهنده (سازگار با OpenAI)
+                  </span>
                 </div>
                 <button
                   type="button"
@@ -811,141 +799,10 @@ export default function AIAssistantDrawer({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => handleProviderSwitch('openai_compatible')}
-                  className={`flex flex-col items-start rounded-xl border p-3.5 text-start transition-colors ${
-                    settings.provider === 'openai_compatible'
-                      ? 'border-accent bg-accent-soft'
-                      : 'border-line-strong bg-surface hover:border-line-strong'
-                  }`}
-                >
-                  <div className="flex w-full items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-ink">
-                      OpenAI-Compatible (ارائه‌دهنده سفارشی)
-                    </span>
-                    <span
-                      dir="ltr"
-                      className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-accent-deep dark:text-accent"
-                    >
-                      /v1/chat/completions
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-[11px] leading-5 text-ink-3">
-                    پیش‌فرض — سازگار با OpenAI، OpenRouter، Groq، DeepSeek، Ollama، LM Studio
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleProviderSwitch('gemini')}
-                  className={`flex flex-col items-start rounded-xl border p-3.5 text-start transition-colors ${
-                    settings.provider === 'gemini'
-                      ? 'border-accent bg-accent-soft'
-                      : 'border-line-strong bg-surface hover:border-line-strong'
-                  }`}
-                >
-                  <div className="flex w-full items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-ink">
-                      Google Gemini (گزینه اختیاری)
-                    </span>
-                    <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${
-                        serverStatus.geminiReady ? 'bg-ok' : 'bg-warn'
-                      }`}
-                    />
-                  </div>
-                  <p className="mt-1.5 text-[11px] leading-5 text-ink-3">
-                    نیاز به کلید GEMINI_API_KEY روی سرور دارد؛ از تنظیمات در دسترس است
-                  </p>
-                </button>
-              </div>
-            </div>
-
-            {/* Provider-specific config */}
-            {settings.provider === 'gemini' ? (
-              <div className="space-y-4 rounded-xl border border-line bg-surface p-4">
-                <div className="text-sm font-bold text-ink">
-                  ۲. تنظیمات مدل Gemini و عمق استدلال
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-ink-2">
-                    انتخاب مدل:
-                  </label>
-                  <div className="space-y-2">
-                    {GEMINI_AVAILABLE_MODELS.map((gm) => (
-                      <button
-                        key={gm.id}
-                        type="button"
-                        onClick={() =>
-                          setSettings((prev) => ({ ...prev, model: gm.id }))
-                        }
-                        className={`flex w-full items-center justify-between rounded-lg border px-3.5 py-2.5 text-start text-xs transition-colors ${
-                          settings.model === gm.id
-                            ? 'border-accent bg-accent-soft font-bold text-accent-deep dark:text-accent'
-                            : 'border-line bg-panel text-ink-2 hover:border-line-strong'
-                        }`}
-                      >
-                        <span>{gm.label}</span>
-                        <span
-                          dir="ltr"
-                          className="shrink-0 rounded border border-line-strong bg-surface px-2 py-0.5 font-mono text-[11px] text-accent"
-                        >
-                          {gm.id}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-ink-2">
-                    سطح تفکر و استدلال ریاضی:
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(
-                      [
-                        { id: 'LOW', label: 'سریع (Low)' },
-                        { id: 'MEDIUM', label: 'متعادل (Medium)' },
-                        { id: 'HIGH', label: 'عمیق (High)' },
-                      ] as const
-                    ).map((lvl) => (
-                      <button
-                        key={lvl.id}
-                        type="button"
-                        onClick={() =>
-                          setSettings((prev) => ({
-                            ...prev,
-                            thinkingLevel: lvl.id,
-                          }))
-                        }
-                        className={`rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${
-                          settings.thinkingLevel === lvl.id
-                            ? 'border-accent bg-accent-solid text-white'
-                            : 'border-line-strong bg-panel text-ink-3 hover:text-ink'
-                        }`}
-                      >
-                        {lvl.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4 rounded-xl border border-line bg-surface p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-ink">
-                    ۲. پیکربندی ارائه‌دهنده سفارشی
-                  </span>
-                  <Server className="h-4 w-4 text-accent" />
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-ink-2">
-                    پیش‌تنظیم‌های آماده:
-                  </label>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-ink-2">
+                  پیش‌تنظیم‌های آماده:
+                </label>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {OPENAI_COMPATIBLE_PRESETS.map((preset) => (
                       <button
@@ -964,6 +821,52 @@ export default function AIAssistantDrawer({
                   </div>
                   <p className="mt-1.5 text-[11px] text-ink-4">
                     {activePreset.description}
+                  </p>
+                </div>
+
+                {/* API key — entered here, stored only in this browser */}
+                <div>
+                  <label
+                    htmlFor="api-key-input"
+                    className="mb-1 block text-xs font-bold text-ink-2"
+                  >
+                    کلید API (API Key):
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-4" />
+                    <input
+                      id="api-key-input"
+                      type={showApiKey ? 'text' : 'password'}
+                      dir="ltr"
+                      autoComplete="off"
+                      value={settings.apiKey}
+                      onChange={(e) =>
+                        setSettings((prev) => ({
+                          ...prev,
+                          apiKey: e.target.value,
+                        }))
+                      }
+                      placeholder="sk-…"
+                      aria-label="کلید API ارائه‌دهنده"
+                      className="w-full rounded-lg border border-line-strong bg-panel py-2 pe-10 ps-9 font-mono text-xs text-ink outline-none transition-colors focus:border-accent focus:bg-surface"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey((prev) => !prev)}
+                      aria-label={showApiKey ? 'پنهان کردن کلید' : 'نمایش کلید'}
+                      className="absolute end-2.5 top-1/2 -translate-y-1/2 text-ink-4 transition-colors hover:text-ink"
+                    >
+                      {showApiKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-5 text-ink-4">
+                    فقط در حافظه همین مرورگر ذخیره می‌شود و همراه هر درخواست به
+                    مسیر سرور این برنامه فرستاده می‌شود. برای سرویس‌های محلی
+                    (Ollama / LM Studio) خالی بگذار.
                   </p>
                 </div>
 
@@ -1055,24 +958,29 @@ export default function AIAssistantDrawer({
                     <span>وضعیت احراز هویت سمت سرور:</span>
                   </div>
                   <p className="mt-1 text-[11px]">
-                    درخواست‌ها از مسیر امن{' '}
+                    کلید API بالا فقط در مرورگر تو ذخیره می‌شود و با هر درخواست
+                    از مسیر امن{' '}
                     <code dir="ltr" className="font-mono text-accent-deep">
                       /api/ai/chat
                     </code>{' '}
-                    ارسال می‌شوند. کلید{' '}
+                    عبور می‌کند. در نبود آن، کلیدهای محیطی سرور (
                     <code dir="ltr" className="font-mono text-ink">
                       OPENAI_COMPATIBLE_API_KEY
                     </code>{' '}
-                    در Secrets سرور خوانده می‌شود (سرویس‌های محلی مانند Ollama به کلید نیاز ندارند).
+                    یا{' '}
+                    <code dir="ltr" className="font-mono text-ink">
+                      GEMINI_API_KEY
+                    </code>{' '}
+                    برای پیش‌تنظیم Gemini) به‌عنوان جایگزین استفاده می‌شوند
+                    (سرویس‌های محلی مانند Ollama به کلید نیاز ندارند).
                   </p>
                 </div>
               </div>
-            )}
 
             {/* Pedagogical settings */}
             <div className="space-y-4 rounded-xl border border-line bg-surface p-4">
               <div className="text-sm font-bold text-ink">
-                ۳. تنظیمات آموزشی و نحوه بسط راه‌حل‌ها
+                ۲. تنظیمات آموزشی و نحوه بسط راه‌حل‌ها
               </div>
 
               <div>

@@ -17,6 +17,8 @@ interface ChatRequestBody {
   provider?: AIProviderType;
   customBaseUrl?: string;
   model?: string;
+  /** API key supplied from the settings UI; env keys are only a fallback */
+  apiKey?: string;
   detailLevel?: SolutionDetailLevel;
   thinkingLevel?: ReasoningLevel;
   includeModuleContext?: boolean;
@@ -126,11 +128,30 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
       };
 
-      const serverOpenAIKey = process.env.OPENAI_COMPATIBLE_API_KEY;
-      if (
-        serverOpenAIKey &&
-        serverOpenAIKey !== 'MY_OPENAI_COMPATIBLE_API_KEY'
-      ) {
+      // Key precedence: the key entered in the settings UI wins; Google's
+      // OpenAI-compatible endpoint falls back to GEMINI_API_KEY, every
+      // other host to OPENAI_COMPATIBLE_API_KEY.
+      const isGeminiEndpoint = targetBaseUrl.includes(
+        'generativelanguage.googleapis.com'
+      );
+      const userKey = body.apiKey?.trim();
+      let serverOpenAIKey = userKey || undefined;
+      if (!serverOpenAIKey) {
+        if (isGeminiEndpoint) {
+          const geminiKey = process.env.GEMINI_API_KEY;
+          serverOpenAIKey =
+            geminiKey && geminiKey !== 'MY_GEMINI_API_KEY'
+              ? geminiKey
+              : undefined;
+        } else {
+          const envKey = process.env.OPENAI_COMPATIBLE_API_KEY;
+          serverOpenAIKey =
+            envKey && envKey !== 'MY_OPENAI_COMPATIBLE_API_KEY'
+              ? envKey
+              : undefined;
+        }
+      }
+      if (serverOpenAIKey) {
         headers['Authorization'] = `Bearer ${serverOpenAIKey}`;
       }
 
@@ -249,7 +270,7 @@ export async function POST(req: NextRequest) {
     }
 
     /* ────────────────────────── Default: Google Gemini ────────────────────────── */
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = body.apiKey?.trim() || process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         {

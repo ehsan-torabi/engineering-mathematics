@@ -9,6 +9,7 @@ export type AIProviderType = 'gemini' | 'openai_compatible';
 
 export type OpenAICompatiblePresetId =
   | 'openai'
+  | 'gemini'
   | 'openrouter'
   | 'groq'
   | 'deepseek'
@@ -34,6 +35,8 @@ export interface AISettings {
   presetId: OpenAICompatiblePresetId;
   customBaseUrl: string;
   model: string;
+  /** User-supplied API key, entered in the settings UI and stored only in this browser */
+  apiKey: string;
   detailLevel: SolutionDetailLevel;
   thinkingLevel: ReasoningLevel;
   includeModuleContext: boolean;
@@ -77,6 +80,20 @@ export const OPENAI_COMPATIBLE_PRESETS: OpenAICompatiblePreset[] = [
     baseUrl: 'https://api.openai.com/v1',
     defaultModel: 'gpt-4o-mini',
     suggestedModels: ['gpt-4o-mini', 'gpt-4o', 'o3-mini'],
+  },
+  {
+    id: 'gemini',
+    label: 'Google Gemini',
+    description:
+      'نقطه پایانی رسمی سازگار با OpenAI در Google AI؛ کلید GEMINI_API_KEY سرور استفاده می‌شود',
+    baseUrl:
+      'https://generativelanguage.googleapis.com/v1beta/openai',
+    defaultModel: 'gemini-3.8-flash',
+    suggestedModels: [
+      'gemini-3.8-flash',
+      'gemini-3.1-flash-lite',
+      'gemini-flash-latest',
+    ],
   },
   {
     id: 'openrouter',
@@ -137,6 +154,7 @@ export const DEFAULT_AI_SETTINGS: AISettings = {
   presetId: 'custom',
   customBaseUrl: 'https://api.openai.com/v1',
   model: 'gpt-4o-mini',
+  apiKey: '',
   detailLevel: 'full_step_by_step',
   thinkingLevel: 'MEDIUM',
   includeModuleContext: true,

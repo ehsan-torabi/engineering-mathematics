@@ -8,10 +8,12 @@ import {
   BookMarked,
   CheckCircle2,
   ClipboardList,
+  GraduationCap,
   Landmark,
   Play,
 } from 'lucide-react';
 import { CURRICULUM_MODULES, MODULE_ENRICHMENT } from '@/lib/curriculum-data';
+import { EXAM_PAPERS, TOTAL_EXAM_QUESTIONS } from '@/lib/exams';
 import { useStudyProgress } from '@/lib/study-progress-context';
 import { useCourseTools } from '@/components/shell/AppChrome';
 import { MathText } from '@/components/MathFormula';
@@ -194,7 +196,21 @@ export default function CourseHome() {
       </section>
 
       {/* Course-wide tools */}
-      <div className="mt-10 grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => router.push('/exams')}
+          className="flex items-center gap-3 rounded-xl border border-accent-line bg-accent-soft p-4 text-start transition-colors hover:bg-accent-tint"
+        >
+          <GraduationCap className="h-5 w-5 shrink-0 text-accent" />
+          <span className="min-w-0">
+            <span className="block text-sm font-bold text-ink">بانک امتحانات</span>
+            <span className="block text-xs text-ink-3">
+              {EXAM_PAPERS.length} برگه · {TOTAL_EXAM_QUESTIONS} سؤال با حل کامل
+            </span>
+          </span>
+        </button>
+
         <button
           type="button"
           onClick={openExam}
