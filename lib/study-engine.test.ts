@@ -8,12 +8,12 @@ import {
   getExamQuestions,
   INITIAL_STUDY_PROGRESS,
   REQUIREMENTS_SPECIFICATION,
-} from './study-engine';
+} from './study-engine.ts';
 import {
   CURRICULUM_MODULES,
   getModuleDefaultLayout,
   LAYOUT_COMPLEXITY_CONFIG,
-} from './curriculum-data';
+} from './curriculum-data.ts';
 
 test('extractAllFormulas aggregates formulas from all 7 curriculum modules', () => {
   const allFormulas = extractAllFormulas();

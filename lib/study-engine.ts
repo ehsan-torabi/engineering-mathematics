@@ -1,9 +1,11 @@
 import {
   CURRICULUM_MODULES,
+} from './curriculum-data.ts';
+import type {
   CurriculumModule,
   ModuleId,
   PracticeQuestion,
-} from './curriculum-data';
+} from './curriculum-data.ts';
 
 export interface FormulaCatalogEntry {
   id: string;
@@ -455,8 +457,8 @@ export const REQUIREMENTS_SPECIFICATION: RequirementEngineeringItem[] = [
     description:
       'نمایش جزء‌به‌جزء انتخاب $u$ و $dv$، انتگرال‌گیری صریح، جایگذاری حدود بالا و پایین و ساده‌سازی جبری $\\cos(n\\pi)=(-1)^n$ در تمام مثال‌ها.',
     acceptanceCriteria:
-      'موتور StepByStepSolver دارای قابلیت مرور تک‌گام، نمایش کامل، نکات مفهومی (Why Hint) و ۵ خانواده حل‌گر پارامتریک پویا.',
-    targetComponent: 'StepByStepSolver.tsx',
+      'موتور ExamplesDeck دارای مرور تک‌گام، نمایش کامل، نکات مفهومی (Why Hint) و ۵ خانواده حل‌گر پارامتریک پویا.',
+    targetComponent: 'ExamplesDeck.tsx + example-generator.ts',
     priority: 'حیاتی (Must-Have)',
     implemented: true,
   },
@@ -515,8 +517,8 @@ export const REQUIREMENTS_SPECIFICATION: RequirementEngineeringItem[] = [
     description:
       'تجمیع تمام فرمول‌های کلیدی هر ۷ فصل در یک مرجع قابل جستجو با امکان فیلتر فصل، کپی کد LaTeX و پرش مستقیم به زیرمبحث مربوطه.',
     acceptanceCriteria:
-      'مدال FormulaCheatSheetModal متصل به موتور جستجوی study-engine.ts.',
-    targetComponent: 'FormulaCheatSheetModal.tsx + study-engine.ts',
+      'پنجره FormulaSheetModal متصل به موتور جستجوی study-engine.ts.',
+    targetComponent: 'FormulaSheetModal.tsx + study-engine.ts',
     priority: 'حیاتی (Must-Have)',
     implemented: true,
   },
@@ -527,8 +529,8 @@ export const REQUIREMENTS_SPECIFICATION: RequirementEngineeringItem[] = [
     description:
       'ذخیره پایدار وضعیت مطالعه زیرمباحث، تسلط بر مثال‌های حل‌شده، یادداشت‌های شخصی دانشجو و کارنامه تحلیلی آزمون جامع در localStorage.',
     acceptanceCriteria:
-      'داشبورد StudyRoadmapModal با ۳ تب (نقشه راه پیشرفت، شبیه‌ساز آزمون جامع زمان‌دار و ماتریس مهندسی نیازمندی‌ها).',
-    targetComponent: 'StudyRoadmapModal.tsx + study-engine.ts',
+      'نقشه دوره در CourseHome، آزمون جامع در ExamModal و ماتریس نیازمندی‌ها در RequirementsModal.',
+    targetComponent: 'CourseHome.tsx + ExamModal.tsx + study-engine.ts',
     priority: 'حیاتی (Must-Have)',
     implemented: true,
   },

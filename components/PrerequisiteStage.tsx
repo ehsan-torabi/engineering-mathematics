@@ -11,12 +11,12 @@ import MathFormula, { MathText } from '@/components/MathFormula';
 import {
   Compass,
   Calculator,
+  ListChecks,
   Activity,
   CheckCircle2,
   ArrowDownRight,
   ArrowLeft,
   AlertCircle,
-  Sparkles,
 } from 'lucide-react';
 
 type PrereqLabTab = 'ibp_tabular' | 'trig_parity' | 'ode_hyperbolic';
@@ -86,15 +86,15 @@ export default function PrerequisiteStage() {
   return (
     <section
       aria-label="آزمایشگاه تعاملی ریاضیات پایه و پیش‌نیاز"
-      className="rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-xs transition-colors sm:p-5 dark:border-[#334155] dark:bg-[#111827]"
+      className="rounded-xl border border-line bg-surface p-4 transition-colors sm:p-5"
     >
       {/* Top Interactive Sub-Lab Switcher */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3.5 dark:border-[#334155]">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3.5">
         <div>
-          <h3 className="text-base font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+          <h3 className="text-base font-bold text-ink">
             آزمایشگاه تعاملی ریاضیات پایه و پیش‌نیاز مهندسی
           </h3>
-          <p className="text-xs text-[#475569] dark:text-[#94A3B8]">
+          <p className="text-xs text-ink-3">
             ابزارهای بصری برای تسلط کامل بر روش جزء‌به‌جزء جدولی (جدول DI با فلش‌های قطری)، دایره مثلثاتی فوریه و معادلات دیفرانسیل مرتبه دوم
           </p>
         </div>
@@ -105,8 +105,8 @@ export default function PrerequisiteStage() {
             onClick={() => setActiveTab('ibp_tabular')}
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold transition ${
               activeTab === 'ibp_tabular'
-                ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#334155] hover:border-[#0284C7] dark:border-[#334155] dark:bg-[#1E293B] dark:text-[#CBD5E1]'
+                ? 'border-accent bg-accent-solid text-white'
+                : 'border-line-strong bg-panel text-ink-2 hover:border-accent'
             }`}
           >
             <Calculator className="h-3.5 w-3.5" />
@@ -118,8 +118,8 @@ export default function PrerequisiteStage() {
             onClick={() => setActiveTab('trig_parity')}
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold transition ${
               activeTab === 'trig_parity'
-                ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#334155] hover:border-[#0284C7] dark:border-[#334155] dark:bg-[#1E293B] dark:text-[#CBD5E1]'
+                ? 'border-accent bg-accent-solid text-white'
+                : 'border-line-strong bg-panel text-ink-2 hover:border-accent'
             }`}
           >
             <Compass className="h-3.5 w-3.5" />
@@ -131,8 +131,8 @@ export default function PrerequisiteStage() {
             onClick={() => setActiveTab('ode_hyperbolic')}
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-bold transition ${
               activeTab === 'ode_hyperbolic'
-                ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#334155] hover:border-[#0284C7] dark:border-[#334155] dark:bg-[#1E293B] dark:text-[#CBD5E1]'
+                ? 'border-accent bg-accent-solid text-white'
+                : 'border-line-strong bg-panel text-ink-2 hover:border-accent'
             }`}
           >
             <Activity className="h-3.5 w-3.5" />
@@ -145,8 +145,8 @@ export default function PrerequisiteStage() {
       {activeTab === 'ibp_tabular' && (
         <div className="space-y-4">
           {/* Pattern Selector Bar */}
-          <div className="flex flex-col gap-2.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5 sm:flex-row sm:items-center sm:justify-between dark:border-[#334155] dark:bg-[#1E293B]/70">
-            <div className="text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+          <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-panel p-3.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs font-bold text-ink">
               انتخاب الگوی انتگرال برای ساخت جدول DI و مشاهده مسیر ضرب قُطری:
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -176,8 +176,8 @@ export default function PrerequisiteStage() {
                   onClick={() => handlePatternChange(pat.id)}
                   className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
                     ibpPatternId === pat.id
-                      ? 'border-[#0284C7] bg-[#0284C7] text-white shadow-2xs'
-                      : 'border-[#CBD5E1] bg-white text-[#334155] hover:border-[#0284C7] dark:border-[#475569] dark:bg-[#0F172A] dark:text-[#CBD5E1]'
+                      ? 'border-accent bg-accent-solid text-white'
+                      : 'border-line-strong bg-surface text-ink-2 hover:border-accent'
                   }`}
                 >
                   <MathText text={pat.label} />
@@ -187,34 +187,34 @@ export default function PrerequisiteStage() {
           </div>
 
           {/* 4 Golden Rules of Tabular DI Banner */}
-          <div className="rounded-xl border border-[#0284C7]/30 bg-[#F0F9FF] p-4 dark:border-[#0284C7]/40 dark:bg-[#0C4A6E]/25">
-            <div className="mb-2 flex items-center gap-2 text-xs font-bold text-[#0369A1] dark:text-[#38BDF8]">
-              <Sparkles className="h-4 w-4 shrink-0" />
+          <div className="rounded-xl border border-accent/30 bg-accent-soft p-4 dark:border-accent/40">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold text-accent-deep">
+              <ListChecks className="h-4 w-4 shrink-0" />
               <span>
                 ۴ قانون طلایی روش جزء‌به‌جزء جدولی (Tabular DI Method) — چرا هرگز هم‌سطر ضرب نمی‌کنیم؟
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-2.5 text-xs leading-6 text-[#1E293B] md:grid-cols-2 dark:text-[#E2E8F0]">
-              <div className="rounded-lg border border-[#BAE6FD] bg-white/90 p-2.5 dark:border-[#0369A1]/50 dark:bg-[#0F172A]/90">
-                <strong className="font-bold text-[#0284C7] dark:text-[#38BDF8]">
+            <div className="grid grid-cols-1 gap-2.5 text-xs leading-6 text-ink-2 md:grid-cols-2">
+              <div className="rounded-lg border border-accent-line bg-surface/90 p-2.5 dark:bg-ink-solid/90">
+                <strong className="font-bold text-accent">
                   قانون ۱ (انتخاب ستون‌ها با LIATE):{' '}
                 </strong>
                 <MathText text="در سطر اول، تابع $u$ (معمولاً چندجمله‌ای $x^k$) را در ستون $D$ (مشتق‌گیری متوالی) و تابع $dv$ (مثلثاتی یا نمایی) را در ستون $I$ (انتگرال‌گیری متوالی) قرار می‌دهیم." />
               </div>
-              <div className="rounded-lg border border-[#BAE6FD] bg-white/90 p-2.5 dark:border-[#0369A1]/50 dark:bg-[#0F172A]/90">
-                <strong className="font-bold text-[#059669] dark:text-[#34D399]">
+              <div className="rounded-lg border border-accent-line bg-surface/90 p-2.5 dark:bg-ink-solid/90">
+                <strong className="font-bold text-ok">
                   <MathText text="قانون ۲ (ضرب قُطری $D_k \searrow I_{k+1}$): " />
                 </strong>
                 <MathText text="هر عنصر در سطر $k$ ستون $D$ (با علامت متناوب $+,-,+,-$) همیشه به صورت **قُطری ($\searrow$)** در **سطر بعدی ($k+1$)** از ستون $I$ ضرب می‌شود؛ هرگز دو عنصر هم‌سطر را خارج از انتگرال ضرب نکنید!" />
               </div>
-              <div className="rounded-lg border border-[#BAE6FD] bg-white/90 p-2.5 dark:border-[#0369A1]/50 dark:bg-[#0F172A]/90">
-                <strong className="font-bold text-[#D97706] dark:text-[#FBBF24]">
+              <div className="rounded-lg border border-accent-line bg-surface/90 p-2.5 dark:bg-ink-solid/90">
+                <strong className="font-bold text-warn">
                   <MathText text="قانون ۳ (چرا $I_1$ در سطر اول ضرب نمی‌شود؟): " />
                 </strong>
                 <MathText text="چون در فرمول $\int u\,dv = u\cdot v - \int v\,du$، جمله اول $u\cdot v$ است نه $u\cdot dv$! عبارت سطر اول ستون $I$ خودِ $dv$ است و انتگرال آن یعنی $v$ در **سطر دوم ستون $I$ ($I_2$)** قرار دارد." />
               </div>
-              <div className="rounded-lg border border-[#BAE6FD] bg-white/90 p-2.5 dark:border-[#0369A1]/50 dark:bg-[#0F172A]/90">
-                <strong className="font-bold text-[#7C3AED] dark:text-[#C084FC]">
+              <div className="rounded-lg border border-accent-line bg-surface/90 p-2.5 dark:bg-ink-solid/90">
+                <strong className="font-bold text-accent">
                   <MathText text="قانون ۴ (قانون توقف افقی $\longleftarrow$ در سطر آخر): " />
                 </strong>
                 <MathText text="در آخرین سطر جدول، دو عنصر هم‌سطر را به صورت **افقی ($\longleftarrow$)** در هم ضرب کرده و **داخل علامت انتگرال** ($\pm\int D_{\text{last}}\cdot I_{\text{last}}\,dx$) می‌گذاریم. اگر $D_{\text{last}}=0$ باشد، انتگرال صفر شده و تمام می‌شود!" />
@@ -223,8 +223,8 @@ export default function PrerequisiteStage() {
           </div>
 
           {/* Interactive Step Filter Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2.5 dark:border-[#334155] dark:bg-[#1E293B]/60">
-            <span className="text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-panel px-3.5 py-2.5">
+            <span className="text-xs font-bold text-ink">
               ردیاب مرحله‌به‌مرحله قطرهای جدول (روی هر قطر کلیک کنید تا مسیر ضرب آن هایلایت شود):
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -233,8 +233,8 @@ export default function PrerequisiteStage() {
                 onClick={() => setSelectedDiagStep('all')}
                 className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition ${
                   selectedDiagStep === 'all'
-                    ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                    : 'border-[#CBD5E1] bg-white text-[#334155] hover:border-[#0284C7] dark:border-[#475569] dark:bg-[#0F172A] dark:text-[#CBD5E1]'
+                    ? 'border-accent bg-accent-solid text-white'
+                    : 'border-line-strong bg-surface text-ink-2 hover:border-accent'
                 }`}
               >
                 نمایش هم‌زمان همه قطرها ({diModel.diagonals.length} قطر)
@@ -246,8 +246,8 @@ export default function PrerequisiteStage() {
                   onClick={() => setSelectedDiagStep(diag.stepNumber)}
                   className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition ${
                     selectedDiagStep === diag.stepNumber
-                      ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                      : 'border-[#CBD5E1] bg-white text-[#334155] hover:border-[#0284C7] dark:border-[#475569] dark:bg-[#0F172A] dark:text-[#CBD5E1]'
+                      ? 'border-accent bg-accent-solid text-white'
+                      : 'border-line-strong bg-surface text-ink-2 hover:border-accent'
                   }`}
                 >
                   <MathText
@@ -260,8 +260,8 @@ export default function PrerequisiteStage() {
                 onClick={() => setSelectedDiagStep('horizontal')}
                 className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition ${
                   selectedDiagStep === 'horizontal'
-                    ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
-                    : 'border-[#CBD5E1] bg-white text-[#334155] hover:border-[#7C3AED] dark:border-[#475569] dark:bg-[#0F172A] dark:text-[#CBD5E1]'
+                    ? 'border-accent bg-accent-solid text-white'
+                    : 'border-line-strong bg-surface text-ink-2 hover:border-accent'
                 }`}
               >
                 <MathText
@@ -274,9 +274,9 @@ export default function PrerequisiteStage() {
           {/* Main Grid: Left = Visual DI Table with Diagonal Arrows, Right = Extracted Terms & Evaluation */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Visual Interactive Tabular DI Table */}
-            <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-7 dark:border-[#334155] dark:bg-[#1E293B]/60">
+            <div className="space-y-3 rounded-xl border border-line bg-panel p-4 lg:col-span-7">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+                <div className="text-xs font-bold text-ink">
                   جدول تعاملی DI (چپ به راست: ستون مشتق D در سمت چپ ↘ ستون انتگرال I در سمت راست):
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -288,11 +288,11 @@ export default function PrerequisiteStage() {
               {/* Structured Visual Table in LTR so Column D is on the Left and arrows ↘ point Down-Right to Column I */}
               <div
                 dir="ltr"
-                className="overflow-x-auto rounded-xl border border-[#CBD5E1] bg-white shadow-2xs dark:border-[#475569] dark:bg-[#0F172A]"
+                className="overflow-x-auto rounded-xl border border-line-strong bg-surface"
               >
                 <table className="w-full border-collapse text-center text-xs">
                   <thead>
-                    <tr className="border-b border-[#CBD5E1] bg-[#F1F5F9] text-[#0F172A] dark:border-[#334155] dark:bg-[#1E293B] dark:text-[#F8FAFC]">
+                    <tr className="border-b border-line-strong bg-muted text-ink">
                       <th className="px-2.5 py-2.5 font-bold" dir="rtl">
                         سطر
                       </th>
@@ -300,26 +300,26 @@ export default function PrerequisiteStage() {
                         علامت
                       </th>
                       <th
-                        className="px-3 py-2.5 font-bold text-[#0284C7] dark:text-[#38BDF8]"
+                        className="px-3 py-2.5 font-bold text-accent"
                         dir="rtl"
                       >
                         ستون D (مشتق متوالی u)
                       </th>
                       <th
-                        className="px-2.5 py-2.5 font-bold text-[#059669] dark:text-[#34D399]"
+                        className="px-2.5 py-2.5 font-bold text-ok"
                         dir="rtl"
                       >
                         مسیر ضرب قُطری (↘)
                       </th>
                       <th
-                        className="px-3 py-2.5 font-bold text-[#D97706] dark:text-[#FBBF24]"
+                        className="px-3 py-2.5 font-bold text-warn"
                         dir="rtl"
                       >
                         ستون I (انتگرال متوالی dv)
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E2E8F0] dark:divide-[#334155]">
+                  <tbody className="divide-y divide-line">
                     {diModel.rows.map((row) => {
                       const outgoingDiag = diModel.diagonals.find(
                         (d) => d.fromRow === row.rowIndex
@@ -346,12 +346,12 @@ export default function PrerequisiteStage() {
                       return (
                         <tr
                           key={row.rowIndex}
-                          className="transition-colors hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B]/40"
+                          className="transition-colors hover:bg-panel"
                         >
                           {/* Row Number */}
                           <td
                             dir="rtl"
-                            className="px-2.5 py-3 font-mono font-bold text-[#475569] dark:text-[#94A3B8]"
+                            className="px-2.5 py-3 font-mono font-bold text-ink-3"
                           >
                             سطر {row.rowIndex}
                           </td>
@@ -362,8 +362,8 @@ export default function PrerequisiteStage() {
                               dir="ltr"
                               className={`inline-flex h-7 w-7 items-center justify-center rounded-full font-mono text-sm font-extrabold ${
                                 row.sign === '+'
-                                  ? 'border border-[#059669]/40 bg-[#ECFDF5] text-[#059669] dark:bg-[#064E3B]/60 dark:text-[#34D399]'
-                                  : 'border border-[#D97706]/40 bg-[#FFFBEB] text-[#D97706] dark:bg-[#78350F]/60 dark:text-[#FBBF24]'
+                                  ? 'border border-ok/40 bg-ok-soft text-ok'
+                                  : 'border border-warn/40 bg-warn-soft text-warn'
                               }`}
                             >
                               {row.sign}1
@@ -374,7 +374,7 @@ export default function PrerequisiteStage() {
                           <td
                             className={`px-3 py-3 transition-all ${
                               isDHighlighted
-                                ? 'bg-[#F0F9FF] ring-2 ring-inset ring-[#0284C7] dark:bg-[#0C4A6E]/40 dark:ring-[#38BDF8]'
+                                ? 'bg-accent-soft ring-2 ring-inset ring-accent'
                                 : ''
                             }`}
                           >
@@ -384,7 +384,7 @@ export default function PrerequisiteStage() {
                               />
                               <span
                                 dir="rtl"
-                                className="text-[11px] font-medium text-[#475569] dark:text-[#94A3B8]"
+                                className="text-[11px] font-medium text-ink-3"
                               >
                                 {row.dRoleFa}
                               </span>
@@ -402,15 +402,15 @@ export default function PrerequisiteStage() {
                                 className={`mx-auto flex flex-col items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition ${
                                   selectedDiagStep === 'all' ||
                                   selectedDiagStep === outgoingDiag.stepNumber
-                                    ? 'border-[#0284C7] bg-[#E0F2FE] text-[#0369A1] shadow-2xs dark:border-[#38BDF8] dark:bg-[#0C4A6E]/70 dark:text-[#7DD3FC]'
-                                    : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B] dark:border-[#475569] dark:bg-[#1E293B] dark:text-[#94A3B8]'
+                                    ? 'border-accent bg-accent-tint text-accent-deep'
+                                    : 'border-line-strong bg-panel text-ink-4'
                                 }`}
                               >
                                 <span className="flex items-center gap-1">
                                   <MathFormula
                                     formula={`(${outgoingDiag.rowSign}D_{${outgoingDiag.fromRow}}) \\searrow I_{${outgoingDiag.toRow}}`}
                                   />
-                                  <ArrowDownRight className="h-4 w-4 text-[#0284C7] dark:text-[#38BDF8]" />
+                                  <ArrowDownRight className="h-4 w-4 text-accent" />
                                 </span>
                                 <span
                                   dir="rtl"
@@ -429,8 +429,8 @@ export default function PrerequisiteStage() {
                                 className={`mx-auto flex flex-col items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition ${
                                   selectedDiagStep === 'all' ||
                                   selectedDiagStep === 'horizontal'
-                                    ? 'border-[#7C3AED] bg-[#F3E8FF] text-[#6D28D9] dark:border-[#C084FC] dark:bg-[#4C1D95]/60 dark:text-[#DDD6FE]'
-                                    : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B] dark:border-[#475569] dark:bg-[#1E293B] dark:text-[#94A3B8]'
+                                    ? 'border-accent bg-accent-soft text-accent'
+                                    : 'border-line-strong bg-panel text-ink-4'
                                 }`}
                               >
                                 <span className="flex items-center gap-1">
@@ -455,9 +455,9 @@ export default function PrerequisiteStage() {
                           <td
                             className={`px-3 py-3 transition-all ${
                               row.rowIndex === 1
-                                ? 'bg-[#FFFBEB]/60 dark:bg-[#78350F]/20'
+                                ? 'bg-warn-soft/60 dark:bg-warn-soft/20'
                                 : isIHighlighted
-                                ? 'bg-[#ECFDF5] ring-2 ring-inset ring-[#059669] dark:bg-[#064E3B]/40 dark:ring-[#34D399]'
+                                ? 'bg-ok-soft ring-2 ring-inset ring-ok'
                                 : ''
                             }`}
                           >
@@ -468,7 +468,7 @@ export default function PrerequisiteStage() {
                               {row.rowIndex === 1 ? (
                                 <span
                                   dir="rtl"
-                                  className="inline-flex items-center gap-1 rounded bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-bold text-[#92400E] dark:bg-[#78350F] dark:text-[#FDE68A]"
+                                  className="inline-flex items-center gap-1 rounded bg-warn-tint px-2 py-0.5 text-[10px] font-bold text-warn-ink"
                                 >
                                   <AlertCircle className="h-3 w-3 shrink-0" />
                                   {row.iRoleFa}
@@ -476,7 +476,7 @@ export default function PrerequisiteStage() {
                               ) : (
                                 <span
                                   dir="rtl"
-                                  className="text-[11px] font-semibold text-[#059669] dark:text-[#34D399]"
+                                  className="text-[11px] font-semibold text-ok"
                                 >
                                   {row.iRoleFa}
                                 </span>
@@ -491,7 +491,7 @@ export default function PrerequisiteStage() {
               </div>
 
               {/* Why Row 1 of Column I is never multiplied callout */}
-              <div className="rounded-lg border border-[#F59E0B]/40 bg-[#FFFBEB] p-3 text-xs leading-6 text-[#92400E] dark:border-[#F59E0B]/40 dark:bg-[#78350F]/30 dark:text-[#FDE68A]">
+              <div className="rounded-lg border border-warn/40 bg-warn-soft p-3 text-xs leading-6 text-warn-ink dark:border-warn/40">
                 <strong className="font-bold">
                   نکته بسیار مهم (چرا سطر ۱ ستون I یعنی I₁ در هیچ قطری ضرب نمی‌شود؟):{' '}
                 </strong>
@@ -500,8 +500,8 @@ export default function PrerequisiteStage() {
             </div>
 
             {/* Right Column: Step-by-Step Diagonal Products & Final Result */}
-            <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-5 dark:border-[#334155] dark:bg-[#1E293B]/60">
-              <div className="text-xs font-bold text-[#0369A1] dark:text-[#38BDF8]">
+            <div className="space-y-3 rounded-xl border border-line bg-panel p-4 lg:col-span-5">
+              <div className="text-xs font-bold text-accent-deep">
                 استخراج مرحله‌به‌مرحله جملات از قطرهای جدول:
               </div>
 
@@ -516,11 +516,11 @@ export default function PrerequisiteStage() {
                       onClick={() => setSelectedDiagStep(diag.stepNumber)}
                       className={`cursor-pointer rounded-xl border p-3 transition ${
                         isActive
-                          ? 'border-[#0284C7] bg-white shadow-2xs dark:border-[#38BDF8] dark:bg-[#0F172A]'
-                          : 'border-[#E2E8F0] bg-white/60 opacity-65 hover:opacity-100 dark:border-[#334155] dark:bg-[#0F172A]/50'
+                          ? 'border-accent bg-surface'
+                          : 'border-line bg-surface/60 opacity-65 hover:opacity-100 dark:bg-ink-solid/50'
                       }`}
                     >
-                      <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+                      <div className="mb-1 flex items-center justify-between text-xs font-bold text-ink">
                         <span>
                           قطر {diag.stepNumber} (سطر {diag.fromRow} ستون D ↘ سطر{' '}
                           {diag.toRow} ستون I):
@@ -530,7 +530,7 @@ export default function PrerequisiteStage() {
                           highlight
                         />
                       </div>
-                      <p className="mb-1.5 text-[11px] leading-5 text-[#475569] dark:text-[#94A3B8]">
+                      <p className="mb-1.5 text-[11px] leading-5 text-ink-3">
                         {diag.explanationFa}
                       </p>
                       <MathFormula
@@ -547,11 +547,11 @@ export default function PrerequisiteStage() {
                   className={`cursor-pointer rounded-xl border p-3 transition ${
                     selectedDiagStep === 'all' ||
                     selectedDiagStep === 'horizontal'
-                      ? 'border-[#7C3AED] bg-[#FAF5FF] shadow-2xs dark:border-[#C084FC] dark:bg-[#2E1065]/40'
-                      : 'border-[#E2E8F0] bg-white/60 opacity-65 hover:opacity-100 dark:border-[#334155] dark:bg-[#0F172A]/50'
+                      ? 'border-accent bg-accent-soft'
+                      : 'border-line bg-surface/60 opacity-65 hover:opacity-100 dark:bg-ink-solid/50'
                   }`}
                 >
-                  <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#6D28D9] dark:text-[#DDD6FE]">
+                  <div className="mb-1 flex items-center justify-between text-xs font-bold text-accent">
                     <span>
                       قانون سطر آخر (ضرب افقی سطر {diModel.horizontalRemainder.rowIndex} زیر علامت انتگرال):
                     </span>
@@ -559,7 +559,7 @@ export default function PrerequisiteStage() {
                       formula={`${diModel.horizontalRemainder.rowSign}\\int D_{${diModel.horizontalRemainder.rowIndex}} \\cdot I_{${diModel.horizontalRemainder.rowIndex}}\\,dx`}
                     />
                   </div>
-                  <p className="mb-1.5 text-[11px] leading-5 text-[#475569] dark:text-[#CBD5E1]">
+                  <p className="mb-1.5 text-[11px] leading-5 text-ink-3">
                     {diModel.horizontalRemainder.explanationFa}
                   </p>
                   <MathFormula
@@ -570,8 +570,8 @@ export default function PrerequisiteStage() {
               </div>
 
               {/* Combined Final Indefinite & Definite Formulas */}
-              <div className="space-y-2 border-t border-[#E2E8F0] pt-3 dark:border-[#334155]">
-                <div className="text-xs font-bold text-[#059669] dark:text-[#34D399]">
+              <div className="space-y-2 border-t border-line pt-3">
+                <div className="text-xs font-bold text-ok">
                   حاصل جمع قطرها (جواب نهایی انتگرال نامعین و معین):
                 </div>
                 <MathFormula
@@ -593,8 +593,8 @@ export default function PrerequisiteStage() {
           <div className="space-y-3 lg:col-span-7">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-12">
               {/* Unit Circle SVG */}
-              <div className="flex flex-col items-center justify-center rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 sm:col-span-5 dark:border-[#334155] dark:bg-[#1E293B]">
-                <div className="mb-1 text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+              <div className="flex flex-col items-center justify-center rounded-xl border border-line bg-panel p-3 sm:col-span-5">
+                <div className="mb-1 text-xs font-bold text-ink">
                   <MathText text={`دایره مثلثاتی در زاویه $\\theta = ${harmonicN}\\pi$`} />
                 </div>
                 <svg
@@ -609,7 +609,7 @@ export default function PrerequisiteStage() {
                     y1={circleCy}
                     x2="225"
                     y2={circleCy}
-                    stroke="#94A3B8"
+                    stroke="var(--chart-muted)"
                     strokeWidth="1.5"
                   />
                   <line
@@ -617,7 +617,7 @@ export default function PrerequisiteStage() {
                     y1="15"
                     x2={circleCx}
                     y2="205"
-                    stroke="#94A3B8"
+                    stroke="var(--chart-muted)"
                     strokeWidth="1.5"
                   />
                   <circle
@@ -625,7 +625,7 @@ export default function PrerequisiteStage() {
                     cy={circleCy}
                     r={circleR}
                     fill="none"
-                    stroke="#64748B"
+                    stroke="var(--chart-axis)"
                     strokeWidth="2"
                   />
                   <line
@@ -633,14 +633,14 @@ export default function PrerequisiteStage() {
                     y1={circleCy}
                     x2={pointNPiX}
                     y2={pointNPiY}
-                    stroke="#0284C7"
+                    stroke="var(--chart-accent)"
                     strokeWidth="3"
                   />
                   <circle
                     cx={pointNPiX}
                     cy={pointNPiY}
                     r="7"
-                    fill="#D97706"
+                    fill="var(--chart-warn)"
                     stroke="#FFFFFF"
                     strokeWidth="2"
                   />
@@ -648,7 +648,7 @@ export default function PrerequisiteStage() {
                     x={circleCx + circleR + 8}
                     y={circleCy - 6}
                     fontSize="11"
-                    fill="#0284C7"
+                    fill="var(--chart-accent)"
                     fontWeight="bold"
                   >
                     (1,0)
@@ -657,7 +657,7 @@ export default function PrerequisiteStage() {
                     x={circleCx - circleR - 36}
                     y={circleCy - 6}
                     fontSize="11"
-                    fill="#D97706"
+                    fill="var(--chart-warn)"
                     fontWeight="bold"
                   >
                     (-1,0)
@@ -666,7 +666,7 @@ export default function PrerequisiteStage() {
                     x={circleCx - 16}
                     y={circleCy - circleR - 8}
                     fontSize="10"
-                    fill="#64748B"
+                    fill="var(--chart-axis)"
                   >
                     (0,1)
                   </text>
@@ -674,12 +674,12 @@ export default function PrerequisiteStage() {
                     x={circleCx - 18}
                     y={circleCy + circleR + 16}
                     fontSize="10"
-                    fill="#64748B"
+                    fill="var(--chart-axis)"
                   >
                     (0,-1)
                   </text>
                 </svg>
-                <div className="mt-1 text-center text-[11px] font-semibold text-[#0369A1] dark:text-[#38BDF8]">
+                <div className="mt-1 text-center text-[11px] font-semibold text-accent-deep">
                   {trigInfo.isEvenN
                     ? `چون n=${harmonicN} زوج است، زاویه ${harmonicN}π روی نقطه (+1, 0) می‌افتد`
                     : `چون n=${harmonicN} فرد است، زاویه ${harmonicN}π روی نقطه (-1, 0) می‌افتد`}
@@ -687,10 +687,10 @@ export default function PrerequisiteStage() {
               </div>
 
               {/* Wave Plot on [-pi, pi] */}
-              <div className="flex flex-col justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 sm:col-span-7 dark:border-[#334155] dark:bg-[#1E293B]">
-                <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+              <div className="flex flex-col justify-between rounded-xl border border-line bg-panel p-3 sm:col-span-7">
+                <div className="mb-1 flex items-center justify-between text-xs font-bold text-ink">
                   <MathText text={`رفتار $\\cos(${harmonicN}x)$ و $\\sin(${harmonicN}x)$ در مرزهای $\\pm\\pi$`} />
-                  <span className="rounded bg-[#E0F2FE] px-2 py-0.5 text-[11px] text-[#0369A1] dark:bg-[#0C4A6E] dark:text-[#7DD3FC]">
+                  <span className="rounded bg-accent-tint px-2 py-0.5 text-[11px] text-accent-deep">
                     <MathText text={`$n = ${harmonicN}$ (${trigInfo.isEvenN ? 'زوج' : 'فرد'})`} />
                   </span>
                 </div>
@@ -706,7 +706,7 @@ export default function PrerequisiteStage() {
                     y1={padY + plotH / 2}
                     x2={waveWidth - padX}
                     y2={padY + plotH / 2}
-                    stroke="#94A3B8"
+                    stroke="var(--chart-muted)"
                     strokeWidth="1.2"
                   />
                   <line
@@ -714,18 +714,18 @@ export default function PrerequisiteStage() {
                     y1={padY}
                     x2={waveWidth / 2}
                     y2={waveHeight - padY}
-                    stroke="#64748B"
+                    stroke="var(--chart-axis)"
                     strokeDasharray="4 4"
                   />
                   <polyline
                     fill="none"
-                    stroke="#0284C7"
+                    stroke="var(--chart-accent)"
                     strokeWidth="2.5"
                     points={cosPoints.join(' ')}
                   />
                   <polyline
                     fill="none"
-                    stroke="#D97706"
+                    stroke="var(--chart-warn)"
                     strokeWidth="2"
                     strokeDasharray="5 3"
                     points={sinPoints.join(' ')}
@@ -734,25 +734,25 @@ export default function PrerequisiteStage() {
                     cx={toWaveX(-Math.PI)}
                     cy={toWaveY(trigInfo.cosNPi)}
                     r="5.5"
-                    fill="#0284C7"
+                    fill="var(--chart-accent)"
                   />
                   <circle
                     cx={toWaveX(Math.PI)}
                     cy={toWaveY(trigInfo.cosNPi)}
                     r="5.5"
-                    fill="#0284C7"
+                    fill="var(--chart-accent)"
                   />
                   <circle
                     cx={toWaveX(Math.PI)}
                     cy={toWaveY(0)}
                     r="4.5"
-                    fill="#D97706"
+                    fill="var(--chart-warn)"
                   />
                   <text
                     x={padX - 8}
                     y={waveHeight - 6}
                     fontSize="11"
-                    fill="#64748B"
+                    fill="var(--chart-axis)"
                   >
                     -π
                   </text>
@@ -760,7 +760,7 @@ export default function PrerequisiteStage() {
                     x={waveWidth / 2 - 4}
                     y={waveHeight - 6}
                     fontSize="11"
-                    fill="#64748B"
+                    fill="var(--chart-axis)"
                   >
                     0
                   </text>
@@ -768,16 +768,16 @@ export default function PrerequisiteStage() {
                     x={waveWidth - padX - 8}
                     y={waveHeight - 6}
                     fontSize="11"
-                    fill="#64748B"
+                    fill="var(--chart-axis)"
                   >
                     +π
                   </text>
                 </svg>
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#475569] dark:text-[#94A3B8]">
-                  <span className="font-bold text-[#0284C7] dark:text-[#38BDF8]">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-ink-3">
+                  <span className="font-bold text-accent">
                     <MathText text={`━ خط آبی ممتد: $\\cos(${harmonicN}x)$ (زوج)`} />
                   </span>
-                  <span className="font-bold text-[#D97706] dark:text-[#FBBF24]">
+                  <span className="font-bold text-warn">
                     <MathText text={`┅ خط نارنجی خط‌چین: $\\sin(${harmonicN}x)$ (فرد)`} />
                   </span>
                 </div>
@@ -785,8 +785,8 @@ export default function PrerequisiteStage() {
             </div>
 
             {/* Golden Identities Reference Box */}
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5 dark:border-[#334155] dark:bg-[#1E293B]">
-              <div className="mb-1.5 text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+            <div className="rounded-xl border border-line bg-panel p-3.5">
+              <div className="mb-1.5 text-xs font-bold text-ink">
                 <MathText text="قانون طلایی تفکیک جملات زوج ($n=2k$) و فرد ($n=2k-1$) در سری فوریه:" />
               </div>
               <MathFormula
@@ -797,13 +797,13 @@ export default function PrerequisiteStage() {
           </div>
 
           {/* Controls & Live Exact Values */}
-          <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-5 dark:border-[#334155] dark:bg-[#1E293B]">
+          <div className="space-y-4 rounded-xl border border-line bg-panel p-4 lg:col-span-5">
             <div>
-              <label className="mb-2 flex items-center justify-between text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+              <label className="mb-2 flex items-center justify-between text-xs font-bold text-ink">
                 <MathText text="انتخاب شماره هماهنگ صحیح ($n$):" />
                 <span
                   dir="ltr"
-                  className="rounded bg-[#0284C7] px-2.5 py-0.5 font-mono text-xs text-white"
+                  className="rounded bg-accent-solid px-2.5 py-0.5 font-mono text-xs text-white"
                 >
                   n = {harmonicN} ({trigInfo.isEvenN ? 'Even / زوج' : 'Odd / فرد'})
                 </span>
@@ -815,7 +815,7 @@ export default function PrerequisiteStage() {
                 step={1}
                 value={harmonicN}
                 onChange={(e) => setHarmonicN(Number(e.target.value))}
-                className="w-full accent-[#0284C7]"
+                className="w-full accent-accent"
               />
               <div className="mt-2 grid grid-cols-8 gap-1">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((val) => (
@@ -825,8 +825,8 @@ export default function PrerequisiteStage() {
                     onClick={() => setHarmonicN(val)}
                     className={`rounded border py-1 font-mono text-xs font-bold transition ${
                       harmonicN === val
-                        ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                        : 'border-[#CBD5E1] bg-white text-[#334155] dark:border-[#475569] dark:bg-[#0F172A] dark:text-[#CBD5E1]'
+                        ? 'border-accent bg-accent-solid text-white'
+                        : 'border-line-strong bg-surface text-ink-2'
                     }`}
                   >
                     {val}
@@ -836,7 +836,7 @@ export default function PrerequisiteStage() {
             </div>
 
             <div className="space-y-2.5">
-              <div className="text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+              <div className="text-xs font-bold text-ink">
                 <MathText text={`مقادیر دقیق مثلثاتی به ازای $n = ${harmonicN}$:`} />
               </div>
               <MathFormula
@@ -854,7 +854,7 @@ export default function PrerequisiteStage() {
               />
             </div>
 
-            <p className="text-xs leading-6 text-[#334155] dark:text-[#CBD5E1]">
+            <p className="text-xs leading-6 text-ink-2">
               <MathText text="در انتگرال‌گیری ضرایب فوریه، هرگاه در حدود بالا و پایین به $\sin(n\pi)$ رسیدید مستقیماً عدد $0$ و هرگاه به $\cos(n\pi)$ رسیدید مستقیماً $(-1)^n$ قرار دهید (هرگز آن را به صورت $\cos(n\pi)$ رها نکنید)." />
             </p>
           </div>
@@ -865,12 +865,12 @@ export default function PrerequisiteStage() {
       {activeTab === 'ode_hyperbolic' && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
           <div className="space-y-3 lg:col-span-6">
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5 dark:border-[#334155] dark:bg-[#1E293B]">
-              <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+            <div className="rounded-xl border border-line bg-panel p-3.5">
+              <div className="mb-2 flex items-center justify-between text-xs font-bold text-ink">
                 <MathText text="نمودار رفتار جواب معادله $X''(x) + \lambda X(x) = 0$" />
                 <span
                   dir="ltr"
-                  className="rounded bg-[#0284C7] px-2 py-0.5 font-mono text-xs text-white"
+                  className="rounded bg-accent-solid px-2 py-0.5 font-mono text-xs text-white"
                 >
                   λ = {lambdaPreset}
                 </span>
@@ -887,13 +887,13 @@ export default function PrerequisiteStage() {
                   y1={padY + plotH / 2}
                   x2={waveWidth - padX}
                   y2={padY + plotH / 2}
-                  stroke="#94A3B8"
+                  stroke="var(--chart-muted)"
                   strokeWidth="1.5"
                 />
                 <polyline
                   fill="none"
                   stroke={
-                    odeInfo.canSatisfyTwoPointZeroBC ? '#059669' : '#D97706'
+                    odeInfo.canSatisfyTwoPointZeroBC ? 'var(--chart-ok)' : 'var(--chart-warn)'
                   }
                   strokeWidth="3"
                   points={odePoints.join(' ')}
@@ -902,22 +902,22 @@ export default function PrerequisiteStage() {
                   cx={padX}
                   cy={padY + plotH / 2}
                   r="5"
-                  fill="#0284C7"
+                  fill="var(--chart-accent)"
                 />
                 <circle
                   cx={waveWidth - padX}
                   cy={padY + plotH / 2}
                   r="5"
-                  fill="#0284C7"
+                  fill="var(--chart-accent)"
                 />
-                <text x={padX - 8} y={waveHeight - 6} fontSize="11" fill="#64748B">
+                <text x={padX - 8} y={waveHeight - 6} fontSize="11" fill="var(--chart-axis)">
                   x = 0
                 </text>
                 <text
                   x={waveWidth - padX - 18}
                   y={waveHeight - 6}
                   fontSize="11"
-                  fill="#64748B"
+                  fill="var(--chart-axis)"
                 >
                   x = L
                 </text>
@@ -926,11 +926,11 @@ export default function PrerequisiteStage() {
                 <CheckCircle2
                   className={`h-4 w-4 shrink-0 ${
                     odeInfo.canSatisfyTwoPointZeroBC
-                      ? 'text-[#059669] dark:text-[#34D399]'
-                      : 'text-[#D97706] dark:text-[#FBBF24]'
+                      ? 'text-ok'
+                      : 'text-warn'
                   }`}
                 />
-                <span className="text-[#334155] dark:text-[#CBD5E1]">
+                <span className="text-ink-2">
                   {odeInfo.canSatisfyTwoPointZeroBC
                     ? 'جواب نوسانی است و می‌تواند در هر دو مرز x=0 و x=L صفر شود (تولید توابع ویژه)!'
                     : 'جواب غیرنوسانی است و نمی‌تواند هم‌زمان در دو مرز x=0 و x=L صفر شود (جواب بدیهی X=0).'}
@@ -939,8 +939,8 @@ export default function PrerequisiteStage() {
             </div>
           </div>
 
-          <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-6 dark:border-[#334155] dark:bg-[#1E293B]">
-            <div className="text-xs font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+          <div className="space-y-3 rounded-xl border border-line bg-panel p-4 lg:col-span-6">
+            <div className="text-xs font-bold text-ink">
               <MathText text="انتخاب علامت و مقدار پارامتر $\lambda$ در معادله $X'' + \lambda X = 0$:" />
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -955,8 +955,8 @@ export default function PrerequisiteStage() {
                   onClick={() => setLambdaPreset(item.val)}
                   className={`rounded-lg border px-2.5 py-2 text-xs font-bold transition ${
                     lambdaPreset === item.val
-                      ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                      : 'border-[#CBD5E1] bg-white text-[#334155] dark:border-[#475569] dark:bg-[#0F172A] dark:text-[#CBD5E1]'
+                      ? 'border-accent bg-accent-solid text-white'
+                      : 'border-line-strong bg-surface text-ink-2'
                   }`}
                 >
                   {item.label}
@@ -965,17 +965,17 @@ export default function PrerequisiteStage() {
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs font-bold text-[#0369A1] dark:text-[#38BDF8]">
+              <div className="text-xs font-bold text-accent-deep">
                 معادله مشخصه و ریشه‌ها:
               </div>
               <MathFormula block formula={odeInfo.rootsLatex} />
-              <div className="text-xs font-bold text-[#0369A1] dark:text-[#38BDF8]">
+              <div className="text-xs font-bold text-accent-deep">
                 فرم کلی جواب معادله دیفرانسیل:
               </div>
               <MathFormula block highlight formula={odeInfo.generalSolutionLatex} />
             </div>
 
-            <p className="text-xs leading-6 text-[#334155] dark:text-[#CBD5E1]">
+            <p className="text-xs leading-6 text-ink-2">
               <MathText text={odeInfo.physicalMeaningFa} />
             </p>
           </div>

@@ -93,8 +93,8 @@ export default function MathFormula({
         style={{ unicodeBidi: 'isolate' }}
         className={`my-2.5 overflow-x-auto rounded-xl border px-4 py-3.5 text-center transition-colors ${
           highlight
-            ? 'border-[#0284C7]/50 bg-[#F0F9FF] text-[#0F172A] shadow-2xs dark:border-[#38BDF8]/50 dark:bg-[#0C4A6E]/35 dark:text-[#F8FAFC]'
-            : 'border-[#E2E8F0] bg-white text-[#0F172A] dark:border-[#334155] dark:bg-[#0F172A] dark:text-[#F8FAFC]'
+            ? 'border-accent/50 bg-accent-soft text-ink'
+            : 'border-line bg-surface text-ink'
         } ${className}`}
       >
         <div
@@ -111,8 +111,8 @@ export default function MathFormula({
       style={{ unicodeBidi: 'isolate' }}
       className={`mx-1 inline-block rounded px-1.5 py-0.5 align-middle transition-colors ${
         highlight
-          ? 'bg-[#E0F2FE] text-[#0369A1] dark:bg-[#0C4A6E]/60 dark:text-[#7DD3FC]'
-          : 'bg-[#F1F5F9]/80 text-[#0F172A] dark:bg-[#1E293B] dark:text-[#F8FAFC]'
+          ? 'bg-accent-tint text-accent-deep'
+          : 'bg-muted/80 text-ink dark:bg-muted'
       } ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
@@ -152,7 +152,7 @@ export function MathText({
           return (
             <strong
               key={idx}
-              className="font-bold text-[#0F172A] dark:text-[#F8FAFC]"
+              className="font-bold text-ink"
             >
               {boldSubParts.map((sub, sIdx) => {
                 if (

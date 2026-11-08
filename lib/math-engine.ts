@@ -46,7 +46,9 @@ export function integrateSimpson(
   if (Math.abs(b - a) < 1e-12) return 0;
   const n = steps % 2 === 0 ? steps : steps + 1;
   const h = (b - a) / n;
-  let sum = fn(a) + fn(b);
+  const fa = fn(a);
+  const fb = fn(b);
+  let sum = (Number.isFinite(fa) ? fa : 0) + (Number.isFinite(fb) ? fb : 0);
 
   for (let i = 1; i < n; i++) {
     const x = a + i * h;
@@ -326,54 +328,84 @@ export function evaluateTransformPair(
 } {
   const a = Math.max(0.2, paramA);
   const shiftedX = xOrAlpha - timeShift;
-  const shiftedAlpha = xOrAlpha - freqShift;
+
+  /**
+   * Complex spectrum of the time-shifted base signal f(x - timeShift):
+   * F_base(β) = F(β) · e^{-i β x₀} (time-shift theorem, phase evaluated at β).
+   */
+  const spectrumAt = (beta: number): { re: number; im: number } => {
+    let mag = 0;
+    let phase = -beta * timeShift;
+    switch (presetId) {
+      case 'rect_pulse': {
+        const val =
+          Math.abs(beta) < 1e-8 ? 2 * a : (2 * Math.sin(a * beta)) / beta;
+        mag = Math.abs(val);
+        if (val < 0) phase += Math.PI;
+        break;
+      }
+      case 'two_sided_exp': {
+        mag = (2 * a) / (a * a + beta * beta);
+        break;
+      }
+      case 'gaussian': {
+        mag = Math.sqrt(Math.PI / a) * Math.exp(-(beta * beta) / (4 * a));
+        break;
+      }
+      case 'one_sided_exp': {
+        mag = 1 / Math.sqrt(a * a + beta * beta);
+        phase += -Math.atan2(beta, a);
+        break;
+      }
+      case 'triangle_pulse': {
+        const half = (a * beta) / 2;
+        const sinc = Math.abs(half) < 1e-8 ? 1 : Math.sin(half) / half;
+        mag = a * sinc * sinc;
+        break;
+      }
+    }
+    return { re: mag * Math.cos(phase), im: mag * Math.sin(phase) };
+  };
+
+  // f(x - x₀)·cos(ω₀x) has spectrum ½F(α−ω₀) + ½F(α+ω₀) (modulation theorem).
+  let realFAlpha: number;
+  let imagFAlpha: number;
+  if (freqShift !== 0) {
+    const lo = spectrumAt(xOrAlpha - freqShift);
+    const hi = spectrumAt(xOrAlpha + freqShift);
+    realFAlpha = 0.5 * lo.re + 0.5 * hi.re;
+    imagFAlpha = 0.5 * lo.im + 0.5 * hi.im;
+  } else {
+    const s = spectrumAt(xOrAlpha);
+    realFAlpha = s.re;
+    imagFAlpha = s.im;
+  }
+  const absFAlpha = Math.sqrt(
+    realFAlpha * realFAlpha + imagFAlpha * imagFAlpha
+  );
 
   let baseFx = 0;
-  let baseMag = 0;
-  let basePhase = -shiftedAlpha * timeShift;
-
   switch (presetId) {
-    case 'rect_pulse': {
+    case 'rect_pulse':
       baseFx = Math.abs(shiftedX) <= a ? 1 : 0;
-      const val =
-        Math.abs(shiftedAlpha) < 1e-8
-          ? 2 * a
-          : (2 * Math.sin(a * shiftedAlpha)) / shiftedAlpha;
-      baseMag = Math.abs(val);
-      if (val < 0) basePhase += Math.PI;
       break;
-    }
-    case 'two_sided_exp': {
+    case 'two_sided_exp':
       baseFx = Math.exp(-a * Math.abs(shiftedX));
-      baseMag = (2 * a) / (a * a + shiftedAlpha * shiftedAlpha);
       break;
-    }
-    case 'gaussian': {
+    case 'gaussian':
       baseFx = Math.exp(-a * shiftedX * shiftedX);
-      baseMag = Math.sqrt(Math.PI / a) * Math.exp(-(shiftedAlpha * shiftedAlpha) / (4 * a));
       break;
-    }
-    case 'one_sided_exp': {
+    case 'one_sided_exp':
       baseFx = shiftedX >= 0 ? Math.exp(-a * shiftedX) : 0;
-      baseMag = 1 / Math.sqrt(a * a + shiftedAlpha * shiftedAlpha);
-      basePhase += -Math.atan2(shiftedAlpha, a);
       break;
-    }
-    case 'triangle_pulse': {
+    case 'triangle_pulse':
       baseFx = Math.abs(shiftedX) <= a ? 1 - Math.abs(shiftedX) / a : 0;
-      const half = (a * shiftedAlpha) / 2;
-      const sinc = Math.abs(half) < 1e-8 ? 1 : Math.sin(half) / half;
-      baseMag = a * sinc * sinc;
       break;
-    }
   }
-
-  const realFAlpha = baseMag * Math.cos(basePhase);
-  const imagFAlpha = baseMag * Math.sin(basePhase);
 
   return {
     fx: baseFx * Math.cos(freqShift * xOrAlpha),
-    absFAlpha: baseMag,
+    absFAlpha,
     realFAlpha,
     imagFAlpha,
     A_alpha: realFAlpha / Math.PI,
@@ -531,7 +563,7 @@ export const MASTER_FOURIER_TRANSFORM_TABLE: FourierTransformTableEntry[] = [
     categoryFa: 'قضیه مشتق فرکانس',
     timeFormulaLatex: 'f(x) = x^2 e^{-a|x|}',
     timeConditionLatex: 'a > 0',
-    freqFormulaLatex: 'F(\\alpha) = \\frac{4a(3\\alpha^2 - a^2)}{(a^2 + \\alpha^2)^3}',
+    freqFormulaLatex: 'F(\\alpha) = \\frac{4a(a^2 - 3\\alpha^2)}{(a^2 + \\alpha^2)^3}',
     fZeroLatex: 'F(0) = \\frac{4}{a^3}',
     parsevalEnergyLatex: '\\int_{-\\infty}^{\\infty} x^4 e^{-2a|x|} dx = \\frac{3}{2a^5}',
     derivationMethodFa: 'دو بار اعمال قضیه مشتق فرکانس $\\mathcal{F}[x^2 f(x)] = -\\frac{d^2}{d\\alpha^2}F(\\alpha)$',
@@ -622,15 +654,28 @@ export const MASTER_FOURIER_TRANSFORM_TABLE: FourierTransformTableEntry[] = [
  * I_Omega(x) = int_0^Omega (A(alpha) cos(alpha x) + B(alpha) sin(alpha x)) d_alpha
  */
 export function evaluatePartialFourierIntegral(
-  presetId: TransformPresetId,
+  presetId: FourierIntegralPresetId,
   x: number,
   paramA: number,
   cutoffOmega: number
 ): number {
   const omega = Math.max(0.5, cutoffOmega);
+  const a = Math.max(0.2, paramA);
+  // Purely odd preset: spectral density B(alpha) = 2 alpha / (pi (a^2 + alpha^2)),
+  // I_Omega(x) = int_0^Omega B(alpha) sin(alpha x) dalpha.
+  if (presetId === 'sign_damped') {
+    return integrateSimpson(
+      (alpha) =>
+        ((2 * alpha) / (Math.PI * (a * a + alpha * alpha))) *
+        Math.sin(alpha * x),
+      0,
+      omega,
+      160
+    );
+  }
   return integrateSimpson(
     (alpha) => {
-      const pair = evaluateTransformPair(presetId, alpha, paramA, 0, 0);
+      const pair = evaluateTransformPair(presetId as TransformPresetId, alpha, paramA, 0, 0);
       return pair.A_alpha * Math.cos(alpha * x) + pair.B_alpha * Math.sin(alpha * x);
     },
     0,
@@ -2800,25 +2845,12 @@ export function computeFourierIntegralConvergenceTrajectory(params: {
     const omega = Math.min(maxOmega, i * stepOmega);
 
     // Compute I_Omega(probeX)
-    let approxVal = 0;
-    if (presetId === 'sign_damped') {
-      approxVal = integrateSimpson(
-        (alpha) => {
-          const B = (2 * alpha) / (Math.PI * (a * a + alpha * alpha));
-          return B * Math.sin(alpha * probeX);
-        },
-        0,
-        omega,
-        140
-      );
-    } else {
-      approxVal = evaluatePartialFourierIntegral(
-        presetId as TransformPresetId,
-        probeX,
-        a,
-        omega
-      );
-    }
+    const approxVal = evaluatePartialFourierIntegral(
+      presetId,
+      probeX,
+      a,
+      omega
+    );
 
     // Cumulative energy up to omega
     let cumulativeEnergy = 0;
@@ -2854,7 +2886,7 @@ export function computeFourierIntegralConvergenceTrajectory(params: {
         ? {
             A_alpha: 0,
             B_alpha: (2 * omega) / (Math.PI * (a * a + omega * omega)),
-            absFAlpha: (2 * Math.PI * omega) / (a * a + omega * omega),
+            absFAlpha: (2 * omega) / (a * a + omega * omega),
           }
         : evaluateTransformPair(presetId as TransformPresetId, omega, a, 0, 0);
 

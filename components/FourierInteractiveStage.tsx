@@ -23,7 +23,7 @@ import {
   Pause,
   Play,
   Sliders,
-  Sparkles,
+  Sigma,
   TrendingUp,
 } from 'lucide-react';
 import {
@@ -360,21 +360,21 @@ export default function FourierInteractiveStage({
     return (
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
         {/* Left/Top 7 Cols: Interactive Canvas Stage */}
-        <div className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs lg:col-span-7">
+        <div className="rounded-xl border border-line bg-surface p-5 lg:col-span-7">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-base font-bold text-[#0F172A]">
+              <h3 className="text-base font-bold text-ink">
                 آزمایشگاه تعاملی ضرب داخلی، نُرم و تعامد توابع روی [-π, π]
               </h3>
-              <p className="text-xs text-[#475569]">
+              <p className="text-xs text-ink-3">
                 مساحت رنگ‌شده زیر نمودار حاصل‌ضرب f(x)·g(x) مقدار ضرب داخلی ⟨f, g⟩ را نشان می‌دهد
               </p>
             </div>
             <span
               className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-bold ${
                 orthoData.orthogonal
-                  ? 'bg-[#ECFDF5] text-[#059669]'
-                  : 'bg-[#FEF3C7] text-[#B45309]'
+                  ? 'bg-ok-soft text-ok'
+                  : 'bg-warn-tint text-warn'
               }`}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -384,7 +384,7 @@ export default function FourierInteractiveStage({
             </span>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#F8FAFC]">
+          <div className="overflow-hidden rounded-xl border border-line bg-panel">
             <svg
               viewBox={`0 0 ${svgWidth} ${svgHeight}`}
               className="h-64 w-full"
@@ -397,7 +397,7 @@ export default function FourierInteractiveStage({
                 y1={svgHeight / 2}
                 x2={svgWidth - 30}
                 y2={svgHeight / 2}
-                stroke="#94A3B8"
+                stroke="var(--chart-muted)"
                 strokeWidth="1.2"
               />
               <line
@@ -405,14 +405,14 @@ export default function FourierInteractiveStage({
                 y1={16}
                 x2={svgWidth / 2}
                 y2={svgHeight - 16}
-                stroke="#94A3B8"
+                stroke="var(--chart-muted)"
                 strokeWidth="1.2"
               />
 
               {/* Shaded integral area of f(x)*g(x) */}
               <path
                 d={areaPath}
-                fill={orthoData.orthogonal ? '#0284C7' : '#059669'}
+                fill={orthoData.orthogonal ? 'var(--chart-accent)' : 'var(--chart-ok)'}
                 fillOpacity="0.18"
               />
 
@@ -427,7 +427,7 @@ export default function FourierInteractiveStage({
                   )
                   .join(' ')}
                 fill="none"
-                stroke="#0284C7"
+                stroke="var(--chart-accent)"
                 strokeWidth="2"
                 strokeDasharray="5 3"
               />
@@ -443,7 +443,7 @@ export default function FourierInteractiveStage({
                   )
                   .join(' ')}
                 fill="none"
-                stroke="#D97706"
+                stroke="var(--chart-warn)"
                 strokeWidth="2"
                 strokeDasharray="2 3"
               />
@@ -452,7 +452,7 @@ export default function FourierInteractiveStage({
               <path
                 d={prodPath}
                 fill="none"
-                stroke="#0F172A"
+                stroke="var(--chart-axis)"
                 strokeWidth="2.5"
               />
 
@@ -460,43 +460,43 @@ export default function FourierInteractiveStage({
               <text
                 x={35}
                 y={svgHeight / 2 + 16}
-                className="fill-[#475569] font-mono text-[11px]"
+                className="fill-(--chart-axis) font-mono text-[11px]"
               >
                 -π
               </text>
               <text
                 x={svgWidth / 2 + 6}
                 y={svgHeight / 2 + 16}
-                className="fill-[#475569] font-mono text-[11px]"
+                className="fill-(--chart-axis) font-mono text-[11px]"
               >
                 0
               </text>
               <text
                 x={svgWidth - 48}
                 y={svgHeight / 2 + 16}
-                className="fill-[#475569] font-mono text-[11px]"
+                className="fill-(--chart-axis) font-mono text-[11px]"
               >
                 +π
               </text>
             </svg>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-[#475569]">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-0.5 w-4 bg-[#0284C7]" />
+                <span className="inline-block h-0.5 w-4 bg-accent-solid" />
                 تابع اول f(x)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-0.5 w-4 bg-[#D97706]" />
+                <span className="inline-block h-0.5 w-4 bg-warn-solid" />
                 تابع دوم g(x)
               </span>
-              <span className="flex items-center gap-1.5 font-semibold text-[#0F172A]">
-                <span className="inline-block h-1 w-4 bg-[#0F172A]" />
+              <span className="flex items-center gap-1.5 font-semibold text-ink">
+                <span className="inline-block h-1 w-4 bg-ink-solid" />
                 حاصل‌ضرب f(x)·g(x)
               </span>
             </div>
-            <span dir="ltr" className="font-mono font-semibold text-[#0369A1]">
+            <span dir="ltr" className="font-mono font-semibold text-accent-deep">
               ⟨f, g⟩ = {orthoData.innerProduct.toFixed(4)} | ‖f‖ ={' '}
               {orthoData.normF.toFixed(3)} | ‖g‖ = {orthoData.normG.toFixed(3)}
             </span>
@@ -504,20 +504,20 @@ export default function FourierInteractiveStage({
         </div>
 
         {/* Right/Bottom 5 Cols: Controls & Acoustic Harmonics Motivation */}
-        <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs lg:col-span-5">
-          <h4 className="text-sm font-bold text-[#0F172A]">
+        <div className="space-y-4 rounded-xl border border-line bg-surface p-5 lg:col-span-5">
+          <h4 className="text-sm font-bold text-ink">
             انتخاب توابع جهت آزمون تعامد و محاسبه نُرم
           </h4>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#334155]">
+              <label className="mb-1 block text-xs font-semibold text-ink-2">
                 تابع اول f(x):
               </label>
               <select
                 value={funcIdxA}
                 onChange={(e) => setFuncIdxA(Number(e.target.value))}
-                className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-medium text-[#0F172A]"
+                className="w-full rounded-lg border border-line-strong bg-panel px-3 py-2 text-xs font-medium text-ink"
               >
                 {ORTHOGONAL_BASIS_OPTIONS.map((opt, idx) => (
                   <option key={opt.id} value={idx}>
@@ -528,13 +528,13 @@ export default function FourierInteractiveStage({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-semibold text-[#334155]">
+              <label className="mb-1 block text-xs font-semibold text-ink-2">
                 تابع دوم g(x):
               </label>
               <select
                 value={funcIdxB}
                 onChange={(e) => setFuncIdxB(Number(e.target.value))}
-                className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-medium text-[#0F172A]"
+                className="w-full rounded-lg border border-line-strong bg-panel px-3 py-2 text-xs font-medium text-ink"
               >
                 {ORTHOGONAL_BASIS_OPTIONS.map((opt, idx) => (
                   <option key={opt.id} value={idx}>
@@ -552,9 +552,9 @@ export default function FourierInteractiveStage({
           />
 
           {/* Motivation from PDF Page 3: Piano vs Violin 440Hz Harmonics */}
-          <div className="border-t border-[#E2E8F0] pt-4">
+          <div className="border-t border-line pt-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-bold text-[#0F172A]">
+              <span className="text-xs font-bold text-ink">
                 انگیزه فیزیکی (صفحه ۳ جزوه): طیف هماهنگ‌های ۴۴۰ هرتز
               </span>
               <div className="flex gap-1">
@@ -563,8 +563,8 @@ export default function FourierInteractiveStage({
                   onClick={() => setInstrumentPreset('piano')}
                   className={`rounded px-2.5 py-1 text-xs font-semibold ${
                     instrumentPreset === 'piano'
-                      ? 'bg-[#0284C7] text-white'
-                      : 'bg-[#F1F5F9] text-[#475569]'
+                      ? 'bg-accent-solid text-white'
+                      : 'bg-muted text-ink-3'
                   }`}
                 >
                   پیانو (Piano)
@@ -574,20 +574,20 @@ export default function FourierInteractiveStage({
                   onClick={() => setInstrumentPreset('violin')}
                   className={`rounded px-2.5 py-1 text-xs font-semibold ${
                     instrumentPreset === 'violin'
-                      ? 'bg-[#0284C7] text-white'
-                      : 'bg-[#F1F5F9] text-[#475569]'
+                      ? 'bg-accent-solid text-white'
+                      : 'bg-muted text-ink-3'
                   }`}
                 >
                   ویولن (Violin)
                 </button>
               </div>
             </div>
-            <p className="mb-2.5 text-xs leading-relaxed text-[#475569]">
+            <p className="mb-2.5 text-xs leading-relaxed text-ink-3">
               {instrumentPreset === 'piano'
                 ? 'در پیانو فرکانس پایه ۴۴۰ هرتز قوی‌ترین دامنه را دارد و هماهنگ‌های بالاتر به سرعت تضعیف می‌شوند.'
                 : 'در ویولن هماهنگ‌های مرتبه دوم (۸۸۰ هرتز) و سوم (۱۳۲۰ هرتز) دامنه بزرگی دارند که طنین خاص ویولن را می‌سازد.'}
             </p>
-            <div className="grid grid-cols-5 gap-2 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-center">
+            <div className="grid grid-cols-5 gap-2 rounded-lg border border-line bg-panel p-3 text-center">
               {(instrumentPreset === 'piano'
                 ? [100, 42, 18, 9, 4]
                 : [85, 95, 68, 45, 25]
@@ -595,11 +595,11 @@ export default function FourierInteractiveStage({
                 <div key={i} className="flex flex-col items-center">
                   <div className="flex h-14 w-full items-end justify-center rounded bg-white p-1">
                     <div
-                      className="w-4 rounded-t bg-[#0284C7] transition-all"
+                      className="w-4 rounded-t bg-accent-solid transition-all"
                       style={{ height: `${amp}%` }}
                     />
                   </div>
-                  <span className="mt-1 font-mono text-[10px] font-semibold text-[#334155]">
+                  <span className="mt-1 font-mono text-[10px] font-semibold text-ink-2">
                     {(i + 1) * 440}Hz
                   </span>
                 </div>
@@ -678,14 +678,14 @@ export default function FourierInteractiveStage({
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
       {/* Left/Top 7 Cols: Live Partial Sum S_N(x) & Gibbs Error Plot */}
-      <div className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs lg:col-span-7">
+      <div className="rounded-xl border border-line bg-surface p-5 lg:col-span-7">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 className="flex items-center gap-2 text-base font-bold text-[#0F172A]">
-              <Activity className="h-4 w-4 text-[#0284C7]" />
+            <h3 className="flex items-center gap-2 text-base font-bold text-ink">
+              <Activity className="h-4 w-4 text-accent" />
               شبیه‌ساز همگرایی مجموع جزئی سری فوریه S_N(x)، هارمونیک‌ها و پدیده گیبس
             </h3>
-            <p className="text-xs text-[#475569]">
+            <p className="text-xs text-ink-3">
               {activePresetMeta.labelFa} — {activePresetMeta.symmetryBadge}
             </p>
           </div>
@@ -696,8 +696,8 @@ export default function FourierInteractiveStage({
               onClick={() => setShowHarmonicsOverlay((v) => !v)}
               className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
                 showHarmonicsOverlay
-                  ? 'border-[#7C3AED] bg-[#F5F3FF] text-[#6D28D9]'
-                  : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                  ? 'border-accent bg-accent-soft text-accent'
+                  : 'border-line-strong bg-panel text-ink-3 hover:bg-muted'
               }`}
             >
               {showHarmonicsOverlay
@@ -710,8 +710,8 @@ export default function FourierInteractiveStage({
               onClick={() => setShowErrorCurve((v) => !v)}
               className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
                 showErrorCurve
-                  ? 'border-[#DC2626] bg-[#FEF2F2] text-[#DC2626]'
-                  : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                  ? 'border-danger bg-danger-soft text-danger-ink'
+                  : 'border-line-strong bg-panel text-ink-3 hover:bg-muted'
               }`}
             >
               {showErrorCurve
@@ -722,7 +722,7 @@ export default function FourierInteractiveStage({
         </div>
 
         {/* SVG Waveform Plot */}
-        <div className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#F8FAFC]">
+        <div className="overflow-hidden rounded-xl border border-line bg-panel">
           <svg
             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
             className="h-64 w-full"
@@ -735,7 +735,7 @@ export default function FourierInteractiveStage({
               y1={svgHeight / 2}
               x2={svgWidth - 30}
               y2={svgHeight / 2}
-              stroke="#94A3B8"
+              stroke="var(--chart-muted)"
               strokeWidth="1.2"
             />
             <line
@@ -743,7 +743,7 @@ export default function FourierInteractiveStage({
               y1={16}
               x2={svgWidth / 2}
               y2={svgHeight - 16}
-              stroke="#94A3B8"
+              stroke="var(--chart-muted)"
               strokeWidth="1.2"
             />
 
@@ -753,7 +753,7 @@ export default function FourierInteractiveStage({
               y1={20}
               x2={mapX(-halfPeriodL, 2 * halfPeriodL)}
               y2={svgHeight - 20}
-              stroke="#CBD5E1"
+              stroke="var(--chart-grid)"
               strokeDasharray="4 4"
             />
             <line
@@ -761,7 +761,7 @@ export default function FourierInteractiveStage({
               y1={20}
               x2={mapX(halfPeriodL, 2 * halfPeriodL)}
               y2={svgHeight - 20}
-              stroke="#CBD5E1"
+              stroke="var(--chart-grid)"
               strokeDasharray="4 4"
             />
 
@@ -771,21 +771,21 @@ export default function FourierInteractiveStage({
                 <path
                   d={h1Path}
                   fill="none"
-                  stroke="#8B5CF6"
+                  stroke="var(--chart-violet)"
                   strokeWidth="1.3"
                   strokeOpacity="0.65"
                 />
                 <path
                   d={h2Path}
                   fill="none"
-                  stroke="#10B981"
+                  stroke="var(--chart-ok)"
                   strokeWidth="1.2"
                   strokeOpacity="0.55"
                 />
                 <path
                   d={h3Path}
                   fill="none"
-                  stroke="#F59E0B"
+                  stroke="var(--chart-warn)"
                   strokeWidth="1.2"
                   strokeOpacity="0.55"
                 />
@@ -796,7 +796,7 @@ export default function FourierInteractiveStage({
             <path
               d={exactPath}
               fill="none"
-              stroke="#64748B"
+              stroke="var(--chart-axis)"
               strokeWidth="2"
               strokeDasharray="5 4"
             />
@@ -805,7 +805,7 @@ export default function FourierInteractiveStage({
             <path
               d={approxPath}
               fill="none"
-              stroke="#0284C7"
+              stroke="var(--chart-accent)"
               strokeWidth="2.6"
             />
 
@@ -814,7 +814,7 @@ export default function FourierInteractiveStage({
               <path
                 d={errorPath}
                 fill="none"
-                stroke="#DC2626"
+                stroke="var(--chart-danger)"
                 strokeWidth="1.8"
               />
             )}
@@ -823,21 +823,21 @@ export default function FourierInteractiveStage({
             <text
               x={mapX(-halfPeriodL, 2 * halfPeriodL) - 10}
               y={svgHeight - 6}
-              className="fill-[#475569] font-mono text-[11px]"
+              className="fill-(--chart-axis) font-mono text-[11px]"
             >
               -ℓ
             </text>
             <text
               x={svgWidth / 2 + 5}
               y={svgHeight - 6}
-              className="fill-[#475569] font-mono text-[11px]"
+              className="fill-(--chart-axis) font-mono text-[11px]"
             >
               0
             </text>
             <text
               x={mapX(halfPeriodL, 2 * halfPeriodL) - 6}
               y={svgHeight - 6}
-              className="fill-[#475569] font-mono text-[11px]"
+              className="fill-(--chart-axis) font-mono text-[11px]"
             >
               +ℓ
             </text>
@@ -845,47 +845,47 @@ export default function FourierInteractiveStage({
         </div>
 
         {/* Plot Legend */}
-        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#475569]">
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-ink-3">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="flex items-center gap-1 font-semibold text-[#0284C7]">
-              <span className="inline-block h-1 w-4 rounded bg-[#0284C7]" />
+            <span className="flex items-center gap-1 font-semibold text-accent">
+              <span className="inline-block h-1 w-4 rounded bg-accent-solid" />
               مجموع جزئی S_N(x)
             </span>
             <span className="flex items-center gap-1">
-              <span className="inline-block h-0.5 w-4 border-b border-dashed border-[#64748B]" />
+              <span className="inline-block h-0.5 w-4 border-b border-dashed border-line-strong" />
               تابع اصلی f(x)
             </span>
             {showHarmonicsOverlay && (
               <>
-                <span className="flex items-center gap-1 text-[#7C3AED]">
-                  <span className="inline-block h-0.5 w-3 bg-[#8B5CF6]" />
+                <span className="flex items-center gap-1 text-accent">
+                  <span className="inline-block h-0.5 w-3 bg-accent-solid" />
                   هارمونیک اول (n=1)
                 </span>
-                <span className="flex items-center gap-1 text-[#059669]">
-                  <span className="inline-block h-0.5 w-3 bg-[#10B981]" />
+                <span className="flex items-center gap-1 text-ok">
+                  <span className="inline-block h-0.5 w-3 bg-ok-solid" />
                   هارمونیک دوم (n=2)
                 </span>
-                <span className="flex items-center gap-1 text-[#D97706]">
-                  <span className="inline-block h-0.5 w-3 bg-[#F59E0B]" />
+                <span className="flex items-center gap-1 text-warn">
+                  <span className="inline-block h-0.5 w-3 bg-warn-solid" />
                   هارمونیک سوم (n=3)
                 </span>
               </>
             )}
           </div>
-          <span className="font-mono text-[11px] text-[#64748B]">
+          <span className="font-mono text-[11px] text-ink-4">
             T = 2ℓ = {(2 * halfPeriodL).toFixed(2)}
           </span>
         </div>
 
         {/* Harmonic Spectrum & Parseval Energy Verification */}
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-            <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-[#0F172A]">
+          <div className="rounded-lg border border-line bg-panel p-3">
+            <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-ink">
               <span className="flex items-center gap-1.5">
-                <BarChart3 className="h-3.5 w-3.5 text-[#0284C7]" />
+                <BarChart3 className="h-3.5 w-3.5 text-accent" />
                 مقادیر عددی ضرایب اول اویلر (a_n, b_n)
               </span>
-              <span dir="ltr" className="font-mono text-[#0369A1]">
+              <span dir="ltr" className="font-mono text-accent-deep">
                 a₀/2 = {(fourierData.coeffs.a0 / 2).toFixed(3)}
               </span>
             </div>
@@ -896,13 +896,13 @@ export default function FourierInteractiveStage({
               {[0, 1, 2, 3].map((idx) => (
                 <div
                   key={idx}
-                  className="rounded border border-[#E2E8F0] bg-white px-2 py-1 text-center"
+                  className="rounded border border-line bg-surface px-2 py-1 text-center"
                 >
-                  <div className="font-bold text-[#334155]">n={idx + 1}</div>
-                  <div className="text-[#0284C7]">
+                  <div className="font-bold text-ink-2">n={idx + 1}</div>
+                  <div className="text-accent">
                     a:{(fourierData.coeffs.an[idx] ?? 0).toFixed(2)}
                   </div>
-                  <div className="text-[#059669]">
+                  <div className="text-ok">
                     b:{(fourierData.coeffs.bn[idx] ?? 0).toFixed(2)}
                   </div>
                 </div>
@@ -910,25 +910,25 @@ export default function FourierInteractiveStage({
             </div>
           </div>
 
-          <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-            <div className="mb-1 flex items-center justify-between text-xs font-bold text-[#0F172A]">
+          <div className="rounded-lg border border-line bg-panel p-3">
+            <div className="mb-1 flex items-center justify-between text-xs font-bold text-ink">
               <span className="flex items-center gap-1">
-                <Sparkles className="h-3.5 w-3.5 text-[#059669]" />
+                <Activity className="h-3.5 w-3.5 text-ok" />
                 تحقق اتحاد پارسوال (انرژی سیگنال)
               </span>
-              <span dir="ltr" className="font-mono text-[#059669]">
+              <span dir="ltr" className="font-mono text-ok">
                 {energyRatio.toFixed(1)}%
               </span>
             </div>
-            <div className="my-1.5 h-2 w-full overflow-hidden rounded-full bg-[#E2E8F0]">
+            <div className="my-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full bg-[#059669] transition-all"
+                className="h-full bg-ok-solid transition-all"
                 style={{ width: `${energyRatio}%` }}
               />
             </div>
             <div
               dir="ltr"
-              className="flex justify-between font-mono text-[11px] text-[#475569]"
+              className="flex justify-between font-mono text-[11px] text-ink-3"
             >
               <span>LHS: {fourierData.coeffs.parsevalLHS.toFixed(3)}</span>
               <span>
@@ -940,19 +940,19 @@ export default function FourierInteractiveStage({
       </div>
 
       {/* Right/Bottom 5 Cols: Parameter Controls */}
-      <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs lg:col-span-5">
-        <h4 className="text-sm font-bold text-[#0F172A]">
+      <div className="space-y-4 rounded-xl border border-line bg-surface p-5 lg:col-span-5">
+        <h4 className="text-sm font-bold text-ink">
           پنل تنظیمات تابع و تعداد جملات سری فوریه
         </h4>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#334155]">
+          <label className="mb-1.5 block text-xs font-bold text-ink-2">
             ۱. انتخاب تابع نمونه از مثال‌های جزوه (۸ الگوی استاندارد):
           </label>
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value as PresetFunctionId)}
-            className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-semibold text-[#0F172A]"
+            className="w-full rounded-lg border border-line-strong bg-panel px-3 py-2 text-xs font-semibold text-ink"
           >
             {PRESET_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>
@@ -963,9 +963,9 @@ export default function FourierInteractiveStage({
         </div>
 
         <div>
-          <label className="mb-1 flex items-center justify-between text-xs font-bold text-[#334155]">
+          <label className="mb-1 flex items-center justify-between text-xs font-bold text-ink-2">
             <span>۲. تعداد هماهنگ‌های سری (N):</span>
-            <span className="font-mono text-sm font-bold text-[#0284C7]">
+            <span className="font-mono text-sm font-bold text-accent">
               N = {numHarmonicsN} جمله
             </span>
           </label>
@@ -976,9 +976,9 @@ export default function FourierInteractiveStage({
             step={1}
             value={numHarmonicsN}
             onChange={(e) => setNumHarmonicsN(Number(e.target.value))}
-            className="w-full accent-[#0284C7]"
+            className="w-full accent-accent"
           />
-          <div className="flex justify-between font-mono text-[10px] text-[#64748B]">
+          <div className="flex justify-between font-mono text-[10px] text-ink-4">
             <span>N=1 (فرکانس پایه)</span>
             <span>N=15</span>
             <span>N=35 (همگرایی بالا)</span>
@@ -986,9 +986,9 @@ export default function FourierInteractiveStage({
         </div>
 
         <div>
-          <label className="mb-1 flex items-center justify-between text-xs font-bold text-[#334155]">
+          <label className="mb-1 flex items-center justify-between text-xs font-bold text-ink-2">
             <span>۳. نصف دوره تناوب (ℓ در بازه [-ℓ, ℓ]):</span>
-            <span dir="ltr" className="font-mono text-xs font-bold text-[#0284C7]">
+            <span dir="ltr" className="font-mono text-xs font-bold text-accent">
               ℓ = {halfPeriodL.toFixed(2)} (T = {(2 * halfPeriodL).toFixed(2)})
             </span>
           </label>
@@ -999,12 +999,12 @@ export default function FourierInteractiveStage({
             step={0.14}
             value={halfPeriodL}
             onChange={(e) => setHalfPeriodL(Number(e.target.value))}
-            className="w-full accent-[#0284C7]"
+            className="w-full accent-accent"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#334155]">
+          <label className="mb-1.5 block text-xs font-bold text-ink-2">
             ۴. نوع بسط سری فوریه (توسیع روی بازه):
           </label>
           <div className="grid grid-cols-3 gap-1.5">
@@ -1023,8 +1023,8 @@ export default function FourierInteractiveStage({
                 }
                 className={`rounded-lg border px-2 py-2 text-xs font-semibold transition ${
                   extensionMode === item.id
-                    ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                    : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                    ? 'border-accent bg-accent-solid text-white'
+                    : 'border-line bg-panel text-ink-3 hover:bg-muted'
                 }`}
               >
                 {item.label}
@@ -1033,8 +1033,8 @@ export default function FourierInteractiveStage({
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-          <div className="mb-1 text-xs font-bold text-[#334155]">
+        <div className="rounded-xl border border-line bg-panel p-3">
+          <div className="mb-1 text-xs font-bold text-ink-2">
             فرمول مجموع جزئی سری فوریه فعلی:
           </div>
           <MathFormula
@@ -1051,15 +1051,15 @@ export default function FourierInteractiveStage({
       {/* Dynamic Recharts Convergence Visualizer & Interactive n-Scrubber (lg:col-span-12) */}
       <div
         data-testid="recharts-convergence-sandbox"
-        className="rounded-xl border border-[#CBD5E1] bg-white p-5 shadow-xs lg:col-span-12"
+        className="rounded-xl border border-line-strong bg-surface p-5 lg:col-span-12"
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-bold text-[#0369A1]">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-tint px-2.5 py-0.5 text-xs font-bold text-accent-deep">
               <TrendingUp className="h-3.5 w-3.5" />
               تحلیلگر تعاملی همگرایی دنباله مجموع‌های جزئی (Recharts Convergence Sandbox)
             </span>
-            <h4 className="mt-1 text-base font-extrabold text-[#0F172A]">
+            <h4 className="mt-1 text-base font-extrabold text-ink">
               <MathText text="کاوشگر پویای همگرایی $S_n(x)$ و دنباله $S_n(x_0)$ بر حسب افزایش تعداد جملات $n$" />
             </h4>
           </div>
@@ -1070,8 +1070,8 @@ export default function FourierInteractiveStage({
               onClick={() => setRechartsMetricMode('pointwise')}
               className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
                 rechartsMetricMode === 'pointwise'
-                  ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                  : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                  ? 'border-accent bg-accent-solid text-white'
+                  : 'border-line-strong bg-panel text-ink-3 hover:bg-muted'
               }`}
             >
               همگرایی نقطه‌ای Sₙ(x₀) به حد دیریکله
@@ -1081,8 +1081,8 @@ export default function FourierInteractiveStage({
               onClick={() => setRechartsMetricMode('energy')}
               className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
                 rechartsMetricMode === 'energy'
-                  ? 'border-[#059669] bg-[#059669] text-white'
-                  : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                  ? 'border-ok bg-ok-solid text-white'
+                  : 'border-line-strong bg-panel text-ink-3 hover:bg-muted'
               }`}
             >
               همگرایی انرژی پارسوال و طیف دامنه |cₙ|
@@ -1091,15 +1091,15 @@ export default function FourierInteractiveStage({
         </div>
 
         {/* Interactive Scrubber Bar for n and Probe Point x_0 */}
-        <div className="mb-4 grid grid-cols-1 gap-4 rounded-xl border border-[#BAE6FD] bg-[#F0F9FF]/70 p-4 lg:grid-cols-12">
+        <div className="mb-4 grid grid-cols-1 gap-4 rounded-xl border border-accent-line bg-accent-soft/70 p-4 lg:grid-cols-12">
           {/* Term Count n Scrubber (7 cols) */}
           <div className="space-y-2 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label
                 htmlFor="recharts-n-scrubber"
-                className="flex items-center gap-1.5 text-xs font-extrabold text-[#0F172A]"
+                className="flex items-center gap-1.5 text-xs font-extrabold text-ink"
               >
-                <Sliders className="h-3.5 w-3.5 text-[#0284C7]" />
+                <Sliders className="h-3.5 w-3.5 text-accent" />
                 <span>اسکرابر تعاملی تعداد جملات سری (Scrub through n = 1 … 35):</span>
               </label>
 
@@ -1110,7 +1110,7 @@ export default function FourierInteractiveStage({
                     setIsAutoScrubbing(false);
                     setNumHarmonicsN((prev) => Math.max(1, prev - 1));
                   }}
-                  className="inline-flex items-center gap-0.5 rounded-md border border-[#CBD5E1] bg-white px-2 py-1 text-xs font-bold text-[#334155] hover:bg-[#F1F5F9]"
+                  className="inline-flex items-center gap-0.5 rounded-md border border-line-strong bg-surface px-2 py-1 text-xs font-bold text-ink-2 hover:bg-muted"
                   title="کاهش یک جمله"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -1120,7 +1120,7 @@ export default function FourierInteractiveStage({
                 <span
                   dir="ltr"
                   data-testid="scrubbed-n-badge"
-                  className="rounded-md bg-[#0284C7] px-2.5 py-1 font-mono text-xs font-extrabold text-white"
+                  className="rounded-md bg-accent-solid px-2.5 py-1 font-mono text-xs font-extrabold text-white"
                 >
                   n = {numHarmonicsN}
                 </span>
@@ -1131,7 +1131,7 @@ export default function FourierInteractiveStage({
                     setIsAutoScrubbing(false);
                     setNumHarmonicsN((prev) => Math.min(35, prev + 1));
                   }}
-                  className="inline-flex items-center gap-0.5 rounded-md border border-[#CBD5E1] bg-white px-2 py-1 text-xs font-bold text-[#334155] hover:bg-[#F1F5F9]"
+                  className="inline-flex items-center gap-0.5 rounded-md border border-line-strong bg-surface px-2 py-1 text-xs font-bold text-ink-2 hover:bg-muted"
                   title="افزایش یک جمله"
                 >
                   <span>n+1</span>
@@ -1144,8 +1144,8 @@ export default function FourierInteractiveStage({
                   onClick={() => setIsAutoScrubbing((v) => !v)}
                   className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition ${
                     isAutoScrubbing
-                      ? 'bg-[#DC2626] text-white'
-                      : 'border border-[#0284C7] bg-white text-[#0284C7] hover:bg-[#E0F2FE]'
+                      ? 'bg-danger-solid text-white'
+                      : 'border border-accent bg-surface text-accent hover:bg-accent-tint'
                   }`}
                 >
                   {isAutoScrubbing ? (
@@ -1175,11 +1175,11 @@ export default function FourierInteractiveStage({
                 setIsAutoScrubbing(false);
                 setNumHarmonicsN(Number(e.target.value));
               }}
-              className="w-full accent-[#0284C7]"
+              className="w-full accent-accent"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-1.5 pt-0.5">
-              <span className="text-[11px] font-semibold text-[#475569]">
+              <span className="text-[11px] font-semibold text-ink-3">
                 پرش سریع به مرتبه هارمونیک:
               </span>
               <div dir="ltr" className="flex flex-wrap gap-1">
@@ -1194,8 +1194,8 @@ export default function FourierInteractiveStage({
                     }}
                     className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold transition ${
                       numHarmonicsN === nVal
-                        ? 'bg-[#0284C7] text-white'
-                        : 'border border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#E0F2FE]'
+                        ? 'bg-accent-solid text-white'
+                        : 'border border-line-strong bg-surface text-ink-2 hover:bg-accent-tint'
                     }`}
                   >
                     n={nVal}
@@ -1206,17 +1206,17 @@ export default function FourierInteractiveStage({
           </div>
 
           {/* Probe Point x_0 Selector (5 cols) */}
-          <div className="space-y-2 border-t border-[#BAE6FD] pt-3 lg:col-span-5 lg:border-t-0 lg:border-r lg:pr-4 lg:pt-0">
+          <div className="space-y-2 border-t border-accent-line pt-3 lg:col-span-5 lg:border-t-0 lg:border-r lg:pr-4 lg:pt-0">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="recharts-probe-x-slider"
-                className="text-xs font-extrabold text-[#0F172A]"
+                className="text-xs font-extrabold text-ink"
               >
                 نقطه کاوش همگرایی (x₀ در بازه [-ℓ, ℓ]):
               </label>
               <span
                 dir="ltr"
-                className="rounded bg-white px-2 py-0.5 font-mono text-xs font-bold text-[#0369A1] shadow-2xs"
+                className="rounded bg-surface px-2 py-0.5 font-mono text-xs font-bold text-accent-deep"
               >
                 x₀ = {probeX.toFixed(2)} ({(probeRatio * 100).toFixed(0)}% ℓ)
               </span>
@@ -1231,11 +1231,11 @@ export default function FourierInteractiveStage({
               step={0.02}
               value={probeRatio}
               onChange={(e) => setProbeRatio(Number(e.target.value))}
-              className="w-full accent-[#0369A1]"
+              className="w-full accent-accent"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-1">
-              <span className="text-[11px] font-semibold text-[#475569]">
+              <span className="text-[11px] font-semibold text-ink-3">
                 نقاط کلیدی آزمون دیریکله:
               </span>
               <div className="flex flex-wrap gap-1">
@@ -1251,8 +1251,8 @@ export default function FourierInteractiveStage({
                     onClick={() => setProbeRatio(preset.ratio)}
                     className={`rounded px-2 py-0.5 text-[10px] font-bold transition ${
                       Math.abs(probeRatio - preset.ratio) < 0.015
-                        ? 'bg-[#0369A1] text-white'
-                        : 'border border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#E0F2FE]'
+                        ? 'bg-accent-solid text-white'
+                        : 'border border-line-strong bg-surface text-ink-2 hover:bg-accent-tint'
                     }`}
                   >
                     {preset.label}
@@ -1266,14 +1266,14 @@ export default function FourierInteractiveStage({
         {/* Two Side-by-Side Dynamic Recharts Visualizations */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* Chart 1: Spatial Partial Sum Comparison S_1(x), S_3(x), S_n(x), and f(x) */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5 lg:col-span-6">
+          <div className="rounded-xl border border-line bg-panel p-3.5 lg:col-span-6">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
-              <span className="text-xs font-bold text-[#0F172A]">
+              <span className="text-xs font-bold text-ink">
                 ۱. مقایسه نمودار تابع f(x) با مجموع‌های جزئی S₁(x)، S₃(x) و Sₙ(x)
               </span>
               <span
                 dir="ltr"
-                className="rounded bg-[#E0F2FE] px-2 py-0.5 font-mono text-[11px] font-bold text-[#0369A1]"
+                className="rounded bg-accent-tint px-2 py-0.5 font-mono text-[11px] font-bold text-accent-deep"
               >
                 Active: S_{numHarmonicsN}(x)
               </span>
@@ -1285,22 +1285,22 @@ export default function FourierInteractiveStage({
                   data={spatialRechartsData}
                   margin={{ top: 20, right: 16, left: -12, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis
                     dataKey="x"
                     type="number"
                     domain={[-halfPeriodL, halfPeriodL]}
-                    tick={{ fontSize: 11, fill: '#475569' }}
+                    tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                     tickFormatter={(v) => Number(v).toFixed(1)}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: '#475569' }}
+                    tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                     domain={['auto', 'auto']}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#FFFFFF',
-                      borderColor: '#CBD5E1',
+                      backgroundColor: 'var(--surface)',
+                      borderColor: 'var(--chart-grid)',
                       borderRadius: '8px',
                       fontSize: '11px',
                     }}
@@ -1309,13 +1309,13 @@ export default function FourierInteractiveStage({
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
                   <ReferenceLine
                     x={probeX}
-                    stroke="#0369A1"
+                    stroke="var(--chart-accent)"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
                     label={{
                       value: `x₀=${probeX.toFixed(2)}`,
                       position: 'top',
-                      fill: '#0369A1',
+                      fill: 'var(--chart-accent)',
                       fontSize: 10,
                     }}
                   />
@@ -1323,7 +1323,7 @@ export default function FourierInteractiveStage({
                     type="monotone"
                     dataKey="exactY"
                     name="f(x) تابع دقیق"
-                    stroke="#64748B"
+                    stroke="var(--chart-axis)"
                     strokeWidth={2}
                     strokeDasharray="5 4"
                     dot={false}
@@ -1333,7 +1333,7 @@ export default function FourierInteractiveStage({
                     type="monotone"
                     dataKey="s1Y"
                     name="S₁(x) (n=1)"
-                    stroke="#A855F7"
+                    stroke="var(--chart-purple)"
                     strokeWidth={1.3}
                     strokeOpacity={0.65}
                     dot={false}
@@ -1343,7 +1343,7 @@ export default function FourierInteractiveStage({
                     type="monotone"
                     dataKey="s3Y"
                     name="S₃(x) (n=3)"
-                    stroke="#F59E0B"
+                    stroke="var(--chart-warn)"
                     strokeWidth={1.3}
                     strokeOpacity={0.7}
                     dot={false}
@@ -1353,8 +1353,8 @@ export default function FourierInteractiveStage({
                     type="monotone"
                     dataKey="snY"
                     name={`S_${numHarmonicsN}(x) (n=${numHarmonicsN})`}
-                    stroke="#0284C7"
-                    fill="#0284C7"
+                    stroke="var(--chart-accent)"
+                    fill="var(--chart-accent)"
                     fillOpacity={0.1}
                     strokeWidth={2.6}
                     dot={false}
@@ -1366,14 +1366,14 @@ export default function FourierInteractiveStage({
           </div>
 
           {/* Chart 2: Convergence Trajectory as n Increases (n = 0 .. 35) */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5 lg:col-span-6">
+          <div className="rounded-xl border border-line bg-panel p-3.5 lg:col-span-6">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
-              <span className="text-xs font-bold text-[#0F172A]">
+              <span className="text-xs font-bold text-ink">
                 {rechartsMetricMode === 'pointwise'
                   ? `۲. دنباله همگرایی Sₙ(x₀) بر حسب افزایش تعداد جملات n (در x₀ = ${probeX.toFixed(2)})`
                   : '۲. همگرایی انرژی پارسوال (%) و دامنه هارمونیک‌ها بر حسب افزایش n'}
               </span>
-              <span className="text-[11px] font-semibold text-[#0369A1]">
+              <span className="text-[11px] font-semibold text-accent-deep">
                 (روی هر نقطه n کلیک کنید)
               </span>
             </div>
@@ -1395,19 +1395,19 @@ export default function FourierInteractiveStage({
                       }
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                     <XAxis
                       dataKey="n"
-                      tick={{ fontSize: 11, fill: '#475569' }}
+                      tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                     />
                     <YAxis
-                      tick={{ fontSize: 11, fill: '#475569' }}
+                      tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                       domain={['auto', 'auto']}
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#FFFFFF',
-                        borderColor: '#CBD5E1',
+                        backgroundColor: 'var(--surface)',
+                        borderColor: 'var(--chart-grid)',
                         borderRadius: '8px',
                         fontSize: '11px',
                       }}
@@ -1416,26 +1416,26 @@ export default function FourierInteractiveStage({
                     <Legend wrapperStyle={{ fontSize: '11px' }} />
                     <ReferenceLine
                       y={convergenceTrajectory.dirichletTargetAtProbe}
-                      stroke="#059669"
+                      stroke="var(--chart-ok)"
                       strokeWidth={2}
                       strokeDasharray="5 3"
                       label={{
                         value: `Dirichlet S(x₀)=${convergenceTrajectory.dirichletTargetAtProbe.toFixed(3)}`,
                         position: 'insideTopRight',
-                        fill: '#059669',
+                        fill: 'var(--chart-ok)',
                         fontSize: 10,
                       }}
                     />
                     <ReferenceLine
                       x={numHarmonicsN}
-                      stroke="#DC2626"
+                      stroke="var(--chart-danger)"
                       strokeWidth={1.8}
                       strokeDasharray="3 3"
                     />
                     <Bar
                       dataKey="termContributionAtProbe"
                       name="سهم جمله n-ام در x₀"
-                      fill="#93C5FD"
+                      fill="var(--chart-accent)"
                       opacity={0.75}
                       isAnimationActive={false}
                     />
@@ -1443,9 +1443,9 @@ export default function FourierInteractiveStage({
                       type="monotone"
                       dataKey="partialSumAtProbe"
                       name="مجموع جزئی Sₙ(x₀)"
-                      stroke="#0284C7"
+                      stroke="var(--chart-accent)"
                       strokeWidth={2.5}
-                      dot={{ r: 2.5, fill: '#0284C7' }}
+                      dot={{ r: 2.5, fill: 'var(--chart-accent)' }}
                       isAnimationActive={false}
                     />
                     {activeTermStats && (
@@ -1453,7 +1453,7 @@ export default function FourierInteractiveStage({
                         x={numHarmonicsN}
                         y={activeTermStats.partialSumAtProbe}
                         r={6}
-                        fill="#DC2626"
+                        fill="var(--chart-danger)"
                         stroke="#FFFFFF"
                         strokeWidth={2}
                       />
@@ -1474,26 +1474,26 @@ export default function FourierInteractiveStage({
                       }
                     }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                     <XAxis
                       dataKey="n"
-                      tick={{ fontSize: 11, fill: '#475569' }}
+                      tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                     />
                     <YAxis
                       yAxisId="left"
                       domain={[0, 100]}
-                      tick={{ fontSize: 11, fill: '#059669' }}
+                      tick={{ fontSize: 11, fill: 'var(--chart-ok)' }}
                       unit="%"
                     />
                     <YAxis
                       yAxisId="right"
                       orientation="right"
-                      tick={{ fontSize: 11, fill: '#6366F1' }}
+                      tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#FFFFFF',
-                        borderColor: '#CBD5E1',
+                        backgroundColor: 'var(--surface)',
+                        borderColor: 'var(--chart-grid)',
                         borderRadius: '8px',
                         fontSize: '11px',
                       }}
@@ -1503,7 +1503,7 @@ export default function FourierInteractiveStage({
                     <ReferenceLine
                       yAxisId="left"
                       x={numHarmonicsN}
-                      stroke="#DC2626"
+                      stroke="var(--chart-danger)"
                       strokeWidth={1.8}
                       strokeDasharray="3 3"
                     />
@@ -1511,7 +1511,7 @@ export default function FourierInteractiveStage({
                       yAxisId="right"
                       dataKey="harmonicAmplitude"
                       name="دامنه هارمونیک √(aₙ²+bₙ²)"
-                      fill="#818CF8"
+                      fill="var(--chart-indigo)"
                       opacity={0.75}
                       isAnimationActive={false}
                     />
@@ -1520,8 +1520,8 @@ export default function FourierInteractiveStage({
                       type="monotone"
                       dataKey="energyRatioPercent"
                       name="درصد انرژی پارسوال (%)"
-                      stroke="#059669"
-                      fill="#10B981"
+                      stroke="var(--chart-ok)"
+                      fill="var(--chart-ok)"
                       fillOpacity={0.18}
                       strokeWidth={2.5}
                       isAnimationActive={false}
@@ -1532,7 +1532,7 @@ export default function FourierInteractiveStage({
                         x={numHarmonicsN}
                         y={activeTermStats.energyRatioPercent}
                         r={6}
-                        fill="#DC2626"
+                        fill="var(--chart-danger)"
                         stroke="#FFFFFF"
                         strokeWidth={2}
                       />
@@ -1547,52 +1547,52 @@ export default function FourierInteractiveStage({
         {/* Live Convergence Metrics Readout Bar for Scrubbed n */}
         {activeTermStats && (
           <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-            <div className="rounded-lg border border-[#BAE6FD] bg-[#F0F9FF] p-2.5">
-              <div className="text-[11px] font-bold text-[#0369A1]">
+            <div className="rounded-lg border border-accent-line bg-accent-soft p-2.5">
+              <div className="text-[11px] font-bold text-accent-deep">
                 مقدار مجموع جزئی در n = {numHarmonicsN}
               </div>
               <div
                 dir="ltr"
-                className="mt-0.5 font-mono text-sm font-extrabold text-[#0F172A]"
+                className="mt-0.5 font-mono text-sm font-extrabold text-ink"
               >
                 S_{numHarmonicsN}({probeX.toFixed(2)}) ={' '}
                 {activeTermStats.partialSumAtProbe.toFixed(4)}
               </div>
             </div>
 
-            <div className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] p-2.5">
-              <div className="text-[11px] font-bold text-[#047857]">
+            <div className="rounded-lg border border-ok-line bg-ok-soft p-2.5">
+              <div className="text-[11px] font-bold text-ok-ink">
                 مقدار حدی قضیه دیریکله S(x₀)
               </div>
               <div
                 dir="ltr"
-                className="mt-0.5 font-mono text-sm font-extrabold text-[#065F46]"
+                className="mt-0.5 font-mono text-sm font-extrabold text-ok-ink"
               >
                 [f(x₀⁻)+f(x₀⁺)]/2 ={' '}
                 {convergenceTrajectory.dirichletTargetAtProbe.toFixed(4)}
               </div>
             </div>
 
-            <div className="rounded-lg border border-[#FDE68A] bg-[#FFFBEB] p-2.5">
-              <div className="text-[11px] font-bold text-[#B45309]">
+            <div className="rounded-lg border border-warn-line bg-warn-soft p-2.5">
+              <div className="text-[11px] font-bold text-warn">
                 خطای مطلق تقریب در نقطه x₀
               </div>
               <div
                 dir="ltr"
-                className="mt-0.5 font-mono text-sm font-extrabold text-[#92400E]"
+                className="mt-0.5 font-mono text-sm font-extrabold text-warn-ink"
               >
                 |S_{numHarmonicsN}(x₀) - S(x₀)| ={' '}
                 {activeTermStats.absErrorAtProbe.toFixed(4)}
               </div>
             </div>
 
-            <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-2.5">
-              <div className="text-[11px] font-bold text-[#334155]">
+            <div className="rounded-lg border border-line bg-panel p-2.5">
+              <div className="text-[11px] font-bold text-ink-2">
                 سهم جمله n={numHarmonicsN} و انرژی پارسوال
               </div>
               <div
                 dir="ltr"
-                className="mt-0.5 font-mono text-xs font-extrabold text-[#0F172A]"
+                className="mt-0.5 font-mono text-xs font-extrabold text-ink"
               >
                 T_{numHarmonicsN}(x₀)={activeTermStats.termContributionAtProbe.toFixed(3)}{' '}
                 | E={activeTermStats.energyRatioPercent.toFixed(1)}%
@@ -1604,45 +1604,45 @@ export default function FourierInteractiveStage({
 
 
       {/* Full-Width Analytical Derivation & Term-by-Term Series Expansion Workbench (lg:col-span-12) */}
-      <div className="rounded-xl border border-[#BAE6FD] bg-white p-5 shadow-xs lg:col-span-12">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
+      <div className="rounded-xl border border-accent-line bg-surface p-5 lg:col-span-12">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-bold text-[#0369A1]">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-tint px-2.5 py-0.5 text-xs font-bold text-accent-deep">
               <BookOpen className="h-3.5 w-3.5" />
               بسط تحلیلی و تشریحی گام‌به‌گام تابع انتخاب‌شده
             </span>
-            <h4 className="mt-1 text-base font-extrabold text-[#0F172A]">
+            <h4 className="mt-1 text-base font-extrabold text-ink">
               <MathText text={analyticalDetails.titleFa} />
             </h4>
           </div>
-          <span className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-1 text-xs font-bold text-[#047857]">
+          <span className="rounded-lg border border-ok-line bg-ok-soft px-3 py-1 text-xs font-bold text-ok-ink">
             {analyticalDetails.symmetryTypeFa}
           </span>
         </div>
 
         {/* Row 1: Function Definition, Symmetry Explanation, and Explicit Expanded Terms */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-12">
-            <div className="text-xs font-bold text-[#0F172A]">
+          <div className="space-y-3 rounded-xl border border-line bg-panel p-4 lg:col-span-12">
+            <div className="text-xs font-bold text-ink">
               <MathText text="۱. ضابطه ریاضی تابع و دلیل تقارن در بازه $[-\ell, \ell]$:" />
             </div>
             <MathFormula formula={analyticalDetails.functionDefinitionLatex} block />
-            <p className="text-xs leading-relaxed text-[#334155]">
+            <p className="text-xs leading-relaxed text-ink-2">
               <MathText text={analyticalDetails.symmetryReasonFa} />
             </p>
-            <div className="rounded-lg border border-[#FDE68A] bg-[#FFFBEB] p-2.5 text-xs leading-relaxed text-[#92400E]">
+            <div className="rounded-lg border border-warn-line bg-warn-soft p-2.5 text-xs leading-relaxed text-warn-ink">
               <strong>سرعت همگرایی ضرایب: </strong>
               <MathText text={analyticalDetails.decayOrderNoteFa} />
             </div>
           </div>
 
-          <div className="space-y-3 rounded-xl border border-[#BAE6FD] bg-[#F0F9FF]/60 p-4 lg:col-span-12">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#0369A1]">
+          <div className="space-y-3 rounded-xl border border-accent-line bg-accent-soft/60 p-4 lg:col-span-12">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-accent-deep">
               <Layers className="h-4 w-4" />
               ۲. فرم بسته سیگما و بسط صریح جمله‌به‌جمله (۴ تا ۵ هارمونیک اول):
             </div>
             <div>
-              <div className="mb-1 text-[11px] font-semibold text-[#475569]">
+              <div className="mb-1 text-[11px] font-semibold text-ink-3">
                 فرم فشرده سری فوریه (Closed-Form Sigma Notation):
               </div>
               <MathFormula
@@ -1652,7 +1652,7 @@ export default function FourierInteractiveStage({
               />
             </div>
             <div>
-              <div className="mb-1 text-[11px] font-semibold text-[#475569]">
+              <div className="mb-1 text-[11px] font-semibold text-ink-3">
                 بسط بازشده جملات متوالی (Term-by-Term Harmonic Expansion):
               </div>
               <MathFormula
@@ -1664,27 +1664,27 @@ export default function FourierInteractiveStage({
         </div>
 
         {/* Row 2: Complete Unskipped Euler Coefficient Integrals (a_0, a_n, b_n) */}
-        <div className="mt-4 space-y-2.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-          <div className="text-xs font-bold text-[#0F172A]">
+        <div className="mt-4 space-y-2.5 rounded-xl border border-line bg-panel p-4">
+          <div className="text-xs font-bold text-ink">
             <MathText text="۳. محاسبه تحلیلی کامل ضرایب سه‌گانه اویلر ($a_0$، $a_n$ و $b_n$) بدون پرش از مراحل انتگرال‌گیری:" />
           </div>
           <div className="grid grid-cols-1 gap-3">
-            <div className="rounded-lg border border-[#E2E8F0] bg-white p-3">
-              <span className="mb-1 inline-block rounded bg-[#E0F2FE] px-2 py-0.5 text-[11px] font-bold text-[#0369A1]">
+            <div className="rounded-lg border border-line bg-surface p-3">
+              <span className="mb-1 inline-block rounded bg-accent-tint px-2 py-0.5 text-[11px] font-bold text-accent-deep">
                 <MathText text="الف) محاسبه ضریب ثابت میانگین ($a_0$ و جمله ثابت $\frac{a_0}{2}$):" />
               </span>
               <MathFormula formula={analyticalDetails.a0DerivationLatex} block />
             </div>
 
-            <div className="rounded-lg border border-[#E2E8F0] bg-white p-3">
-              <span className="mb-1 inline-block rounded bg-[#ECFDF5] px-2 py-0.5 text-[11px] font-bold text-[#047857]">
+            <div className="rounded-lg border border-line bg-surface p-3">
+              <span className="mb-1 inline-block rounded bg-ok-soft px-2 py-0.5 text-[11px] font-bold text-ok-ink">
                 <MathText text="ب) محاسبه ضریب کسینوسی ($a_n$ — بخش زوج تابع):" />
               </span>
               <MathFormula formula={analyticalDetails.anDerivationLatex} block />
             </div>
 
-            <div className="rounded-lg border border-[#E2E8F0] bg-white p-3">
-              <span className="mb-1 inline-block rounded bg-[#FEF3C7] px-2 py-0.5 text-[11px] font-bold text-[#B45309]">
+            <div className="rounded-lg border border-line bg-surface p-3">
+              <span className="mb-1 inline-block rounded bg-warn-tint px-2 py-0.5 text-[11px] font-bold text-warn">
                 <MathText text="ج) محاسبه ضریب سینوسی ($b_n$ — بخش فرد تابع):" />
               </span>
               <MathFormula formula={analyticalDetails.bnDerivationLatex} block />
@@ -1694,19 +1694,19 @@ export default function FourierInteractiveStage({
 
         {/* Row 3: Dirichlet Pointwise Convergence & Parseval Series Summation */}
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <div className="space-y-2.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-12">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#0F172A]">
-              <Compass className="h-4 w-4 text-[#0284C7]" />
+          <div className="space-y-2.5 rounded-xl border border-line bg-panel p-4 lg:col-span-12">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
+              <Compass className="h-4 w-4 text-accent" />
               ۴. بررسی قضیه همگرایی نقطه‌ای دیریکله در نقاط حساس و استخراج سری‌های عددی:
             </div>
             <div className="space-y-2.5">
               {analyticalDetails.dirichletConvergencePoints.map((pt, idx) => (
                 <div
                   key={idx}
-                  className="rounded-lg border border-[#E2E8F0] bg-white p-3"
+                  className="rounded-lg border border-line bg-surface p-3"
                 >
                   <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-[#0369A1]">
+                    <span className="text-xs font-bold text-accent-deep">
                       <MathText text={pt.pointLabelFa} />
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
@@ -1721,12 +1721,12 @@ export default function FourierInteractiveStage({
             </div>
           </div>
 
-          <div className="space-y-2.5 rounded-xl border border-[#A7F3D0] bg-[#ECFDF5]/60 p-4 lg:col-span-12">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#065F46]">
-              <Sparkles className="h-4 w-4 text-[#059669]" />
+          <div className="space-y-2.5 rounded-xl border border-ok-line bg-ok-soft/60 p-4 lg:col-span-12">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ok-ink">
+              <Sigma className="h-4 w-4 text-ok" />
               ۵. استخراج مجموع سری توان دوم/چهارم با اتحاد پارسوال:
             </div>
-            <p className="text-xs leading-relaxed text-[#047857]">
+            <p className="text-xs leading-relaxed text-ok-ink">
               <MathText text="با قرار دادن ضرایب $a_0, a_n, b_n$ این تابع در اتحاد پارسوال $\frac{1}{\ell}\int_{-\ell}^{\ell} |f(x)|^2 dx = \frac{a_0^2}{2} + \sum_{n=1}^{\infty}(a_n^2 + b_n^2)$ داریم:" />
             </p>
             <MathFormula

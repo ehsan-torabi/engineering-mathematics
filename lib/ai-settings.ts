@@ -1,8 +1,8 @@
 /**
  * Pure Logic & Configuration for the AI Engineering Math Assistant
  * Supports:
- * 1. Built-in Google Gemini (via server-side @google/genai SDK)
- * 2. OpenAI-Compatible Custom Providers (OpenAI, OpenRouter, Ollama, LM Studio, Groq, DeepSeek, vLLM, or any custom /v1/chat/completions endpoint)
+ * 1. OpenAI-Compatible providers as the default path (OpenAI, OpenRouter, Ollama, LM Studio, Groq, DeepSeek, vLLM, or any custom /v1/chat/completions endpoint)
+ * 2. Google Gemini as an optional server-side provider (via @google/genai SDK)
  */
 
 export type AIProviderType = 'gemini' | 'openai_compatible';
@@ -47,13 +47,15 @@ export interface ChatMessageItem {
   timestamp: string;
   providerUsed?: string;
   modelUsed?: string;
+  /** Set when generation was stopped by the user and the partial answer was kept */
+  stopped?: boolean;
 }
 
 export const GEMINI_AVAILABLE_MODELS: { id: string; label: string; badge: string }[] = [
   {
     id: 'gemini-3.8-flash',
-    label: 'Gemini 3.8 Flash (پیشنهادی • سریع و دقیق برای ریاضیات مهندسی)',
-    badge: 'پیش‌فرض',
+    label: 'Gemini 3.8 Flash (سریع و دقیق برای ریاضیات مهندسی)',
+    badge: 'اختیاری',
   },
   {
     id: 'gemini-3.1-flash-lite',
@@ -131,10 +133,10 @@ export const OPENAI_COMPATIBLE_PRESETS: OpenAICompatiblePreset[] = [
 ];
 
 export const DEFAULT_AI_SETTINGS: AISettings = {
-  provider: 'gemini',
-  presetId: 'openai',
+  provider: 'openai_compatible',
+  presetId: 'custom',
   customBaseUrl: 'https://api.openai.com/v1',
-  model: 'gemini-3.8-flash',
+  model: 'gpt-4o-mini',
   detailLevel: 'full_step_by_step',
   thinkingLevel: 'MEDIUM',
   includeModuleContext: true,

@@ -1,118 +1,312 @@
 @import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Calibrated Dual-Theme (Light / Late-Night Study Dark Mode) Surface & Contrast Architecture */
-html.dark {
+/*
+ * Design tokens — single source of truth for light and dark themes.
+ *
+ * Style: Swiss minimalism, tuned for focused study (rtl_level: full).
+ * Chrome palette: one neutral family (slate), one accent (sky blue),
+ * and three semantic status colors (ok/warn/danger) spent only on
+ * feedback — never on decoration. Data series inside charts get their
+ * own --chart-* palette so plots stay readable in both themes without
+ * touching UI chrome.
+ *
+ * Shape lock: rounded-md (6px, chips/inputs) → rounded-lg (8px, inner
+ * boxes/buttons) → rounded-xl (12px, cards/modals). Nothing else.
+ * Elevation: only elements that actually float (modals, popovers,
+ * dropdowns) carry a shadow; content surfaces sit flat on borders.
+ * No letter-spacing tokens anywhere — Persian script must never be
+ * letter-spaced (it breaks letter joining).
+ */
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-muted: var(--muted);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-ink-solid: var(--ink-solid);
+
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-line: var(--accent-line);
+
+  --color-ok: var(--ok);
+  --color-ok-ink: var(--ok-ink);
+  --color-ok-solid: var(--ok-solid);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-tint: var(--ok-tint);
+  --color-ok-line: var(--ok-line);
+
+  --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-solid: var(--warn-solid);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-tint: var(--warn-tint);
+  --color-warn-line: var(--warn-line);
+
+  --color-danger: var(--danger);
+  --color-danger-ink: var(--danger-ink);
+  --color-danger-solid: var(--danger-solid);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-tint: var(--danger-tint);
+  --color-danger-line: var(--danger-line);
+
+  --font-sans: var(--font-vazirmatn), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  /* Motion: strong ease-out for entrances, iOS-like drawer curve for panels */
+  --ease-fluent: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  /* Neutrals (cool slate family, single family across the app) */
+  --paper: #f8fafc;
+  --surface: #ffffff;
+  --panel: #f8fafc;
+  --muted: #f1f5f9;
+
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+
+  --ink: #0f172a;
+  --ink-2: #334155;
+  --ink-3: #475569;
+  --ink-4: #64748b;
+  --ink-solid: #0f172a;
+
+  /* Accent: sky, spent on primary actions, active states and progress only */
+  --accent: #0284c7;
+  --accent-deep: #0369a1;
+  --accent-solid: #0284c7;
+  --accent-soft: #f0f9ff;
+  --accent-tint: #e0f2fe;
+  --accent-line: #bae6fd;
+
+  /* Semantic status */
+  --ok: #059669;
+  --ok-ink: #065f46;
+  --ok-solid: #059669;
+  --ok-soft: #ecfdf5;
+  --ok-tint: #d1fae5;
+  --ok-line: #a7f3d0;
+
+  --warn: #d97706;
+  --warn-ink: #92400e;
+  --warn-solid: #d97706;
+  --warn-soft: #fffbeb;
+  --warn-tint: #fef3c7;
+  --warn-line: #fde68a;
+
+  --danger: #dc2626;
+  --danger-ink: #dc2626;
+  --danger-solid: #dc2626;
+  --danger-soft: #fef2f2;
+  --danger-tint: #fee2e2;
+  --danger-line: #dc2626;
+
+  /* Chart data series (SVG attributes read these as CSS vars) */
+  --chart-accent: #0284c7;
+  --chart-ok: #059669;
+  --chart-danger: #dc2626;
+  --chart-warn: #d97706;
+  --chart-violet: #8b5cf6;
+  --chart-purple: #a855f7;
+  --chart-indigo: #818cf8;
+  --chart-grid: #e2e8f0;
+  --chart-axis: #475569;
+  --chart-muted: #94a3b8;
+}
+
+.dark {
   color-scheme: dark;
-  background-color: #0B1120;
-  color: #F8FAFC;
+
+  --paper: #0b1120;
+  --surface: #111827;
+  --panel: #0f172a;
+  --muted: #1e293b;
+
+  --line: #1e293b;
+  --line-strong: #334155;
+
+  --ink: #f8fafc;
+  --ink-2: #cbd5e1;
+  --ink-3: #94a3b8;
+  --ink-4: #94a3b8;
+  --ink-solid: #1e293b;
+
+  --accent: #38bdf8;
+  --accent-deep: #7dd3fc;
+  --accent-solid: #0369a1;
+  --accent-soft: rgba(12, 74, 110, 0.35);
+  --accent-tint: rgba(3, 105, 161, 0.45);
+  --accent-line: rgba(56, 189, 248, 0.45);
+
+  --ok: #34d399;
+  --ok-ink: #6ee7b7;
+  --ok-solid: #059669;
+  --ok-soft: rgba(6, 78, 59, 0.4);
+  --ok-tint: rgba(6, 78, 59, 0.55);
+  --ok-line: rgba(52, 211, 153, 0.35);
+
+  --warn: #fbbf24;
+  --warn-ink: #fde68a;
+  --warn-solid: #d97706;
+  --warn-soft: rgba(120, 53, 15, 0.4);
+  --warn-tint: rgba(120, 53, 15, 0.55);
+  --warn-line: rgba(251, 191, 36, 0.4);
+
+  --danger: #ef4444;
+  --danger-ink: #fca5a5;
+  --danger-solid: #dc2626;
+  --danger-soft: rgba(127, 29, 29, 0.4);
+  --danger-tint: rgba(127, 29, 29, 0.55);
+  --danger-line: rgba(239, 68, 68, 0.5);
+
+  --chart-accent: #38bdf8;
+  --chart-ok: #34d399;
+  --chart-danger: #f87171;
+  --chart-warn: #fbbf24;
+  --chart-violet: #c084fc;
+  --chart-purple: #d8b4fe;
+  --chart-indigo: #a5b4fc;
+  --chart-grid: #334155;
+  --chart-axis: #94a3b8;
+  --chart-muted: #64748b;
 }
 
-/* Primary & Secondary Neutral Surfaces in Dark Mode */
-html.dark .bg-\[\#F8FAFC\] {
-  background-color: #0B1120;
+html {
+  scrollbar-color: var(--line-strong) transparent;
+  /* Stable gutter keeps centered content from shifting when a modal locks scroll */
+  scrollbar-gutter: stable;
 }
 
-html.dark .bg-\[\#F8FAFC\]\/80 {
-  background-color: rgba(15, 23, 42, 0.85);
+::selection {
+  background-color: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent-deep);
 }
 
-html.dark .bg-white {
-  background-color: #111827;
+.dark ::selection {
+  color: var(--accent);
 }
 
-html.dark .bg-white\/95 {
-  background-color: rgba(17, 24, 39, 0.95);
+/* Keyboard focus is always visible; pointer focus stays clean */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-html.dark .bg-white\/90 {
-  background-color: rgba(15, 23, 42, 0.92);
+/* Press feedback lands on pointer-down, not release (100 ms, transform only) */
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled):active {
+    transform: scale(0.98);
+    transition: transform 100ms var(--ease-fluent);
+  }
 }
 
-html.dark .bg-\[\#F1F5F9\],
-html.dark .bg-\[\#F1F5F9\]\/80 {
-  background-color: #1E293B;
+/*
+ * Motion vocabulary — every entrance uses the same two keyframes so the
+ * app moves as one piece. Phase switches and list mounts fade+rise 160ms;
+ * overlays scale from 0.97 (nothing appears out of nowhere). Exits are
+ * unanimated (fastest exit) — faster than every entrance.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes backdrop-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-rise {
+    animation: rise-in 160ms var(--ease-fluent) both;
+  }
+
+  .animate-overlay {
+    animation: overlay-in 200ms var(--ease-fluent) both;
+  }
+
+  .animate-backdrop {
+    animation: backdrop-in 200ms ease both;
+  }
 }
 
-/* Semantic Tinted Callout & Highlight Surfaces in Dark Mode */
-html.dark .bg-\[\#F0F9FF\] {
-  background-color: rgba(12, 74, 110, 0.35);
+/* Reduced motion: keep state changes, drop the movement */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-html.dark .bg-\[\#E0F2FE\] {
-  background-color: rgba(3, 105, 161, 0.42);
+/* Reduced transparency: frosty chrome becomes solid */
+@media (prefers-reduced-transparency: reduce) {
+  .backdrop-blur-xs,
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg {
+    backdrop-filter: none !important;
+    background-color: var(--surface) !important;
+  }
 }
 
-html.dark .bg-\[\#ECFDF5\],
-html.dark .bg-\[\#ECFDF5\]\/80 {
-  background-color: rgba(6, 78, 59, 0.38);
-}
-
-html.dark .bg-\[\#FFFBEB\],
-html.dark .bg-\[\#FEF3C7\],
-html.dark .bg-\[\#FEF3C7\]\/60 {
-  background-color: rgba(120, 53, 15, 0.36);
-}
-
-html.dark .bg-\[\#FEF2F2\] {
-  background-color: rgba(127, 29, 29, 0.38);
-}
-
-/* Borders & Dividers in Dark Mode */
-html.dark .border-\[\#E2E8F0\] {
-  border-color: #1E293B;
-}
-
-html.dark .border-\[\#CBD5E1\] {
-  border-color: #334155;
-}
-
-/* Typography Hierarchy & Contrast in Dark Mode (WCAG AA/AAA) */
-html.dark .text-\[\#0F172A\] {
-  color: #F8FAFC;
-}
-
-html.dark .text-\[\#1E293B\],
-html.dark .text-\[\#334155\] {
-  color: #E2E8F0;
-}
-
-html.dark .text-\[\#475569\] {
-  color: #CBD5E1;
-}
-
-html.dark .text-\[\#64748B\] {
-  color: #94A3B8;
-}
-
-html.dark .text-\[\#0369A1\] {
-  color: #38BDF8;
-}
-
-html.dark .text-\[\#065F46\] {
-  color: #34D399;
-}
-
-html.dark .text-\[\#92400E\],
-html.dark .text-\[\#B45309\] {
-  color: #FBBF24;
-}
-
-html.dark .text-\[\#991B1B\] {
-  color: #FCA5A5;
-}
-
-/* Form Controls & KaTeX Math Rendering in Dark Mode */
-html.dark select,
-html.dark input[type="text"],
-html.dark input[type="number"],
-html.dark input[type="password"],
-html.dark textarea {
-  background-color: #0F172A;
-  color: #F8FAFC;
-  border-color: #334155;
-}
-
-html.dark .katex {
+/*
+ * KaTeX inherits the theme instead of fighting it, and long display
+ * formulas scroll horizontally on narrow screens instead of blowing up
+ * the reading column.
+ */
+.katex {
   color: inherit;
+}
+
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+  scrollbar-width: thin;
+}
+
+/* Native dropdowns follow the theme in their popup list */
+select {
+  color-scheme: inherit;
 }

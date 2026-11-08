@@ -13,6 +13,7 @@ import MathFormula, { MathText } from './MathFormula';
 import {
   Activity,
   BarChart3,
+  Sigma,
   BookOpen,
   CheckCircle2,
   ChevronLeft,
@@ -22,7 +23,6 @@ import {
   Pause,
   Play,
   Sliders,
-  Sparkles,
   TrendingUp,
   Waves,
 } from 'lucide-react';
@@ -126,21 +126,12 @@ export default function FourierIntegralStage() {
         exactY = p.fx;
       }
 
-      let approxY = 0;
-      if (presetId === 'sign_damped') {
-        // Approximate integral for sign_damped
-        approxY = evaluatePartialFourierIntegral('one_sided_exp', x, paramA, cutoffOmega);
-        // Odd function sine integral
-        const delta = Math.sin(cutoffOmega * x) / (1 + x * x);
-        approxY = Math.sign(x) * (Math.abs(exactY) - 0.1 * delta);
-      } else {
-        approxY = evaluatePartialFourierIntegral(
-          presetId as TransformPresetId,
-          x,
-          paramA,
-          cutoffOmega
-        );
-      }
+      const approxY = evaluatePartialFourierIntegral(
+        presetId as FourierIntegralPresetId,
+        x,
+        paramA,
+        cutoffOmega
+      );
 
       timePoints.push({
         x: Number(x.toFixed(2)),
@@ -198,30 +189,30 @@ export default function FourierIntegralStage() {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
       {/* Top 7 Cols: Spatial Domain I_Omega(x) and Frequency Domain Densities */}
-      <div className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs lg:col-span-7">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
+      <div className="rounded-xl border border-line bg-surface p-5 lg:col-span-7">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
           <div>
-            <h3 className="flex items-center gap-2 text-base font-bold text-[#0F172A]">
-              <Waves className="h-4 w-4 text-[#0284C7]" />
+            <h3 className="flex items-center gap-2 text-base font-bold text-ink">
+              <Waves className="h-4 w-4 text-accent" />
               <MathText text="شبیه‌ساز تحلیلی و عددی انتگرال فوریه و همگرایی $I_\Omega(x)$" />
             </h3>
-            <p className="text-xs text-[#475569]">
+            <p className="text-xs text-ink-3">
               {activePresetMeta.labelFa} — {activePresetMeta.symmetryBadge}
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-[#ECFDF5] px-2.5 py-1 text-xs font-bold text-[#059669]">
-            <Sparkles className="h-3.5 w-3.5" />
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-ok-soft px-2.5 py-1 text-xs font-bold text-ok">
+            <Activity className="h-3.5 w-3.5" />
             فرکانس پیوسته α ∈ [0, ∞)
           </span>
         </div>
 
         {/* Spatial Plot f(x) vs I_Omega(x) via Recharts */}
-        <div className="mb-4 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-          <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-[#0F172A]">
+        <div className="mb-4 rounded-xl border border-line bg-panel p-3">
+          <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-ink">
             <span>
               <MathText text={`۱. حوزه مکان / زمان: تابع دقیق $f(x)$ در مقایسه با انتگرال جزئی فوریه $I_{${cutoffOmega}}(x)$`} />
             </span>
-            <span dir="ltr" className="font-mono text-[#0284C7]">
+            <span dir="ltr" className="font-mono text-accent">
               Ω = {cutoffOmega} rad/s
             </span>
           </div>
@@ -231,22 +222,22 @@ export default function FourierIntegralStage() {
                 data={plotData.timePoints}
                 margin={{ top: 15, right: 15, left: -15, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis
                   dataKey="x"
                   type="number"
                   domain={[-plotData.xDomain, plotData.xDomain]}
-                  tick={{ fontSize: 11, fill: '#475569' }}
+                  tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                   tickFormatter={(v) => Number(v).toFixed(1)}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#475569' }}
+                  tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                   domain={['auto', 'auto']}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#CBD5E1',
+                    backgroundColor: 'var(--surface)',
+                    borderColor: 'var(--chart-grid)',
                     borderRadius: '8px',
                     fontSize: '11px',
                   }}
@@ -255,13 +246,13 @@ export default function FourierIntegralStage() {
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
                 <ReferenceLine
                   x={probeX}
-                  stroke="#DC2626"
+                  stroke="var(--chart-danger)"
                   strokeWidth={1.5}
                   strokeDasharray="4 3"
                   label={{
                     value: `x₀=${probeX.toFixed(2)}`,
                     position: 'top',
-                    fill: '#DC2626',
+                    fill: 'var(--chart-danger)',
                     fontSize: 10,
                   }}
                 />
@@ -269,7 +260,7 @@ export default function FourierIntegralStage() {
                   type="monotone"
                   dataKey="exactY"
                   name="f(x) تابع اصلی"
-                  stroke="#64748B"
+                  stroke="var(--chart-axis)"
                   strokeWidth={2}
                   strokeDasharray="5 4"
                   dot={false}
@@ -279,8 +270,8 @@ export default function FourierIntegralStage() {
                   type="monotone"
                   dataKey="approxY"
                   name={`I_${cutoffOmega}(x) انتگرال فوریه جزئی`}
-                  stroke="#0284C7"
-                  fill="#0284C7"
+                  stroke="var(--chart-accent)"
+                  fill="var(--chart-accent)"
                   fillOpacity={0.12}
                   strokeWidth={2.4}
                   dot={false}
@@ -292,12 +283,12 @@ export default function FourierIntegralStage() {
         </div>
 
         {/* Frequency Spectrum Density A(alpha) & B(alpha) */}
-        <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-          <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-[#0F172A]">
+        <div className="rounded-xl border border-line bg-panel p-3">
+          <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-ink">
             <span>
               <MathText text="۲. حوزه فرکانس: چگالی طیفی پیوسته $A(\alpha)$ و $B(\alpha)$ با بازه انتگرال‌گیری فعلی $[0, \Omega]$" />
             </span>
-            <span dir="ltr" className="font-mono text-[#059669]">
+            <span dir="ltr" className="font-mono text-ok">
               α ∈ [0, {plotData.alphaDomain}] rad/s
             </span>
           </div>
@@ -307,18 +298,18 @@ export default function FourierIntegralStage() {
                 data={plotData.freqPoints}
                 margin={{ top: 10, right: 15, left: -15, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis
                   dataKey="alpha"
                   type="number"
                   domain={[0, plotData.alphaDomain]}
-                  tick={{ fontSize: 11, fill: '#475569' }}
+                  tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                 />
-                <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#FFFFFF',
-                    borderColor: '#CBD5E1',
+                    backgroundColor: 'var(--surface)',
+                    borderColor: 'var(--chart-grid)',
                     borderRadius: '8px',
                     fontSize: '11px',
                   }}
@@ -327,13 +318,13 @@ export default function FourierIntegralStage() {
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
                 <ReferenceLine
                   x={cutoffOmega}
-                  stroke="#0284C7"
+                  stroke="var(--chart-accent)"
                   strokeWidth={2}
                   strokeDasharray="4 3"
                   label={{
                     value: `Ω=${cutoffOmega}`,
                     position: 'top',
-                    fill: '#0284C7',
+                    fill: 'var(--chart-accent)',
                     fontSize: 10,
                   }}
                 />
@@ -341,7 +332,7 @@ export default function FourierIntegralStage() {
                   type="monotone"
                   dataKey="A_alpha"
                   name="A(α) چگالی کسینوسی"
-                  stroke="#0284C7"
+                  stroke="var(--chart-accent)"
                   strokeWidth={2.2}
                   dot={false}
                   isAnimationActive={false}
@@ -350,7 +341,7 @@ export default function FourierIntegralStage() {
                   type="monotone"
                   dataKey="B_alpha"
                   name="B(α) چگالی سینوسی"
-                  stroke="#D97706"
+                  stroke="var(--chart-warn)"
                   strokeWidth={2}
                   strokeDasharray="4 3"
                   dot={false}
@@ -360,8 +351,8 @@ export default function FourierIntegralStage() {
                   type="monotone"
                   dataKey="mag"
                   name="اندازه طیف √(A²+B²)"
-                  stroke="#059669"
-                  fill="#10B981"
+                  stroke="var(--chart-ok)"
+                  fill="var(--chart-ok)"
                   fillOpacity={0.12}
                   strokeWidth={1.5}
                   dot={false}
@@ -374,19 +365,19 @@ export default function FourierIntegralStage() {
       </div>
 
       {/* Top 5 Cols: Interactive Controls */}
-      <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs lg:col-span-5">
-        <h4 className="text-sm font-bold text-[#0F172A]">
+      <div className="space-y-4 rounded-xl border border-line bg-surface p-5 lg:col-span-5">
+        <h4 className="text-sm font-bold text-ink">
           پنل تنظیمات تابع و فرکانس قطع انتگرال فوریه
         </h4>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-[#334155]">
+          <label className="mb-1.5 block text-xs font-bold text-ink-2">
             ۱. انتخاب تابع نمونه غیرمتناوب (۶ الگوی مرجع جزوه):
           </label>
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value as FourierIntegralPresetId)}
-            className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-semibold text-[#0F172A]"
+            className="w-full rounded-lg border border-line-strong bg-panel px-3 py-2 text-xs font-semibold text-ink"
           >
             {FOURIER_INTEGRAL_PRESETS.map((p) => (
               <option key={p.id} value={p.id}>
@@ -397,9 +388,9 @@ export default function FourierIntegralStage() {
         </div>
 
         <div>
-          <label className="mb-1 flex items-center justify-between text-xs font-bold text-[#334155]">
+          <label className="mb-1 flex items-center justify-between text-xs font-bold text-ink-2">
             <span>۲. پارامتر مقیاس مکانی / نرخ میرایی (a):</span>
-            <span dir="ltr" className="font-mono text-sm font-bold text-[#0284C7]">
+            <span dir="ltr" className="font-mono text-sm font-bold text-accent">
               a = {paramA.toFixed(1)}
             </span>
           </label>
@@ -410,24 +401,24 @@ export default function FourierIntegralStage() {
             step={0.1}
             value={paramA}
             onChange={(e) => setParamA(Number(e.target.value))}
-            className="w-full accent-[#0284C7]"
+            className="w-full accent-accent"
           />
-          <div className="mt-1 flex items-center justify-between text-[11px] text-[#64748B]">
+          <div className="mt-1 flex items-center justify-between text-[11px] text-ink-4">
             <span>پالس پهن‌تر (طیف فرکانسی باریک)</span>
             <span>پالس تیز (طیف گسترده)</span>
           </div>
-          <div className="mt-1.5 rounded-md border border-[#FDE68A] bg-[#FFFBEB] p-2 text-[11px] leading-relaxed text-[#92400E]">
+          <div className="mt-1.5 rounded-md border border-warn-line bg-warn-soft p-2 text-[11px] leading-relaxed text-warn-ink">
             <strong>اصل عدم قطعیت فوریه: </strong>
             <MathText text="فشرده‌تر کردن تابع در حوزه زمان/مکان (کاهش $a$) باعث پهن‌تر شدن طیف چگالی فرکانس $A(\alpha)$ می‌گردد ($\Delta x \cdot \Delta \alpha \ge 1/2$)." />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 flex items-center justify-between text-xs font-bold text-[#334155]">
+          <label className="mb-1 flex items-center justify-between text-xs font-bold text-ink-2">
             <span>
               <MathText text="۳. فرکانس قطع انتگرال جزئی ($\Omega$ در $I_\Omega$):" />
             </span>
-            <span dir="ltr" className="font-mono text-sm font-bold text-[#0284C7]">
+            <span dir="ltr" className="font-mono text-sm font-bold text-accent">
               Ω = {cutoffOmega} rad/s
             </span>
           </label>
@@ -441,17 +432,17 @@ export default function FourierIntegralStage() {
               setIsAutoScrubbing(false);
               setCutoffOmega(Number(e.target.value));
             }}
-            className="w-full accent-[#0284C7]"
+            className="w-full accent-accent"
           />
-          <div className="flex justify-between font-mono text-[10px] text-[#64748B]">
+          <div className="flex justify-between font-mono text-[10px] text-ink-4">
             <span>Ω=1 (فرکانس پایین)</span>
             <span>Ω=20</span>
             <span>Ω=40 (همگرایی بالا)</span>
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-          <div className="mb-1 text-xs font-bold text-[#334155]">
+        <div className="rounded-xl border border-line bg-panel p-3">
+          <div className="mb-1 text-xs font-bold text-ink-2">
             فرمول انتگرال فوریه جزئی در حال نمایش:
           </div>
           <MathFormula
@@ -465,15 +456,15 @@ export default function FourierIntegralStage() {
       {/* Dynamic Recharts Convergence Sandbox across Omega (lg:col-span-12) */}
       <div
         data-testid="fourier-integral-recharts-sandbox"
-        className="rounded-xl border border-[#CBD5E1] bg-white p-5 shadow-xs lg:col-span-12"
+        className="rounded-xl border border-line-strong bg-surface p-5 lg:col-span-12"
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] pb-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-bold text-[#0369A1]">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-tint px-2.5 py-0.5 text-xs font-bold text-accent-deep">
               <TrendingUp className="h-3.5 w-3.5" />
               کاوشگر پویای همگرایی انتگرال فوریه با افزایش فرکانس قطع (Recharts Convergence Sandbox)
             </span>
-            <h4 className="mt-1 text-base font-extrabold text-[#0F172A]">
+            <h4 className="mt-1 text-base font-extrabold text-ink">
               <MathText text="تحلیل دنباله انتگرال‌های جزئی $I_\Omega(x_0)$ و بررسی قضیه همگرایی دیریکله" />
             </h4>
           </div>
@@ -484,8 +475,8 @@ export default function FourierIntegralStage() {
               onClick={() => setMetricMode('pointwise')}
               className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
                 metricMode === 'pointwise'
-                  ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                  : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                  ? 'border-accent bg-accent-solid text-white'
+                  : 'border-line-strong bg-panel text-ink-3 hover:bg-muted'
               }`}
             >
               <MathText text="همگرایی نقطه‌ای $I_\Omega(x_0)$ به حد دیریکله" />
@@ -495,8 +486,8 @@ export default function FourierIntegralStage() {
               onClick={() => setMetricMode('energy')}
               className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
                 metricMode === 'energy'
-                  ? 'border-[#059669] bg-[#059669] text-white'
-                  : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                  ? 'border-ok bg-ok-solid text-white'
+                  : 'border-line-strong bg-panel text-ink-3 hover:bg-muted'
               }`}
             >
               <MathText text="همگرایی انرژی پارسوال ($\%$) بر حسب $\Omega$" />
@@ -505,15 +496,15 @@ export default function FourierIntegralStage() {
         </div>
 
         {/* Scrubber Controls for Omega and Probe x_0 */}
-        <div className="mb-4 grid grid-cols-1 gap-4 rounded-xl border border-[#BAE6FD] bg-[#F0F9FF]/70 p-4 lg:grid-cols-12">
+        <div className="mb-4 grid grid-cols-1 gap-4 rounded-xl border border-accent-line bg-accent-soft/70 p-4 lg:grid-cols-12">
           {/* Omega Scrubber (7 cols) */}
           <div className="space-y-2 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label
                 htmlFor="fourier-integral-omega-scrubber"
-                className="flex items-center gap-1.5 text-xs font-extrabold text-[#0F172A]"
+                className="flex items-center gap-1.5 text-xs font-extrabold text-ink"
               >
-                <Sliders className="h-3.5 w-3.5 text-[#0284C7]" />
+                <Sliders className="h-3.5 w-3.5 text-accent" />
                 <MathText text="اسکرابر پیوسته فرکانس قطع انتگرال ($\Omega = 1 \dots 40\text{ rad/s}$):" />
               </label>
 
@@ -524,7 +515,7 @@ export default function FourierIntegralStage() {
                     setIsAutoScrubbing(false);
                     setCutoffOmega((prev) => Math.max(1, prev - 1));
                   }}
-                  className="inline-flex items-center gap-0.5 rounded-md border border-[#CBD5E1] bg-white px-2 py-1 text-xs font-bold text-[#334155] hover:bg-[#F1F5F9]"
+                  className="inline-flex items-center gap-0.5 rounded-md border border-line-strong bg-surface px-2 py-1 text-xs font-bold text-ink-2 hover:bg-muted"
                   title="کاهش یک رادیان"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -533,7 +524,7 @@ export default function FourierIntegralStage() {
 
                 <span
                   dir="ltr"
-                  className="rounded-md bg-[#0284C7] px-2.5 py-1 font-mono text-xs font-extrabold text-white"
+                  className="rounded-md bg-accent-solid px-2.5 py-1 font-mono text-xs font-extrabold text-white"
                 >
                   Ω = {cutoffOmega}
                 </span>
@@ -544,7 +535,7 @@ export default function FourierIntegralStage() {
                     setIsAutoScrubbing(false);
                     setCutoffOmega((prev) => Math.min(40, prev + 1));
                   }}
-                  className="inline-flex items-center gap-0.5 rounded-md border border-[#CBD5E1] bg-white px-2 py-1 text-xs font-bold text-[#334155] hover:bg-[#F1F5F9]"
+                  className="inline-flex items-center gap-0.5 rounded-md border border-line-strong bg-surface px-2 py-1 text-xs font-bold text-ink-2 hover:bg-muted"
                   title="افزایش یک رادیان"
                 >
                   <span>Ω+1</span>
@@ -556,8 +547,8 @@ export default function FourierIntegralStage() {
                   onClick={() => setIsAutoScrubbing((v) => !v)}
                   className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition ${
                     isAutoScrubbing
-                      ? 'bg-[#DC2626] text-white'
-                      : 'border border-[#0284C7] bg-white text-[#0284C7] hover:bg-[#E0F2FE]'
+                      ? 'bg-danger-solid text-white'
+                      : 'border border-accent bg-surface text-accent hover:bg-accent-tint'
                   }`}
                 >
                   {isAutoScrubbing ? (
@@ -586,11 +577,11 @@ export default function FourierIntegralStage() {
                 setIsAutoScrubbing(false);
                 setCutoffOmega(Number(e.target.value));
               }}
-              className="w-full accent-[#0284C7]"
+              className="w-full accent-accent"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-1.5 pt-0.5">
-              <span className="text-[11px] font-semibold text-[#475569]">
+              <span className="text-[11px] font-semibold text-ink-3">
                 پرش سریع به فرکانس قطع:
               </span>
               <div dir="ltr" className="flex flex-wrap gap-1">
@@ -604,8 +595,8 @@ export default function FourierIntegralStage() {
                     }}
                     className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold transition ${
                       cutoffOmega === wVal
-                        ? 'bg-[#0284C7] text-white'
-                        : 'border border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#E0F2FE]'
+                        ? 'bg-accent-solid text-white'
+                        : 'border border-line-strong bg-surface text-ink-2 hover:bg-accent-tint'
                     }`}
                   >
                     Ω={wVal}
@@ -616,17 +607,17 @@ export default function FourierIntegralStage() {
           </div>
 
           {/* Probe Point x_0 Selector (5 cols) */}
-          <div className="space-y-2 border-t border-[#BAE6FD] pt-3 lg:col-span-5 lg:border-t-0 lg:border-r lg:pr-4 lg:pt-0">
+          <div className="space-y-2 border-t border-accent-line pt-3 lg:col-span-5 lg:border-t-0 lg:border-r lg:pr-4 lg:pt-0">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="fourier-integral-probe-x-slider"
-                className="text-xs font-extrabold text-[#0F172A]"
+                className="text-xs font-extrabold text-ink"
               >
                 نقطه کاوش همگرایی (x₀ در محور مکان):
               </label>
               <span
                 dir="ltr"
-                className="rounded bg-white px-2 py-0.5 font-mono text-xs font-bold text-[#0369A1] shadow-2xs"
+                className="rounded bg-surface px-2 py-0.5 font-mono text-xs font-bold text-accent-deep"
               >
                 x₀ = {probeX.toFixed(2)}
               </span>
@@ -640,11 +631,11 @@ export default function FourierIntegralStage() {
               step={0.05}
               value={probeX}
               onChange={(e) => setProbeX(Number(e.target.value))}
-              className="w-full accent-[#0369A1]"
+              className="w-full accent-accent"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-1">
-              <span className="text-[11px] font-semibold text-[#475569]">
+              <span className="text-[11px] font-semibold text-ink-3">
                 نقاط حساس دیریکله:
               </span>
               <div className="flex flex-wrap gap-1">
@@ -660,8 +651,8 @@ export default function FourierIntegralStage() {
                     onClick={() => setProbeX(preset.xVal)}
                     className={`rounded px-2 py-0.5 text-[10px] font-bold transition ${
                       Math.abs(probeX - preset.xVal) < 0.05
-                        ? 'bg-[#0369A1] text-white'
-                        : 'border border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#E0F2FE]'
+                        ? 'bg-accent-solid text-white'
+                        : 'border border-line-strong bg-surface text-ink-2 hover:bg-accent-tint'
                     }`}
                   >
                     {preset.label}
@@ -673,16 +664,16 @@ export default function FourierIntegralStage() {
         </div>
 
         {/* Recharts Convergence Trajectory Chart */}
-        <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5">
+        <div className="rounded-xl border border-line bg-panel p-3.5">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
-            <span className="text-xs font-bold text-[#0F172A]">
+            <span className="text-xs font-bold text-ink">
               {metricMode === 'pointwise' ? (
                 <MathText text={`دنباله همگرایی انتگرال جزئی $I_\\Omega(x_0)$ بر حسب افزایش فرکانس قطع $\\Omega$ (در نقطه $x_0 = ${probeX.toFixed(2)}$)`} />
               ) : (
                 <MathText text="همگرایی یکنواخت انرژی پارسوال انتگرال فوریه ($\%$) بر حسب افزایش فرکانس قطع $\Omega$" />
               )}
             </span>
-            <span className="text-[11px] font-semibold text-[#0369A1]">
+            <span className="text-[11px] font-semibold text-accent-deep">
               (روی هر فرکانس Ω کلیک کنید)
             </span>
           </div>
@@ -700,17 +691,17 @@ export default function FourierIntegralStage() {
                     }
                   }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis
                     dataKey="omega"
-                    tick={{ fontSize: 11, fill: '#475569' }}
+                    tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                     label={{ value: 'Ω (rad/s)', position: 'insideBottomRight', offset: -5, fontSize: 10 }}
                   />
-                  <YAxis tick={{ fontSize: 11, fill: '#475569' }} domain={['auto', 'auto']} />
+                  <YAxis tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} domain={['auto', 'auto']} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#FFFFFF',
-                      borderColor: '#CBD5E1',
+                      backgroundColor: 'var(--surface)',
+                      borderColor: 'var(--chart-grid)',
                       borderRadius: '8px',
                       fontSize: '11px',
                     }}
@@ -719,19 +710,19 @@ export default function FourierIntegralStage() {
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
                   <ReferenceLine
                     y={trajectory.dirichletTargetAtProbe}
-                    stroke="#059669"
+                    stroke="var(--chart-ok)"
                     strokeWidth={2}
                     strokeDasharray="5 3"
                     label={{
                       value: `Dirichlet Target S(x₀)=${trajectory.dirichletTargetAtProbe.toFixed(3)}`,
                       position: 'insideTopRight',
-                      fill: '#059669',
+                      fill: 'var(--chart-ok)',
                       fontSize: 10,
                     }}
                   />
                   <ReferenceLine
                     x={cutoffOmega}
-                    stroke="#0284C7"
+                    stroke="var(--chart-accent)"
                     strokeWidth={1.8}
                     strokeDasharray="3 3"
                   />
@@ -739,9 +730,9 @@ export default function FourierIntegralStage() {
                     type="monotone"
                     dataKey="partialIntegralAtProbe"
                     name="انتگرال جزئی I_Ω(x₀)"
-                    stroke="#0284C7"
+                    stroke="var(--chart-accent)"
                     strokeWidth={2.5}
-                    dot={{ r: 2.5, fill: '#0284C7' }}
+                    dot={{ r: 2.5, fill: 'var(--chart-accent)' }}
                     isAnimationActive={false}
                   />
                   {activeOmegaStats && (
@@ -749,7 +740,7 @@ export default function FourierIntegralStage() {
                       x={cutoffOmega}
                       y={activeOmegaStats.partialIntegralAtProbe}
                       r={6}
-                      fill="#DC2626"
+                      fill="var(--chart-danger)"
                       stroke="#FFFFFF"
                       strokeWidth={2}
                     />
@@ -766,27 +757,27 @@ export default function FourierIntegralStage() {
                     }
                   }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis
                     dataKey="omega"
-                    tick={{ fontSize: 11, fill: '#475569' }}
+                    tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                     label={{ value: 'Ω (rad/s)', position: 'insideBottomRight', offset: -5, fontSize: 10 }}
                   />
                   <YAxis
                     yAxisId="left"
                     domain={[0, 100]}
-                    tick={{ fontSize: 11, fill: '#059669' }}
+                    tick={{ fontSize: 11, fill: 'var(--chart-ok)' }}
                     unit="%"
                   />
                   <YAxis
                     yAxisId="right"
                     orientation="right"
-                    tick={{ fontSize: 11, fill: '#6366F1' }}
+                    tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#FFFFFF',
-                      borderColor: '#CBD5E1',
+                      backgroundColor: 'var(--surface)',
+                      borderColor: 'var(--chart-grid)',
                       borderRadius: '8px',
                       fontSize: '11px',
                     }}
@@ -796,7 +787,7 @@ export default function FourierIntegralStage() {
                   <ReferenceLine
                     yAxisId="left"
                     x={cutoffOmega}
-                    stroke="#0284C7"
+                    stroke="var(--chart-accent)"
                     strokeWidth={1.8}
                     strokeDasharray="3 3"
                   />
@@ -804,7 +795,7 @@ export default function FourierIntegralStage() {
                     yAxisId="right"
                     dataKey="spectralMagnitude"
                     name="چگالی طیفی در فرکانس Ω"
-                    fill="#818CF8"
+                    fill="var(--chart-indigo)"
                     opacity={0.6}
                     isAnimationActive={false}
                   />
@@ -813,8 +804,8 @@ export default function FourierIntegralStage() {
                     type="monotone"
                     dataKey="energyRatioPercent"
                     name="درصد انرژی پارسوال جذب‌شده (%)"
-                    stroke="#059669"
-                    fill="#10B981"
+                    stroke="var(--chart-ok)"
+                    fill="var(--chart-ok)"
                     fillOpacity={0.18}
                     strokeWidth={2.5}
                     isAnimationActive={false}
@@ -825,7 +816,7 @@ export default function FourierIntegralStage() {
                       x={cutoffOmega}
                       y={activeOmegaStats.energyRatioPercent}
                       r={6}
-                      fill="#DC2626"
+                      fill="var(--chart-danger)"
                       stroke="#FFFFFF"
                       strokeWidth={2}
                     />
@@ -839,8 +830,8 @@ export default function FourierIntegralStage() {
         {/* Live Metrics readout bar for scrubbed Omega */}
         {activeOmegaStats && (
           <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-            <div className="rounded-lg border border-[#BAE6FD] bg-[#F0F9FF] p-2.5">
-              <div className="text-[11px] font-bold text-[#0369A1]">
+            <div className="rounded-lg border border-accent-line bg-accent-soft p-2.5">
+              <div className="text-[11px] font-bold text-accent-deep">
                 <MathText text={`مقدار انتگرال جزئی در $\\Omega = ${cutoffOmega}$`} />
               </div>
               <div dir="ltr" className="mt-1">
@@ -851,8 +842,8 @@ export default function FourierIntegralStage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] p-2.5">
-              <div className="text-[11px] font-bold text-[#047857]">
+            <div className="rounded-lg border border-ok-line bg-ok-soft p-2.5">
+              <div className="text-[11px] font-bold text-ok-ink">
                 <MathText text="حد دیریکله $S(x_0)$" />
               </div>
               <div dir="ltr" className="mt-1">
@@ -863,8 +854,8 @@ export default function FourierIntegralStage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-[#FDE68A] bg-[#FFFBEB] p-2.5">
-              <div className="text-[11px] font-bold text-[#B45309]">
+            <div className="rounded-lg border border-warn-line bg-warn-soft p-2.5">
+              <div className="text-[11px] font-bold text-warn">
                 <MathText text="خطای مطلق در $x_0$" />
               </div>
               <div dir="ltr" className="mt-1">
@@ -875,8 +866,8 @@ export default function FourierIntegralStage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-2.5">
-              <div className="text-[11px] font-bold text-[#334155]">
+            <div className="rounded-lg border border-line bg-panel p-2.5">
+              <div className="text-[11px] font-bold text-ink-2">
                 درصد انرژی تجمیعی پارسوال
               </div>
               <div dir="ltr" className="mt-1">
@@ -891,59 +882,59 @@ export default function FourierIntegralStage() {
       </div>
 
       {/* Full-Width Analytical Derivation Workbench (lg:col-span-12) */}
-      <div className="rounded-xl border border-[#BAE6FD] bg-white p-5 shadow-xs lg:col-span-12">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
+      <div className="rounded-xl border border-accent-line bg-surface p-5 lg:col-span-12">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-bold text-[#0369A1]">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-tint px-2.5 py-0.5 text-xs font-bold text-accent-deep">
               <BookOpen className="h-3.5 w-3.5" />
               بسط تحلیلی و تشریحی گام‌به‌گام انتگرال فوریه
             </span>
-            <h4 className="mt-1 text-base font-extrabold text-[#0F172A]">
+            <h4 className="mt-1 text-base font-extrabold text-ink">
               <MathText text={analyticalDetails.titleFa} />
             </h4>
           </div>
-          <span className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-1 text-xs font-bold text-[#047857]">
+          <span className="rounded-lg border border-ok-line bg-ok-soft px-3 py-1 text-xs font-bold text-ok-ink">
             {analyticalDetails.symmetryTypeFa}
           </span>
         </div>
 
         {/* Section 1: Definition & Spectral Densities */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-12">
-            <div className="text-xs font-bold text-[#0F172A]">
+          <div className="space-y-3 rounded-xl border border-line bg-panel p-4 lg:col-span-12">
+            <div className="text-xs font-bold text-ink">
               ۱. ضابطه ریاضی تابع، بررسی تقارن و رفتار مجانبی در بی‌نهایت:
             </div>
             <MathFormula formula={analyticalDetails.functionDefinitionLatex} block />
-            <p className="text-xs leading-relaxed text-[#334155]">
+            <p className="text-xs leading-relaxed text-ink-2">
               <MathText text={analyticalDetails.symmetryReasonFa} />
             </p>
-            <div className="rounded-lg border border-[#FDE68A] bg-[#FFFBEB] p-2.5 text-xs leading-relaxed text-[#92400E]">
+            <div className="rounded-lg border border-warn-line bg-warn-soft p-2.5 text-xs leading-relaxed text-warn-ink">
               <strong>سرعت نزول طیف فرکانسی و پدیده گیبس: </strong>
               <MathText text={analyticalDetails.decayOrderNoteFa} />
             </div>
           </div>
 
-          <div className="space-y-3 rounded-xl border border-[#BAE6FD] bg-[#F0F9FF]/60 p-4 lg:col-span-12">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#0369A1]">
+          <div className="space-y-3 rounded-xl border border-accent-line bg-accent-soft/60 p-4 lg:col-span-12">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-accent-deep">
               <Layers className="h-4 w-4" />
               ۲. محاسبه گام‌به‌گام ضرایب طیفی اویلر-فوریه A(α) و B(α) بدون پرش:
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-[#E2E8F0] bg-white p-3">
-                <span className="mb-1 inline-block rounded bg-[#E0F2FE] px-2 py-0.5 text-[11px] font-bold text-[#0369A1]">
+              <div className="rounded-lg border border-line bg-surface p-3">
+                <span className="mb-1 inline-block rounded bg-accent-tint px-2 py-0.5 text-[11px] font-bold text-accent-deep">
                   محاسبه ضریب کسینوسی A(α):
                 </span>
                 <MathFormula formula={analyticalDetails.A_alphaDerivationLatex} block />
               </div>
-              <div className="rounded-lg border border-[#E2E8F0] bg-white p-3">
-                <span className="mb-1 inline-block rounded bg-[#FEF3C7] px-2 py-0.5 text-[11px] font-bold text-[#B45309]">
+              <div className="rounded-lg border border-line bg-surface p-3">
+                <span className="mb-1 inline-block rounded bg-warn-tint px-2 py-0.5 text-[11px] font-bold text-warn">
                   محاسبه ضریب سینوسی B(α):
                 </span>
                 <MathFormula formula={analyticalDetails.B_alphaDerivationLatex} block />
               </div>
             </div>
             <div>
-              <div className="mb-1 text-[11px] font-semibold text-[#475569]">
+              <div className="mb-1 text-[11px] font-semibold text-ink-3">
                 نمایش کامل انتگرال فوریه تابع:
               </div>
               <MathFormula formula={analyticalDetails.integralRepresentationLatex} block highlight />
@@ -952,16 +943,16 @@ export default function FourierIntegralStage() {
         </div>
 
         {/* Section 2: Dirichlet Convergence Points */}
-        <div className="mt-4 space-y-2.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#0F172A]">
-            <Compass className="h-4 w-4 text-[#0284C7]" />
+        <div className="mt-4 space-y-2.5 rounded-xl border border-line bg-panel p-4">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-ink">
+            <Compass className="h-4 w-4 text-accent" />
             ۳. بررسی قضیه همگرایی دیریکله در نقاط حساس و استخراج انتگرال‌های ناسره کلاسیک:
           </div>
           <div className="space-y-2.5">
             {analyticalDetails.dirichletConvergencePoints.map((pt, idx) => (
-              <div key={idx} className="rounded-lg border border-[#E2E8F0] bg-white p-3">
+              <div key={idx} className="rounded-lg border border-line bg-surface p-3">
                 <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-[#0369A1]">
+                  <span className="text-xs font-bold text-accent-deep">
                     <MathText text={pt.pointLabelFa} />
                   </span>
                   <div className="flex flex-wrap items-center gap-2">
@@ -978,22 +969,22 @@ export default function FourierIntegralStage() {
 
         {/* Section 3: Parseval & Integral Equations */}
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <div className="space-y-2.5 rounded-xl border border-[#A7F3D0] bg-[#ECFDF5]/60 p-4 lg:col-span-12">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#065F46]">
-              <Sparkles className="h-4 w-4 text-[#059669]" />
+          <div className="space-y-2.5 rounded-xl border border-ok-line bg-ok-soft/60 p-4 lg:col-span-12">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-ok-ink">
+              <Sigma className="h-4 w-4 text-ok" />
               ۴. اعمال اتحاد پارسوال انتگرال فوریه و استخراج انتگرال‌های کسر درجه ۴:
             </div>
-            <p className="text-xs leading-relaxed text-[#047857]">
+            <p className="text-xs leading-relaxed text-ok-ink">
               طبق اتحاد پارسوال برای انتگرال فوریه، مساحت زیر مربع تابع در حوزه مکان برابر مساحت زیر مربع ضرایب طیفی در حوزه فرکانس است:
             </p>
             <MathFormula formula={analyticalDetails.parsevalApplicationLatex} block highlight />
           </div>
 
-          <div className="space-y-2.5 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-4 lg:col-span-12">
-            <div className="text-xs font-bold text-[#0F172A]">
+          <div className="space-y-2.5 rounded-xl border border-line-strong bg-panel p-4 lg:col-span-12">
+            <div className="text-xs font-bold text-ink">
               ۵. کاربرد در حل معادلات انتگرالی (Integral Equations):
             </div>
-            <p className="text-xs leading-relaxed text-[#334155]">
+            <p className="text-xs leading-relaxed text-ink-2">
               <MathText text={analyticalDetails.integralEquationConnectionFa} />
             </p>
           </div>

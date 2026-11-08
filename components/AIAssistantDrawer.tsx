@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   AISettings,
   ChatMessageItem,
@@ -9,22 +9,25 @@ import {
   OPENAI_COMPATIBLE_PRESETS,
   OpenAICompatiblePresetId,
   buildOpenAIChatCompletionsUrl,
-  parseMathMarkdownBlocks,
 } from '@/lib/ai-settings';
-import MathFormula, { MathText } from '@/components/MathFormula';
+import ChatMarkdown from '@/components/ai/ChatMarkdown';
 import {
+  BookOpen,
   Bot,
   Settings2,
   Send,
   X,
-  Trash2,
-  Sparkles,
+  Square,
   Server,
   CheckCircle2,
   AlertCircle,
   RotateCcw,
   Cpu,
   MessageSquareText,
+  Copy,
+  Check,
+  Plus,
+  ArrowDown,
 } from 'lucide-react';
 
 interface AIAssistantDrawerProps {
@@ -42,15 +45,26 @@ interface AIAssistantDrawerProps {
 }
 
 const STORAGE_KEY_SETTINGS = 'eng_math_ai_settings_v1';
+const STORAGE_KEY_CHAT = 'eng_math_ai_chat_v1';
+const MAX_SAVED_MESSAGES = 60;
 
-const INITIAL_ASSISTANT_MESSAGE: ChatMessageItem = {
+function nowTimeLabel(): string {
+  try {
+    return new Intl.DateTimeFormat('fa-IR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date());
+  } catch {
+    return '';
+  }
+}
+
+const WELCOME_MESSAGE: ChatMessageItem = {
   id: 'welcome-msg',
   role: 'assistant',
   content:
-    'سلام! من دستیار هوشمند درس **ریاضیات مهندسی** هستم. هر پرسشی درباره سری فوریه، انتگرال و تبدیل فوریه، مسئله اشتورم-لیوویل یا معادله گرما دارید بپرسید تا راه‌حل را با **بسط کامل تمام مراحل انتگرال‌گیری جزء‌به‌جزء و جایگذاری حدود** به صورت استاندارد برایتان بنویسم.\n\n$$f(x) \\simeq \\frac{a_0}{2} + \\sum_{n=1}^{\\infty} \\left[ a_n \\cos\\left(\\frac{n\\pi x}{\\ell}\\right) + b_n \\sin\\left(\\frac{n\\pi x}{\\ell}\\right) \\right]$$\n\nهمچنین از زبانه **تنظیمات AI (Settings)** می‌توانید بین مدل پیش‌فرض **Google Gemini** یا هر **ارائه‌دهنده سفارشی سازگار با استاندارد OpenAI (Custom Provider)** جابه‌جا شوید.',
-  timestamp: 'اکنون',
-  providerUsed: 'gemini',
-  modelUsed: 'gemini-3.8-flash',
+    'سلام! من دستیار درس **ریاضیات مهندسی** هستم. هر پرسشی درباره سری و تبدیل فوریه، اشتورم-لیوویل یا معادله گرما داری بپرس؛ راه‌حل را گام‌به‌گام و با بسط کامل انتگرال‌گیری جزء‌به‌جزء می‌نویسم.\n\n$$f(x) \\simeq \\frac{a_0}{2} + \\sum_{n=1}^{\\infty} \\left[ a_n \\cos\\left(\\frac{n\\pi x}{\\ell}\\right) + b_n \\sin\\left(\\frac{n\\pi x}{\\ell}\\right) \\right]$$\n\nبرای تنظیم مدل، به زبانه **تنظیمات AI** برو.',
+  timestamp: '',
 };
 
 export default function AIAssistantDrawer({
@@ -75,10 +89,31 @@ export default function AIAssistantDrawer({
     return DEFAULT_AI_SETTINGS;
   });
 
-  const [messages, setMessages] = useState<ChatMessageItem[]>([
-    INITIAL_ASSISTANT_MESSAGE,
-  ]);
-  const [internalPrompt, setInternalPrompt] = useState<string>('');
+  const [messages, setMessages] = useState<ChatMessageItem[]>(() => {
+    // Restore the saved conversation; falls back to the welcome card.
+    // The drawer renders null until opened, so this never causes a
+    // hydration mismatch.
+    if (typeof window === 'undefined') return [WELCOME_MESSAGE];
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY_CHAT);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed as ChatMessageItem[];
+        }
+      }
+    } catch {
+      // Ignore storage read errors
+    }
+    return [WELCOME_MESSAGE];
+  });
+  const [streamingText, setStreamingText] = useState<string | null>(null);
+  const [streamingModel, setStreamingModel] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showJumpToBottom, setShowJumpToBottom] = useState(false);
+  const [internalPrompt, setInternalPrompt] = useState('');
   const inputPrompt = draftPrompt !== undefined ? draftPrompt : internalPrompt;
   const setInputPrompt = (val: string) => {
     if (onDraftPromptChange) {
@@ -87,8 +122,6 @@ export default function AIAssistantDrawer({
       setInternalPrompt(val);
     }
   };
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<{
     checked: boolean;
     geminiReady: boolean;
@@ -102,22 +135,40 @@ export default function AIAssistantDrawer({
   });
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const msgCounterRef = useRef<number>(1);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const isNearBottomRef = useRef(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Persist AI settings to localStorage whenever modified
+  /* ── Persistence: settings + conversation ── */
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      window.localStorage.setItem(
-        STORAGE_KEY_SETTINGS,
-        JSON.stringify(settings)
-      );
+      window.localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
     } catch {
       // Ignore storage write errors
     }
   }, [settings]);
 
-  // Check server status when drawer opens
+  // Persist the conversation as it grows
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hasRealMessages = messages.some((m) => m.id !== 'welcome-msg');
+    try {
+      if (hasRealMessages) {
+        window.localStorage.setItem(
+          STORAGE_KEY_CHAT,
+          JSON.stringify(messages.slice(-MAX_SAVED_MESSAGES))
+        );
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY_CHAT);
+      }
+    } catch {
+      // Ignore storage write errors
+    }
+  }, [messages]);
+
+  /* ── Server status check when the drawer opens ── */
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
@@ -144,13 +195,208 @@ export default function AIAssistantDrawer({
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen && activeTab === 'chat') {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, isOpen, activeTab]);
+  /* ── Auto-scroll: follow only while the reader is already near the bottom ── */
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: smooth ? 'smooth' : 'auto',
+      block: 'end',
+    });
+  }, []);
 
-  if (!isOpen) return null;
+  const handleScrollAreaScroll = () => {
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    isNearBottomRef.current = nearBottom;
+    setShowJumpToBottom(!nearBottom);
+  };
+
+  useEffect(() => {
+    if (!isOpen || activeTab !== 'chat') return;
+    if (isNearBottomRef.current) {
+      scrollToBottom(false);
+    }
+  }, [messages, streamingText, isOpen, activeTab, scrollToBottom]);
+
+  const isBusy = isLoading;
+
+  /* ── Sending: streaming SSE with abort support ── */
+  const sendMessage = async (
+    promptText?: string,
+    historyOverride?: ChatMessageItem[]
+  ) => {
+    const textToSend = (promptText ?? inputPrompt).trim();
+    if (!textToSend || isBusy) return;
+
+    const baseHistory = historyOverride ?? messages;
+    const userMsg: ChatMessageItem = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: textToSend,
+      timestamp: nowTimeLabel(),
+    };
+
+    const updatedHistory = [...baseHistory, userMsg];
+    setMessages(updatedHistory);
+    if (!promptText) {
+      setInputPrompt('');
+    }
+    setErrorBanner(null);
+    setIsLoading(true);
+    setStreamingText('');
+    setStreamingModel(null);
+    setActiveTab('chat');
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    let accumulated = '';
+    let activeModelUsed: string | null = null;
+
+    const finalizeAssistant = (stopped: boolean) => {
+      const content = accumulated.trim();
+      if (!content) return;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content,
+          timestamp: nowTimeLabel(),
+          providerUsed: settings.provider,
+          modelUsed: activeModelUsed || settings.model,
+          stopped: stopped || undefined,
+        },
+      ]);
+    };
+
+    try {
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          provider: settings.provider,
+          customBaseUrl: settings.customBaseUrl,
+          model: settings.model,
+          detailLevel: settings.detailLevel,
+          thinkingLevel: settings.thinkingLevel,
+          includeModuleContext: settings.includeModuleContext,
+          customSystemPrompt: settings.customSystemPrompt,
+          moduleContext,
+          stream: true,
+          messages: updatedHistory
+            .filter((m) => m.id !== 'welcome-msg')
+            .map((m) => ({ role: m.role, content: m.content })),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(
+          data?.error || `خطای سرور هوش مصنوعی (کد ${response.status})`
+        );
+      }
+      if (!response.body) {
+        throw new Error('جریان پاسخ از سرور در دسترس نیست.');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const payload = trimmed.slice(5).trim();
+          if (!payload) continue;
+
+          try {
+            const event = JSON.parse(payload);
+            if (event.type === 'meta') {
+              activeModelUsed = event.modelUsed || settings.model;
+              setStreamingModel(activeModelUsed);
+            } else if (event.type === 'delta' && typeof event.text === 'string') {
+              accumulated += event.text;
+              setStreamingText(accumulated);
+            } else if (event.type === 'error') {
+              throw new Error(event.error || 'خطا در جریان پاسخ مدل.');
+            }
+            // 'done' ends the loop implicitly when the stream closes
+          } catch (err) {
+            if (err instanceof SyntaxError) continue;
+            throw err;
+          }
+        }
+      }
+
+      finalizeAssistant(false);
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // User pressed stop — keep whatever arrived
+        finalizeAssistant(true);
+      } else {
+        const msg =
+          err instanceof Error ? err.message : 'خطای شبکه در ارتباط با سرور';
+        setErrorBanner(msg);
+      }
+    } finally {
+      setIsLoading(false);
+      setStreamingText(null);
+      setStreamingModel(null);
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleStop = () => {
+    abortControllerRef.current?.abort();
+  };
+
+  /* ── Regenerate: strip trailing assistant message(s) and resend the last prompt ── */
+  const handleRegenerate = () => {
+    if (isBusy) return;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        sendMessage(messages[i].content, messages.slice(0, i));
+        return;
+      }
+    }
+  };
+
+  const handleCopyMessage = (msg: ChatMessageItem) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(msg.content).catch(() => {});
+    }
+    setCopiedId(msg.id);
+    setTimeout(() => {
+      setCopiedId((prev) => (prev === msg.id ? null : prev));
+    }, 1600);
+  };
+
+  const handleNewChat = () => {
+    if (isBusy) handleStop();
+    setMessages([WELCOME_MESSAGE]);
+    setErrorBanner(null);
+    setInputPrompt('');
+  };
+
+  /* ── Auto-grow textarea ── */
+  const handleTextareaChange = (value: string) => {
+    setInputPrompt(value);
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+    }
+  };
 
   const activePreset =
     OPENAI_COMPATIBLE_PRESETS.find((p) => p.id === settings.presetId) ||
@@ -191,78 +437,13 @@ export default function AIAssistantDrawer({
     }
   };
 
-  const sendMessage = async (promptText?: string) => {
-    const textToSend = (promptText ?? inputPrompt).trim();
-    if (!textToSend || isLoading) return;
-
-    msgCounterRef.current += 1;
-    const userMsg: ChatMessageItem = {
-      id: `user-${msgCounterRef.current}`,
-      role: 'user',
-      content: textToSend,
-      timestamp: 'اکنون',
-    };
-
-    const updatedHistory = [...messages, userMsg];
-    setMessages(updatedHistory);
-    if (!promptText) {
-      setInputPrompt('');
-    }
-    setErrorBanner(null);
-    setIsLoading(true);
-    setActiveTab('chat');
-
-    try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: settings.provider,
-          customBaseUrl: settings.customBaseUrl,
-          model: settings.model,
-          detailLevel: settings.detailLevel,
-          thinkingLevel: settings.thinkingLevel,
-          includeModuleContext: settings.includeModuleContext,
-          customSystemPrompt: settings.customSystemPrompt,
-          moduleContext,
-          messages: updatedHistory
-            .filter((m) => m.id !== 'welcome-msg')
-            .map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok || data.error) {
-        setErrorBanner(
-          data.error || 'خطا در دریافت پاسخ از سرور هوش مصنوعی.'
-        );
-      } else {
-        msgCounterRef.current += 1;
-        const assistantMsg: ChatMessageItem = {
-          id: `assistant-${msgCounterRef.current}`,
-          role: 'assistant',
-          content: data.text || 'پاسخی دریافت نشد.',
-          timestamp: 'اکنون',
-          providerUsed: data.providerUsed || settings.provider,
-          modelUsed: data.modelUsed || settings.model,
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
-      }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'خطای شبکه در ارتباط با سرور';
-      setErrorBanner(`خطا در ارتباط با سرور: ${msg}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const isServerReady =
+    serverStatus.openAICompatibleKeyConfigured || serverStatus.geminiReady;
 
   const quickPrompts = [
     `یک مثال امتحانی از مبحث «${moduleContext.subtopicTitle}» با حل کاملاً تشریحی و بدون حذف محاسبات پایه بده.`,
     `تمام مراحل انتگرال‌گیری جزء‌به‌جزء ($u$ و $dv$) و جایگذاری حدود در این بخش را گام‌به‌گام توضیح بده.`,
+    `یک سوال چهارگزینه‌ای استاندارد از «${moduleContext.subtopicTitle}» طرح کن، جواب را نگیر؛ بعد از پاسخ من، درست بودن آن را با توضیح کامل بررسی کن.`,
     `نکات کلیدی امتحانی و دام‌های رایج در مبحث «${moduleContext.moduleTitle}» چیست؟`,
     `چگونه از تقارن زوج و فرد یا شرایط مرزی برای ساده‌سازی محاسبات این فصل استفاده کنیم؟`,
   ];
@@ -271,218 +452,297 @@ export default function AIAssistantDrawer({
     settings.customBaseUrl
   );
 
+  if (!isOpen) return null;
+
+  const lastAssistantId = [...messages]
+    .reverse()
+    .find((m) => m.role === 'assistant')?.id;
+
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-start bg-slate-900/40 backdrop-blur-[1px]"
+      className="fixed inset-0 z-50 flex justify-start bg-ink/30 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
-      aria-label="دستیار هوشمند ریاضیات مهندسی و تنظیمات AI"
+      aria-label="دستیار هوشمند ریاضیات مهندسی"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="flex h-full w-full max-w-2xl flex-col border-l border-[#CBD5E1] bg-white shadow-2xl">
-        {/* Top Drawer Header */}
-        <div className="flex items-center justify-between border-b border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3 sm:px-5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0284C7] text-white shadow-2xs">
+      <div className="relative flex h-full w-full max-w-2xl flex-col border-s border-line-strong bg-surface shadow-2xl">
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-solid text-white">
               <Bot className="h-5 w-5" />
             </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#0F172A] sm:text-base">
-                دستیار هوشمند ریاضیات مهندسی (AI Tutor)
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-bold text-ink">
+                دستیار هوشمند درس
               </h2>
-              <div className="flex items-center gap-1.5 text-[11px] text-[#475569]">
-                <span className="inline-block h-2 w-2 rounded-full bg-[#059669]" />
-                <span>
+              <div className="flex items-center gap-1.5 text-[11px] text-ink-3">
+                <span
+                  className={`inline-block h-2 w-2 rounded-full ${
+                    serverStatus.checked
+                      ? isServerReady
+                        ? 'bg-ok'
+                        : 'bg-warn'
+                      : 'bg-ink-4'
+                  }`}
+                />
+                <span dir="auto" className="truncate">
                   {settings.provider === 'gemini'
-                    ? `Google Gemini (${settings.model})`
-                    : `OpenAI-Compatible (${settings.model})`}
+                    ? `Google Gemini · ${settings.model}`
+                    : `OpenAI-Compatible · ${settings.model}`}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {/* Switch between Chat and AI Settings */}
-            <div className="flex rounded-lg border border-[#CBD5E1] bg-white p-0.5">
+          <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex rounded-lg border border-line-strong bg-surface p-0.5">
               <button
                 type="button"
                 onClick={() => setActiveTab('chat')}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
+                aria-pressed={activeTab === 'chat'}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition-colors ${
                   activeTab === 'chat'
-                    ? 'bg-[#0284C7] text-white'
-                    : 'text-[#475569] hover:text-[#0F172A]'
+                    ? 'bg-accent-solid text-white'
+                    : 'text-ink-3 hover:text-ink'
                 }`}
               >
                 <MessageSquareText className="h-3.5 w-3.5" />
-                <span>گفتگو</span>
+                گفتگو
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('settings')}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
+                aria-pressed={activeTab === 'settings'}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition-colors ${
                   activeTab === 'settings'
-                    ? 'bg-[#0284C7] text-white'
-                    : 'text-[#475569] hover:text-[#0F172A]'
+                    ? 'bg-accent-solid text-white'
+                    : 'text-ink-3 hover:text-ink'
                 }`}
               >
                 <Settings2 className="h-3.5 w-3.5" />
-                <span>تنظیمات AI</span>
+                تنظیمات
               </button>
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#CBD5E1] bg-white p-2 text-[#475569] transition hover:bg-[#F1F5F9] hover:text-[#0F172A]"
               aria-label="بستن دستیار هوشمند"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-3 transition-colors hover:bg-muted hover:text-ink"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* TAB 1: CHAT INTERFACE */}
+        {/* ══════════════════ CHAT ══════════════════ */}
         {activeTab === 'chat' ? (
           <>
-            {/* Active Context Banner + Clear Chat */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] bg-[#F0F9FF]/70 px-4 py-2 text-xs">
-              <div className="flex items-center gap-1.5 text-[#0369A1]">
-                <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                <span>مبحث فعال:</span>
-                <strong className="font-bold">
-                  <MathText text={moduleContext.subtopicTitle} />
+            {/* Context strip */}
+            <div className="flex items-center justify-between gap-2 border-b border-line bg-accent-soft/60 px-4 py-2 text-[11px]">
+              <div className="flex min-w-0 items-center gap-1.5 text-accent-deep dark:text-accent">
+                <BookOpen className="h-3.5 w-3.5 shrink-0" />
+                <span className="shrink-0">مبحث فعال:</span>
+                <strong className="truncate font-bold">
+                  {moduleContext.subtopicTitle}
                 </strong>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('settings')}
-                  className="font-bold text-[#0284C7] underline-offset-4 hover:underline"
-                >
-                  تغییر ارائه‌دهنده / مدل
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMessages([INITIAL_ASSISTANT_MESSAGE])}
-                  className="flex items-center gap-1 rounded border border-[#CBD5E1] bg-white px-2 py-1 text-[11px] font-semibold text-[#475569] hover:text-[#DC2626]"
-                >
-                  <Trash2 className="h-3 w-3" />
-                  پاک‌سازی گفتگو
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="flex shrink-0 items-center gap-1 rounded-md border border-line-strong bg-surface px-2 py-1 font-semibold text-ink-3 transition-colors hover:border-accent hover:text-accent"
+              >
+                <Plus className="h-3 w-3" />
+                گفتگوی جدید
+              </button>
             </div>
 
-            {/* Messages Scroll Area */}
-            <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+            {/* Messages */}
+            <div
+              ref={scrollAreaRef}
+              onScroll={handleScrollAreaScroll}
+              className="relative flex-1 space-y-4 overflow-y-auto bg-paper p-4"
+            >
               {messages.map((msg) => {
                 const isUser = msg.role === 'user';
-                const parsedBlocks = parseMathMarkdownBlocks(msg.content);
-
                 return (
                   <div
                     key={msg.id}
-                    className={`flex flex-col ${
-                      isUser ? 'items-start' : 'items-stretch'
-                    }`}
+                    className={`flex flex-col ${isUser ? 'items-end' : 'items-stretch'}`}
                   >
                     <div
-                      className={`rounded-2xl border p-4 ${
+                      className={`rounded-xl border p-3.5 ${
                         isUser
-                          ? 'max-w-[90%] border-[#0284C7]/30 bg-[#F0F9FF] text-[#0F172A]'
-                          : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] shadow-2xs'
+                          ? 'max-w-[85%] border-accent-line bg-accent-soft'
+                          : 'border-line bg-surface'
                       }`}
                     >
-                      <div className="mb-2 flex items-center justify-between gap-2 border-b border-[#E2E8F0]/80 pb-1.5 text-[11px] text-[#64748B]">
-                        <span className="font-bold text-[#0F172A]">
-                          {isUser ? 'پرسش شما' : 'پاسخ تشریحی دستیار هوشمند'}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {!isUser && msg.modelUsed && (
-                            <span
-                              dir="ltr"
-                              className="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] text-[#0369A1] border border-[#E2E8F0]"
+                      {!isUser && (
+                        <div className="mb-2 flex items-center justify-between gap-2 border-b border-line pb-1.5">
+                          <span className="flex items-center gap-1.5 text-[11px] font-bold text-ink-3">
+                            <Bot className="h-3.5 w-3.5 text-accent" />
+                            پاسخ دستیار
+                            {msg.modelUsed && (
+                              <span
+                                dir="ltr"
+                                className="rounded border border-line bg-paper px-1.5 py-0.5 font-mono text-[10px] font-normal text-accent-deep dark:text-accent"
+                              >
+                                {msg.modelUsed}
+                              </span>
+                            )}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {msg.stopped && (
+                              <span className="text-[10px] font-semibold text-warn-ink">
+                                متوقف شد
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleCopyMessage(msg)}
+                              aria-label="کپی پاسخ"
+                              title="کپی متن پاسخ"
+                              className="flex h-6 w-6 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-muted hover:text-ink"
                             >
-                              {msg.providerUsed === 'openai_compatible'
-                                ? `OpenAI-API • ${msg.modelUsed}`
-                                : msg.modelUsed}
-                            </span>
-                          )}
-                          <span>{msg.timestamp}</span>
+                              {copiedId === msg.id ? (
+                                <Check className="h-3.5 w-3.5 text-ok" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                            {msg.id === lastAssistantId && (
+                              <button
+                                type="button"
+                                onClick={handleRegenerate}
+                                disabled={isBusy}
+                                aria-label="تولید مجدد پاسخ"
+                                title="پاسخ جدید با همین پرسش"
+                                className="flex h-6 w-6 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-muted hover:text-ink disabled:opacity-40"
+                              >
+                                <RotateCcw className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
+                      )}
+
+                      <div className="text-[13px] leading-8 text-ink">
+                        <ChatMarkdown content={msg.content} />
                       </div>
 
-                      <div className="space-y-2.5 text-xs leading-7 sm:text-sm sm:leading-8">
-                        {parsedBlocks.map((block, bIdx) => {
-                          if (block.type === 'display_math') {
-                            return (
-                              <MathFormula
-                                key={bIdx}
-                                formula={block.content}
-                                block
-                                highlight
-                              />
-                            );
-                          }
-                          return (
-                            <p key={bIdx} className="text-[#1E293B]">
-                              <MathText text={block.content} />
-                            </p>
-                          );
-                        })}
-                      </div>
+                      {msg.timestamp && (
+                        <div className="mt-1.5 text-[10px] text-ink-4">
+                          {msg.timestamp}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
 
-              {isLoading && (
-                <div className="rounded-xl border border-[#0284C7]/30 bg-[#F0F9FF]/60 p-4 text-xs text-[#0369A1]">
-                  <div className="flex items-center gap-2 font-bold">
-                    <span className="inline-block h-2.5 w-2.5 animate-ping rounded-full bg-[#0284C7]" />
-                    <span>
-                      در حال استنتاج و بسط گام‌به‌گام روابط ریاضی با مدل{' '}
-                      <span dir="ltr" className="font-mono">
-                        {settings.model}
+              {/* Streaming bubble */}
+              {streamingText !== null && (
+                <div className="flex flex-col items-stretch">
+                  <div className="rounded-xl border border-line bg-surface p-3.5">
+                    <div className="mb-2 flex items-center justify-between gap-2 border-b border-line pb-1.5">
+                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-ink-3">
+                        <Bot className="h-3.5 w-3.5 text-accent" />
+                        {streamingText ? 'در حال نوشتن' : 'در حال فکر کردن'}
+                        {streamingModel && (
+                          <span
+                            dir="ltr"
+                            className="rounded border border-line bg-paper px-1.5 py-0.5 font-mono text-[10px] font-normal text-accent-deep dark:text-accent"
+                          >
+                            {streamingModel}
+                          </span>
+                        )}
                       </span>
-                      ...
-                    </span>
+                      <button
+                        type="button"
+                        onClick={handleStop}
+                        className="flex items-center gap-1 rounded-md border border-danger-line bg-danger-soft px-2 py-1 text-[10px] font-bold text-danger-ink transition-colors hover:bg-danger-tint"
+                      >
+                        <Square className="h-2.5 w-2.5 fill-current" />
+                        توقف
+                      </button>
+                    </div>
+
+                    {streamingText ? (
+                      <div className="after:inline-block after:animate-pulse after:content-['▍']">
+                        <ChatMarkdown content={streamingText} />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 py-1">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:0ms]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:150ms]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:300ms]" />
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
               {errorBanner && (
-                <div className="rounded-xl border border-[#DC2626]/40 bg-[#FEF2F2] p-3.5 text-xs leading-6 text-[#991B1B]">
+                <div className="rounded-xl border border-danger-line bg-danger-soft p-3.5 text-xs leading-6 text-danger-ink">
                   <div className="mb-1 flex items-center gap-1.5 font-bold">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-[#DC2626]" />
+                    <AlertCircle className="h-4 w-4 shrink-0" />
                     <span>خطا در دریافت پاسخ:</span>
                   </div>
                   <p>{errorBanner}</p>
-                  {settings.provider === 'openai_compatible' && (
+                  <div className="mt-2 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => handleProviderSwitch('gemini')}
-                      className="mt-2 rounded-lg bg-[#0284C7] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#0369A1]"
+                      onClick={handleRegenerate}
+                      className="flex items-center gap-1 rounded-lg bg-accent-solid px-3 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-accent-deep"
                     >
-                      بازگشت فوری به Google Gemini (پیش‌فرض سرور)
+                      <RotateCcw className="h-3 w-3" />
+                      تلاش مجدد
                     </button>
-                  )}
+                    {settings.provider === 'openai_compatible' &&
+                      serverStatus.geminiReady && (
+                        <button
+                          type="button"
+                          onClick={() => handleProviderSwitch('gemini')}
+                          className="rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                        >
+                          امتحان Google Gemini
+                        </button>
+                      )}
+                  </div>
                 </div>
               )}
 
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Prompts + Input Form */}
-            <div className="border-t border-[#E2E8F0] bg-[#F8FAFC] p-3.5 sm:p-4">
-              <div className="mb-2.5 flex gap-1.5 overflow-x-auto pb-1">
+            {/* Jump to bottom */}
+            {showJumpToBottom && (
+              <button
+                type="button"
+                onClick={() => scrollToBottom()}
+                aria-label="رفتن به پایین گفتگو"
+                className="absolute bottom-36 left-1/2 z-10 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border border-line-strong bg-surface text-ink-2 shadow-lg transition-colors hover:border-accent hover:text-accent"
+              >
+                <ArrowDown className="h-4 w-4" />
+              </button>
+            )}
+
+            {/* Quick prompts + composer */}
+            <div className="border-t border-line bg-surface p-3">
+              <div className="mb-2 flex gap-1.5 overflow-x-auto pb-1">
                 {quickPrompts.map((qp, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    disabled={isLoading}
+                    disabled={isBusy}
                     onClick={() => sendMessage(qp)}
-                    className="shrink-0 rounded-lg border border-[#CBD5E1] bg-white px-2.5 py-1.5 text-right text-[11px] font-semibold text-[#334155] transition hover:border-[#0284C7] hover:bg-[#F0F9FF] hover:text-[#0369A1] disabled:opacity-50"
+                    className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-[11px] font-semibold text-ink-2 transition-colors hover:border-accent hover:bg-accent-soft hover:text-accent-deep disabled:opacity-50 dark:hover:text-accent"
                   >
-                    <MathText text={qp} />
+                    {qp.length > 64 ? `${qp.slice(0, 64)}…` : qp}
                   </button>
                 ))}
               </div>
@@ -495,109 +755,124 @@ export default function AIAssistantDrawer({
                 className="flex items-end gap-2"
               >
                 <textarea
-                  rows={2}
+                  ref={textareaRef}
+                  rows={1}
                   value={inputPrompt}
-                  onChange={(e) => setInputPrompt(e.target.value)}
+                  onChange={(e) => handleTextareaChange(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       sendMessage();
                     }
                   }}
-                  placeholder="سوال یا معادله ریاضی خود را بنویسید (مثلاً: سری فوریه f(x)=x^2 را در بازه [-π, π] گام به گام حساب کن)..."
-                  className="flex-1 resize-none rounded-xl border border-[#CBD5E1] bg-white px-3.5 py-2.5 text-xs leading-6 text-[#0F172A] focus:border-[#0284C7] focus:outline-hidden sm:text-sm"
+                  placeholder="سوال ریاضی‌ات را بنویس… (Shift+Enter برای خط جدید)"
+                  aria-label="متن پرسش"
+                  className="max-h-40 min-h-[44px] flex-1 resize-none rounded-xl border border-line-strong bg-paper px-3.5 py-2.5 text-[13px] leading-7 text-ink outline-none transition-colors focus:border-accent focus:bg-surface"
                 />
-                <button
-                  type="submit"
-                  disabled={isLoading || !inputPrompt.trim()}
-                  className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-[#0284C7] px-4 text-xs font-bold text-white shadow-2xs transition hover:bg-[#0369A1] disabled:opacity-50"
-                >
-                  <Send className="h-4 w-4" />
-                  <span>ارسال</span>
-                </button>
+                {isBusy ? (
+                  <button
+                    type="button"
+                    onClick={handleStop}
+                    className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-danger-line bg-danger-soft px-4 text-xs font-bold text-danger-ink transition-colors hover:bg-danger-tint"
+                  >
+                    <Square className="h-3.5 w-3.5 fill-current" />
+                    توقف
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={!inputPrompt.trim()}
+                    className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-accent-solid px-4 text-xs font-bold text-white transition-colors hover:bg-accent-deep disabled:opacity-40"
+                  >
+                    <Send className="h-4 w-4" />
+                    ارسال
+                  </button>
+                )}
               </form>
             </div>
           </>
         ) : (
-          /* TAB 2: AI SETTINGS & OPENAI-COMPATIBLE CUSTOM PROVIDER CONFIGURATION */
-          <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
-            {/* Section 1: Provider Architecture Selection */}
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+          /* ══════════════════ SETTINGS ══════════════════ */
+          <div className="flex-1 space-y-5 overflow-y-auto bg-paper p-4 sm:p-6">
+            {/* Provider selection */}
+            <div className="rounded-xl border border-line bg-surface p-4">
               <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-bold text-[#0F172A]">
-                  <Cpu className="h-4 w-4 text-[#0284C7]" />
-                  <span>۱. انتخاب ارائه‌دهنده هوش مصنوعی (AI Provider)</span>
+                <div className="flex items-center gap-2 text-sm font-bold text-ink">
+                  <Cpu className="h-4 w-4 text-accent" />
+                  <span>۱. انتخاب ارائه‌دهنده هوش مصنوعی</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSettings(DEFAULT_AI_SETTINGS)}
-                  className="flex items-center gap-1 rounded-lg border border-[#CBD5E1] bg-white px-2.5 py-1 text-[11px] font-bold text-[#475569] hover:text-[#0F172A]"
+                  className="flex items-center gap-1 rounded-lg border border-line-strong bg-surface px-2.5 py-1 text-[11px] font-bold text-ink-3 transition-colors hover:text-ink"
                 >
                   <RotateCcw className="h-3 w-3" />
-                  بازنشانی به پیش‌فرض
+                  بازنشانی
                 </button>
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <button
                   type="button"
-                  onClick={() => handleProviderSwitch('gemini')}
-                  className={`flex flex-col items-start rounded-xl border p-3.5 text-right transition ${
-                    settings.provider === 'gemini'
-                      ? 'border-[#0284C7] bg-[#F0F9FF] ring-2 ring-[#0284C7]/20'
-                      : 'border-[#CBD5E1] bg-white hover:border-[#94A3B8]'
+                  onClick={() => handleProviderSwitch('openai_compatible')}
+                  className={`flex flex-col items-start rounded-xl border p-3.5 text-start transition-colors ${
+                    settings.provider === 'openai_compatible'
+                      ? 'border-accent bg-accent-soft'
+                      : 'border-line-strong bg-surface hover:border-line-strong'
                   }`}
                 >
-                  <div className="flex w-full items-center justify-between">
-                    <span className="text-xs font-bold text-[#0F172A]">
-                      Google Gemini (پیش‌فرض سرور)
+                  <div className="flex w-full items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-ink">
+                      OpenAI-Compatible (ارائه‌دهنده سفارشی)
                     </span>
-                    <span className="rounded bg-[#059669]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#065F46]">
-                      متصل و آماده
+                    <span
+                      dir="ltr"
+                      className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-bold text-accent-deep dark:text-accent"
+                    >
+                      /v1/chat/completions
                     </span>
                   </div>
-                  <p className="mt-1.5 text-[11px] leading-5 text-[#475569]">
-                    استفاده مستقیم از SDK رسمی سرور با پشتیبانی از استدلال ریاضی و فرمول‌نویسی KaTeX
+                  <p className="mt-1.5 text-[11px] leading-5 text-ink-3">
+                    پیش‌فرض — سازگار با OpenAI، OpenRouter، Groq، DeepSeek، Ollama، LM Studio
                   </p>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => handleProviderSwitch('openai_compatible')}
-                  className={`flex flex-col items-start rounded-xl border p-3.5 text-right transition ${
-                    settings.provider === 'openai_compatible'
-                      ? 'border-[#0284C7] bg-[#F0F9FF] ring-2 ring-[#0284C7]/20'
-                      : 'border-[#CBD5E1] bg-white hover:border-[#94A3B8]'
+                  onClick={() => handleProviderSwitch('gemini')}
+                  className={`flex flex-col items-start rounded-xl border p-3.5 text-start transition-colors ${
+                    settings.provider === 'gemini'
+                      ? 'border-accent bg-accent-soft'
+                      : 'border-line-strong bg-surface hover:border-line-strong'
                   }`}
                 >
-                  <div className="flex w-full items-center justify-between">
-                    <span className="text-xs font-bold text-[#0F172A]">
-                      OpenAI-Compatible (ارائه‌دهنده سفارشی)
+                  <div className="flex w-full items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-ink">
+                      Google Gemini (گزینه اختیاری)
                     </span>
                     <span
-                      dir="ltr"
-                      className="rounded bg-[#0284C7]/15 px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#0369A1]"
-                    >
-                      /v1/chat/completions
-                    </span>
+                      className={`h-2 w-2 shrink-0 rounded-full ${
+                        serverStatus.geminiReady ? 'bg-ok' : 'bg-warn'
+                      }`}
+                    />
                   </div>
-                  <p className="mt-1.5 text-[11px] leading-5 text-[#475569]">
-                    سازگار با OpenAI، OpenRouter، Groq، DeepSeek، Ollama، LM Studio و هر سرور سفارشی
+                  <p className="mt-1.5 text-[11px] leading-5 text-ink-3">
+                    نیاز به کلید GEMINI_API_KEY روی سرور دارد؛ از تنظیمات در دسترس است
                   </p>
                 </button>
               </div>
             </div>
 
-            {/* Section 2: Provider-Specific Configuration */}
+            {/* Provider-specific config */}
             {settings.provider === 'gemini' ? (
-              <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-4">
-                <div className="text-sm font-bold text-[#0F172A]">
-                  ۲. تنظیمات مدل Google Gemini و عمق استدلال
+              <div className="space-y-4 rounded-xl border border-line bg-surface p-4">
+                <div className="text-sm font-bold text-ink">
+                  ۲. تنظیمات مدل Gemini و عمق استدلال
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-[#334155]">
-                    انتخاب مدل Gemini:
+                  <label className="mb-1.5 block text-xs font-bold text-ink-2">
+                    انتخاب مدل:
                   </label>
                   <div className="space-y-2">
                     {GEMINI_AVAILABLE_MODELS.map((gm) => (
@@ -607,16 +882,16 @@ export default function AIAssistantDrawer({
                         onClick={() =>
                           setSettings((prev) => ({ ...prev, model: gm.id }))
                         }
-                        className={`flex w-full items-center justify-between rounded-lg border px-3.5 py-2.5 text-right text-xs transition ${
+                        className={`flex w-full items-center justify-between rounded-lg border px-3.5 py-2.5 text-start text-xs transition-colors ${
                           settings.model === gm.id
-                            ? 'border-[#0284C7] bg-[#F0F9FF] font-bold text-[#0369A1]'
-                            : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#334155] hover:border-[#CBD5E1]'
+                            ? 'border-accent bg-accent-soft font-bold text-accent-deep dark:text-accent'
+                            : 'border-line bg-panel text-ink-2 hover:border-line-strong'
                         }`}
                       >
                         <span>{gm.label}</span>
                         <span
                           dir="ltr"
-                          className="rounded bg-white px-2 py-0.5 font-mono text-[11px] text-[#0284C7] border border-[#CBD5E1]"
+                          className="shrink-0 rounded border border-line-strong bg-surface px-2 py-0.5 font-mono text-[11px] text-accent"
                         >
                           {gm.id}
                         </span>
@@ -626,8 +901,8 @@ export default function AIAssistantDrawer({
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-[#334155]">
-                    سطح تفکر و استدلال ریاضی (Thinking Level):
+                  <label className="mb-1.5 block text-xs font-bold text-ink-2">
+                    سطح تفکر و استدلال ریاضی:
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {(
@@ -646,10 +921,10 @@ export default function AIAssistantDrawer({
                             thinkingLevel: lvl.id,
                           }))
                         }
-                        className={`rounded-lg border px-3 py-2 text-xs font-bold transition ${
+                        className={`rounded-lg border px-3 py-2 text-xs font-bold transition-colors ${
                           settings.thinkingLevel === lvl.id
-                            ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                            : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:text-[#0F172A]'
+                            ? 'border-accent bg-accent-solid text-white'
+                            : 'border-line-strong bg-panel text-ink-3 hover:text-ink'
                         }`}
                       >
                         {lvl.label}
@@ -659,18 +934,17 @@ export default function AIAssistantDrawer({
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-4">
+              <div className="space-y-4 rounded-xl border border-line bg-surface p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-[#0F172A]">
-                    ۲. پیکربندی ارائه‌دهنده سازگار با استاندارد OpenAI (Custom Provider)
+                  <span className="text-sm font-bold text-ink">
+                    ۲. پیکربندی ارائه‌دهنده سفارشی
                   </span>
-                  <Server className="h-4 w-4 text-[#0284C7]" />
+                  <Server className="h-4 w-4 text-accent" />
                 </div>
 
-                {/* Preset Buttons */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-[#334155]">
-                    پیش‌تنظیم‌های آماده (Provider Presets):
+                  <label className="mb-1.5 block text-xs font-bold text-ink-2">
+                    پیش‌تنظیم‌های آماده:
                   </label>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {OPENAI_COMPATIBLE_PRESETS.map((preset) => (
@@ -678,28 +952,27 @@ export default function AIAssistantDrawer({
                         key={preset.id}
                         type="button"
                         onClick={() => handlePresetChange(preset.id)}
-                        className={`rounded-lg border px-2.5 py-2 text-right text-xs font-bold transition ${
+                        className={`rounded-lg border px-2.5 py-2 text-start text-xs font-bold transition-colors ${
                           settings.presetId === preset.id
-                            ? 'border-[#0284C7] bg-[#F0F9FF] text-[#0369A1]'
-                            : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#475569] hover:border-[#CBD5E1]'
+                            ? 'border-accent bg-accent-soft text-accent-deep dark:text-accent'
+                            : 'border-line bg-panel text-ink-3 hover:border-line-strong'
                         }`}
                       >
                         {preset.label}
                       </button>
                     ))}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-[#64748B]">
+                  <p className="mt-1.5 text-[11px] text-ink-4">
                     {activePreset.description}
                   </p>
                 </div>
 
-                {/* Custom Base URL Input */}
                 <div>
                   <label
                     htmlFor="custom-base-url-input"
-                    className="mb-1 block text-xs font-bold text-[#334155]"
+                    className="mb-1 block text-xs font-bold text-ink-2"
                   >
-                    آدرس پایه سرور (Custom Provider Base URL):
+                    آدرس پایه سرور (Base URL):
                   </label>
                   <input
                     id="custom-base-url-input"
@@ -714,26 +987,25 @@ export default function AIAssistantDrawer({
                       }))
                     }
                     placeholder="https://api.openai.com/v1"
-                    className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 font-mono text-xs text-[#0F172A] focus:border-[#0284C7] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-lg border border-line-strong bg-panel px-3 py-2 font-mono text-xs text-ink outline-none transition-colors focus:border-accent focus:bg-surface"
                   />
-                  <div className="mt-1 flex items-center justify-between text-[11px] text-[#64748B]">
-                    <span>مسیر نهایی فراخوانی سرور:</span>
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-ink-4">
+                    <span>مسیر نهایی:</span>
                     <code
                       dir="ltr"
-                      className="rounded bg-[#F1F5F9] px-1.5 py-0.5 font-mono text-[10px] text-[#0369A1]"
+                      className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-accent-deep dark:text-accent"
                     >
                       {resolvedOpenAIEndpoint}
                     </code>
                   </div>
                 </div>
 
-                {/* Custom Model Name Input & Quick Chips */}
                 <div>
                   <label
                     htmlFor="custom-model-input"
-                    className="mb-1 block text-xs font-bold text-[#334155]"
+                    className="mb-1 block text-xs font-bold text-ink-2"
                   >
-                    نام یا شناسه مدل (Model Name / ID):
+                    نام مدل (Model ID):
                   </label>
                   <input
                     id="custom-model-input"
@@ -747,11 +1019,11 @@ export default function AIAssistantDrawer({
                       }))
                     }
                     placeholder="gpt-4o-mini"
-                    className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 font-mono text-xs text-[#0F172A] focus:border-[#0284C7] focus:bg-white focus:outline-hidden"
+                    className="w-full rounded-lg border border-line-strong bg-panel px-3 py-2 font-mono text-xs text-ink outline-none transition-colors focus:border-accent focus:bg-surface"
                   />
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] text-[#64748B]">
-                      مدل‌های پیشنهادی این ارائه‌دهنده:
+                    <span className="text-[11px] text-ink-4">
+                      مدل‌های پیشنهادی:
                     </span>
                     {activePreset.suggestedModels.map((sm) => (
                       <button
@@ -761,10 +1033,10 @@ export default function AIAssistantDrawer({
                         onClick={() =>
                           setSettings((prev) => ({ ...prev, model: sm }))
                         }
-                        className={`rounded border px-2 py-0.5 font-mono text-[10px] transition ${
+                        className={`rounded border px-2 py-0.5 font-mono text-[10px] transition-colors ${
                           settings.model === sm
-                            ? 'border-[#0284C7] bg-[#0284C7] text-white'
-                            : 'border-[#CBD5E1] bg-white text-[#334155] hover:border-[#0284C7]'
+                            ? 'border-accent bg-accent-solid text-white'
+                            : 'border-line-strong bg-surface text-ink-2 hover:border-accent'
                         }`}
                       >
                         {sm}
@@ -773,59 +1045,57 @@ export default function AIAssistantDrawer({
                   </div>
                 </div>
 
-                {/* Server Environment Status Info */}
-                <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs leading-6 text-[#475569]">
-                  <div className="flex items-center gap-1.5 font-bold text-[#0F172A]">
+                <div className="rounded-lg border border-line bg-panel p-3 text-xs leading-6 text-ink-3">
+                  <div className="flex items-center gap-1.5 font-bold text-ink">
                     {serverStatus.openAICompatibleKeyConfigured ? (
-                      <CheckCircle2 className="h-4 w-4 text-[#059669]" />
+                      <CheckCircle2 className="h-4 w-4 text-ok" />
                     ) : (
-                      <Server className="h-4 w-4 text-[#0284C7]" />
+                      <Server className="h-4 w-4 text-accent" />
                     )}
                     <span>وضعیت احراز هویت سمت سرور:</span>
                   </div>
                   <p className="mt-1 text-[11px]">
-                    درخواست‌های OpenAI-Compatible از طریق مسیر امن سرور{' '}
-                    <code dir="ltr" className="font-mono text-[#0369A1]">
+                    درخواست‌ها از مسیر امن{' '}
+                    <code dir="ltr" className="font-mono text-accent-deep">
                       /api/ai/chat
                     </code>{' '}
-                    ارسال می‌شوند. برای سرویس‌های ابری، متغیر محیطی{' '}
-                    <code dir="ltr" className="font-mono text-[#0F172A]">
+                    ارسال می‌شوند. کلید{' '}
+                    <code dir="ltr" className="font-mono text-ink">
                       OPENAI_COMPATIBLE_API_KEY
                     </code>{' '}
-                    در بخش Secrets سرور خوانده می‌شود (سرویس‌های محلی مانند Ollama نیاز به کلید ندارند).
+                    در Secrets سرور خوانده می‌شود (سرویس‌های محلی مانند Ollama به کلید نیاز ندارند).
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Section 3: Pedagogical & Derivation Detail Settings */}
-            <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-4">
-              <div className="text-sm font-bold text-[#0F172A]">
-                ۳. تنظیمات آموزشی و نحوه بسط راه‌حل‌های ریاضی (AI Settings)
+            {/* Pedagogical settings */}
+            <div className="space-y-4 rounded-xl border border-line bg-surface p-4">
+              <div className="text-sm font-bold text-ink">
+                ۳. تنظیمات آموزشی و نحوه بسط راه‌حل‌ها
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#334155]">
-                  سطح جزئیات راه‌حل‌ها (Solution Detail Level):
+                <label className="mb-1.5 block text-xs font-bold text-ink-2">
+                  سطح جزئیات راه‌حل‌ها:
                 </label>
                 <div className="space-y-2">
                   {(
                     [
                       {
                         id: 'full_step_by_step',
-                        title:
-                          'بسط کامل گام‌به‌گام بدون حذف محاسبات پایه (پیشنهادی)',
-                        desc: 'نمایش کامل اجزای انتگرال جزء‌به‌جزء (u, dv)، جایگذاری صریح حدود بالا و پایین و ساده‌سازی‌های مثلثاتی',
+                        title: 'بسط کامل گام‌به‌گام بدون حذف محاسبات پایه (پیشنهادی)',
+                        desc: 'نمایش کامل u و dv، جایگذاری صریح حدود و ساده‌سازی‌های مثلثاتی',
                       },
                       {
                         id: 'exam_prep',
-                        title: 'رویکرد امتحانی و نکات تست/تشریحی مهندسی',
-                        desc: 'تمرکز بر تشخیص سریع تقارن زوج و فرد، اتحاد پارسوال و شرایط مرزی',
+                        title: 'رویکرد امتحانی و نکات تست/تشریحی',
+                        desc: 'تمرکز بر تشخیص سریع تقارن، اتحاد پارسوال و شرایط مرزی',
                       },
                       {
                         id: 'conceptual',
                         title: 'توضیح مفهومی، فیزیکی و شهودی',
-                        desc: 'توضیح معنای فیزیکی هماهنگ‌ها، طیف فرکانسی و پخش گرما در میله همراه با فرمول نهایی',
+                        desc: 'معنای فیزیکی هماهنگ‌ها، طیف فرکانسی و پخش گرما',
                       },
                     ] as const
                   ).map((mode) => (
@@ -838,16 +1108,16 @@ export default function AIAssistantDrawer({
                           detailLevel: mode.id,
                         }))
                       }
-                      className={`flex w-full flex-col items-start rounded-lg border p-3 text-right transition ${
+                      className={`flex w-full flex-col items-start rounded-lg border p-3 text-start transition-colors ${
                         settings.detailLevel === mode.id
-                          ? 'border-[#0284C7] bg-[#F0F9FF]'
-                          : 'border-[#E2E8F0] bg-[#F8FAFC] hover:border-[#CBD5E1]'
+                          ? 'border-accent bg-accent-soft'
+                          : 'border-line bg-panel hover:border-line-strong'
                       }`}
                     >
-                      <span className="text-xs font-bold text-[#0F172A]">
+                      <span className="text-xs font-bold text-ink">
                         {mode.title}
                       </span>
-                      <span className="mt-0.5 text-[11px] text-[#475569]">
+                      <span className="mt-0.5 text-[11px] text-ink-3">
                         {mode.desc}
                       </span>
                     </button>
@@ -855,14 +1125,13 @@ export default function AIAssistantDrawer({
                 </div>
               </div>
 
-              {/* Context Toggle */}
-              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3">
+              <label className="flex cursor-pointer items-center justify-between rounded-lg border border-line bg-panel p-3">
                 <div>
-                  <div className="text-xs font-bold text-[#0F172A]">
-                    ارسال خودکار مبحث فعلی درس به دستیار هوشمند
+                  <div className="text-xs font-bold text-ink">
+                    ارسال خودکار مبحث فعلی درس به دستیار
                   </div>
-                  <div className="text-[11px] text-[#475569]">
-                    فصل و زیرمجموعه فعال صفحه را به عنوان زمینه علمی به دستیار ارسال می‌کند
+                  <div className="text-[11px] text-ink-3">
+                    فصل و درس‌نامه فعال به‌عنوان زمینه علمی ارسال می‌شود
                   </div>
                 </div>
                 <input
@@ -874,17 +1143,16 @@ export default function AIAssistantDrawer({
                       includeModuleContext: e.target.checked,
                     }))
                   }
-                  className="h-4 w-4 accent-[#0284C7]"
+                  className="h-4 w-4 accent-[var(--accent)]"
                 />
               </label>
 
-              {/* Custom System Prompt */}
               <div>
                 <label
                   htmlFor="custom-system-prompt"
-                  className="mb-1 block text-xs font-bold text-[#334155]"
+                  className="mb-1 block text-xs font-bold text-ink-2"
                 >
-                  دستورالعمل سفارشی سیستم (Custom System Instructions):
+                  دستورالعمل سفارشی سیستم:
                 </label>
                 <textarea
                   id="custom-system-prompt"
@@ -896,8 +1164,8 @@ export default function AIAssistantDrawer({
                       customSystemPrompt: e.target.value,
                     }))
                   }
-                  placeholder="مثال: در انتهای هر پاسخ یک تمرین مشابه با جواب نهایی نیز پیشنهاد بده..."
-                  className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] p-3 text-xs leading-6 text-[#0F172A] focus:border-[#0284C7] focus:bg-white focus:outline-hidden"
+                  placeholder="مثال: در انتهای هر پاسخ یک تمرین مشابه با جواب نهایی پیشنهاد بده…"
+                  className="w-full rounded-lg border border-line-strong bg-panel p-3 text-xs leading-6 text-ink outline-none transition-colors focus:border-accent focus:bg-surface"
                 />
               </div>
 
@@ -905,10 +1173,10 @@ export default function AIAssistantDrawer({
                 <button
                   type="button"
                   onClick={() => setActiveTab('chat')}
-                  className="flex items-center gap-1.5 rounded-xl bg-[#0284C7] px-5 py-2.5 text-xs font-bold text-white shadow-2xs transition hover:bg-[#0369A1]"
+                  className="flex items-center gap-1.5 rounded-xl bg-accent-solid px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-accent-deep"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>ذخیره و بازگشت به گفتگوی علمی</span>
+                  ذخیره و بازگشت به گفتگو
                 </button>
               </div>
             </div>

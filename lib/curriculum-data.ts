@@ -6,7 +6,7 @@
  * All worked examples are fully expanded step-by-step without skipping intermediate calculus or algebra.
  */
 
-import { TEXTBOOK_NOTES } from './textbook-notes';
+import { TEXTBOOK_NOTES } from './textbook-notes.ts';
 
 export type ModuleId =
   | 'module_0_prerequisites'
@@ -118,6 +118,8 @@ export function getModuleDefaultLayout(moduleId: ModuleId): ModuleComplexityLayo
 export interface CurriculumModule {
   id: ModuleId;
   numberLabel: string;
+  /** Compact label for the top navigation bar */
+  shortTitle: string;
   title: string;
   subtitle: string;
   pdfPageRange: string;
@@ -138,6 +140,7 @@ export interface CurriculumModule {
 const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
   {
     id: 'module_0_prerequisites',
+    shortTitle: '۰. پیش‌نیاز',
     numberLabel: 'بخش ۰ (پیش‌نیاز)',
     title: 'ریاضیات پایه و پیش‌نیاز: انتگرال جزء‌به‌جزء، مثلثات فوریه، اویلر و معادلات دیفرانسیل',
     subtitle: 'مرور جامع و گام‌به‌گام تمام ابزارهای حساب دیفرانسیل و انتگرال، مثلثات مرزی، اعداد مختلط و ODE مورد نیاز برای ریاضیات مهندسی',
@@ -524,6 +527,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
   },
   {
     id: 'module_1_definitions',
+    shortTitle: '۱. تعاریف و تعامد',
     numberLabel: 'بخش ۱',
     title: 'آنالیز فوریه: تعاریف، تقارن، نُرم و تعامد توابع',
     subtitle: 'انگیزه فیزیکی، توابع زوج و فرد، توابع متناوب، ضرب داخلی، نُرم تابع و مجموعه‌های متعامد',
@@ -702,7 +706,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         title: 'تعامد چندجمله‌ای‌های لژاندر و محاسبه گام‌به‌گام بسط سری فوریه تعمیم‌یافته',
         difficulty: 'متوسط (امتحانی)',
         problemStatement:
-          'چندجمله‌ای‌های لژاندر $P_0(x)=1$، $P_1(x)=x$ و $P_2(x)=\\frac{1}{2}(3x^2-1)$ را در بازه $[-1, 1]$ در نظر بگیرید. ابتدا تعامد و نُرم آن‌ها را حساب کنید و سپس سه جمله اول بسط سری فوریهلژاندر تابع پله‌ای $f(x) = \\begin{cases} 0 & -1 < x < 0 \\\\ 1 & 0 < x < 1 \\end{cases}$ را بیابید.',
+          'چندجمله‌ای‌های لژاندر $P_0(x)=1$، $P_1(x)=x$ و $P_2(x)=\\frac{1}{2}(3x^2-1)$ را در بازه $[-1, 1]$ در نظر بگیرید. ابتدا تعامد و نُرم آن‌ها را حساب کنید و سپس سه جمله اول بسط سری فوریه لژاندر تابع پله‌ای $f(x) = \\begin{cases} 0 & -1 < x < 0 \\\\ 1 & 0 < x < 1 \\end{cases}$ را بیابید.',
         problemFormula: 'f(x) = c_0 P_0(x) + c_1 P_1(x) + c_2 P_2(x) + \\dots \\quad , \\quad c_n = \\frac{\\langle f, P_n \\rangle}{\\|P_n\\|^2}',
         finalAnswerFormula: 'f(x) \\simeq \\frac{1}{2} P_0(x) + \\frac{3}{4} P_1(x) + 0 \\cdot P_2(x) = \\frac{1}{2} + \\frac{3}{4}x',
         steps: [
@@ -785,6 +789,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
   },
   {
     id: 'module_2_fourier_series',
+    shortTitle: '۲. سری فوریه',
     numberLabel: 'بخش ۲',
     title: 'سری فوریه و کاربردهای آن (بسط کامل و جامع)',
     subtitle:
@@ -1287,7 +1292,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         problemStatement:
           'تابع $f(x)$ در بازه نامتقارن $[-1, 3)$ به صورت $f(x) = 0$ برای $-1 \\le x < 1$ و $f(x) = 2$ برای $1 \\le x < 3$ تعریف شده و با دوره تناوب $T = 4$ متناوب است. بسط سری فوریه آن را بیابید و مقدار همگرایی سری را در نقاط $x = 1$، $x = -1$ و $x = 3$ تعیین کنید.',
         problemFormula: 'f(x) = \\begin{cases} 0, & -1 \\le x < 1 \\\\ 2, & 1 \\le x < 3 \\end{cases}, \\qquad T = b - a = 3 - (-1) = 4 \\implies \\ell = 2',
-        finalAnswerFormula: 'f(x) \\simeq 1 - \\frac{2}{\\pi}\\sum_{k=1}^{\\infty}\\frac{(-1)^{k-1}}{2k-1}\\cos\\left(\\frac{(2k-1)\\pi x}{2}\\right) + \\frac{2}{\\pi}\\sum_{k=1}^{\\infty}\\frac{1}{2k-1}\\sin\\left(\\frac{(2k-1)\\pi x}{2}\\right)',
+        finalAnswerFormula: 'f(x) \\simeq 1 - \\frac{4}{\\pi}\\sum_{k=1}^{\\infty}\\frac{(-1)^{k-1}}{2k-1}\\cos\\left(\\frac{(2k-1)\\pi x}{2}\\right) \\quad (b_n = 0 \\;\\text{برای همه } n)',
         steps: [
           {
             stepNumber: 1,
@@ -1401,6 +1406,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
   },
   {
     id: 'module_3_fourier_integral',
+    shortTitle: '۳. انتگرال فوریه',
     numberLabel: 'بخش ۳',
     title: 'انتگرال فوریه و کاربردهای آن (بسط کامل)',
     subtitle: 'گذار از سری به انتگرال فوریه در حد $\\ell \\to \\infty$، انتگرال‌های سینوسی و کسینوسی، قضیه دیریکله در نقاط پرش، اتحاد پارسوال و حل معادلات انتگرالی',
@@ -1427,7 +1433,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
           },
         ],
         conceptualPoints: [
-          'سری فوریه سیگنال را به طیف خطی (Line Spectrum) از فرکانس‌های هماهنگ $n\\omega_0$ تجزیه می‌کرد؛ انتگرال فوریه سیگنال را به یک طیف پیوسته پیوسته (Continuous Density Spectrum) تجزیه می‌کند.',
+          'سری فوریه سیگنال را به طیف خطی (Line Spectrum) از فرکانس‌های هماهنگ $n\\omega_0$ تجزیه می‌کرد؛ انتگرال فوریه سیگنال را به یک طیف پیوسته (Continuous Density Spectrum) تجزیه می‌کند.',
           'انرژی کل سیگنال غیرمتناوب برخلاف سیگنال‌های متناوب، در بازه زمانی متناهی متمرکز است و توان میانگین آن صفر است، بنابراین با چگالی انرژی طیفی توصیف می‌شود.',
         ],
       },
@@ -1504,7 +1510,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
           {
             label: 'همگرایی انتگرال سینوسی در مبدأ ($x = 0$)',
             formula: 'x = 0 \\implies \\int_{0}^{\\infty} B(\\alpha) \\sin(0)\\,d\\alpha = 0',
-            note: 'انتگرال فوریه سینوسی هر تابعی در مبدأ $x=0$ همواره دقیقاً صفر است، حتی اگر $f(0^+) \\ne 0$ باشد (به دلیل میانگین حد چپ و راست در پرش فرد $\\frac{f(0^+) - f(0^+)}{2} = 0$).',
+            note: 'انتگرال فوریه سینوسی هر تابعی در مبدأ $x=0$ همواره دقیقاً صفر است، حتی اگر $f(0^+) \\ne 0$ باشد؛ چون در بسط فرد، حد چپ $f(0^-) = -f(0^+)$ است و طبق قضیه دیریکله سری به میانگین $\\frac{f(0^+) + f(0^-)}{2} = 0$ همگرا می‌شود.',
           },
         ],
         conceptualPoints: [
@@ -1887,7 +1893,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         ],
         correctIndex: 0,
         explanation:
-          'چون $A(\\alpha) = \\frac{2}{\\pi(1+\\alpha^2)}$ است، طبق پارسوال $\\frac{1}{\\pi}\\int_{-\\infty}^\\infty e^{-2|x|}dx = \\frac{2}{\\pi} = \\frac{4}{\\pi^2}\\int_0^\\infty \\frac{d\\alpha}{(1+\\alpha^2)^2} \\implies \\int_0^\\infty \\frac{d\\alpha}{(1+\\alpha^2)^2} = \\frac{2}{\\pi} \\times \\frac{\\pi^2}{4} \\times \\frac{1}{2} = \\frac{\\pi}{4}$.',
+          'چون $A(\\alpha) = \\frac{2}{\\pi(1+\\alpha^2)}$ است، طبق پارسوال $\\frac{1}{\\pi}\\int_{-\\infty}^\\infty e^{-2|x|}dx = \\int_0^\\infty [A(\\alpha)]^2 d\\alpha$. سمت چپ برابر $\\frac{1}{\\pi}$ است (زیرا $\\int_{-\\infty}^\\infty e^{-2|x|}dx = 2 \\times \\frac{1}{2} = 1$)، بنابراین $\\frac{4}{\\pi^2}\\int_0^\\infty \\frac{d\\alpha}{(1+\\alpha^2)^2} = \\frac{1}{\\pi} \\implies \\int_0^\\infty \\frac{d\\alpha}{(1+\\alpha^2)^2} = \\frac{\\pi}{4}$.',
       },
       {
         id: 'q5_m3',
@@ -1914,6 +1920,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
   },
   {
     id: 'module_4_fourier_transform',
+    shortTitle: '۴. تبدیل فوریه',
     numberLabel: 'بخش ۴',
     title: 'تبدیل فوریه و قضایای کاربردی آن (Fourier Transform Handbook)',
     subtitle: 'جزوه جامع تبدیل فوریه مختلط، قضایای تقارن، انتقال، مدولاسیون، مقیاس، مشتق و انتگرال، کانولوشن، پارسوال، تبدیل‌های سینوسی/کسینوسی و حل معادلات PDE',
@@ -2229,7 +2236,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         problemStatement:
           'جواب معادله انتگرالی $\\int_{-\\infty}^{\\infty} u(t)\\,e^{-|x-t|}\\,dt = e^{-2|x|}$ را با استفاده از قضیه کانولوشن زمان، تبدیل فوریه و اعمال تبدیل معکوس به دست آورید.',
         problemFormula: '\\int_{-\\infty}^{\\infty} u(t)\\,e^{-|x-t|}\\,dt = e^{-2|x|} \\implies \\text{Find } u(x)',
-        finalAnswerFormula: 'u(x) = \\frac{3}{4} e^{-2|x|} + \\frac{1}{2} \\delta(x) \\quad \\text{یا فرم کلاسیک بدون دلتا: } u(x) = \\frac{3}{2}e^{-2|x|} - \\frac{1}{4}u\'\'(x)',
+        finalAnswerFormula: 'u(x) = 2\\delta(x) - \\frac{3}{2} e^{-2|x|}',
         steps: [
           {
             stepNumber: 1,
@@ -2482,6 +2489,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
   },
   {
     id: 'module_5_sturm_liouville',
+    shortTitle: '۵. اشتورم-لیوویل',
     numberLabel: 'بخش ۵',
     title: 'مسئله اشتورم-لیوویل (Sturm-Liouville)',
     subtitle: 'معادله خودالحاقی، عامل انتگرال‌ساز، شرایط مرزی منظم، مقادیر ویژه $\\lambda_n$ و تعامد توابع ویژه با تابع وزن $p(x)$',
@@ -3025,6 +3033,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
   },
   {
     id: 'module_6_heat_pde',
+    shortTitle: '۶. معادله گرما',
     numberLabel: 'بخش ۶',
     title: 'معادله گرما و معادلات با مشتقات جزئی (PDE)',
     subtitle: 'دسته‌بندی PDEها، معادله گرمای همگن و غیرهمگن، روش جداسازی متغیرها (فوریه)، میله متناهی، نیمه‌نامتناهی و نامتناهی، چشمه‌های حرارتی، هسته گاوسی و اصل ماکزیمم',
@@ -3360,7 +3369,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         problemStatement:
           'مسئله معادله گرمای $u_t = k^2 u_{xx}$ در میله‌ای به طول $L = \\pi$ با ضریب $k = 1$ را با شرایط مرزی غیرهمگن $u(0,t) = 20$ و $u(\\pi,t) = 40$ و دمای اولیه صفر $u(x,0) = 0$ به طور کامل حل کنید.',
         problemFormula: 'u_t = u_{xx} \\quad (0 < x < \\pi) \\quad , \\quad u(0,t) = 20 \\; , \\; u(\\pi,t) = 40 \\; , \\; u(x,0) = 0',
-        finalAnswerFormula: 'u(x,t) = 20 + \\frac{20}{\\pi}x + \\sum_{n=1}^{\\infty} \\left[ \\frac{40(-1)^n - 40}{n\\pi} \\right] \\sin(nx)\\,e^{-n^2 t}',
+        finalAnswerFormula: 'u(x,t) = 20 + \\frac{20}{\\pi}x + \\sum_{n=1}^{\\infty} \\left( \\frac{80(-1)^n - 40}{n\\pi} \\right) \\sin(nx)\\,e^{-n^2 t}',
         steps: [
           {
             stepNumber: 1,
@@ -3718,5 +3727,244 @@ export const CURRICULUM_MODULES: CurriculumModule[] = BASE_CURRICULUM_MODULES.ma
   }),
 }));
 
-export { TEXTBOOK_NOTES } from './textbook-notes';
+export { TEXTBOOK_NOTES } from './textbook-notes.ts';
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Course Enrichment: historical figures & curated external resources.
+ * Portraits are public-domain images from Wikimedia Commons (local copies in
+ * /public/figures). Every external link was verified reachable (Nov 2025).
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+export interface HistoricalFigure {
+  nameFa: string;
+  nameEn: string;
+  years: string;
+  portraitSrc: string;
+  bioFa: string;
+  wikiUrl: string;
+}
+
+export interface ExternalResource {
+  labelFa: string;
+  url: string;
+  kind: 'video' | 'demo' | 'wiki' | 'blog';
+  noteFa: string;
+}
+
+export interface ModuleEnrichment {
+  figures: HistoricalFigure[];
+  resources: ExternalResource[];
+}
+
+const FIG_FOURIER: HistoricalFigure = {
+  nameFa: 'ژوزف فوریه',
+  nameEn: 'Joseph Fourier',
+  years: '۱۷۶۸ – ۱۸۳۰',
+  portraitSrc: '/figures/fourier.jpg',
+  bioFa: 'ریاضیدان و فیزیکدان فرانسوی؛ در کتاب «نظریه تحلیلی گرما» (۱۸۲۲) نشان داد هر تابعی را می‌توان با مجموعی از سینوس و کسینوس‌ها ساخت — همان ایده‌ای که سری و تبدیل فوریه از آن زاده شد و امروز پایه پردازش سیگنال، تصویربرداری پزشکی و مهندسی مخابرات است.',
+  wikiUrl: 'https://fa.wikipedia.org/wiki/ژوزف_فوریه',
+};
+
+const FIG_EULER: HistoricalFigure = {
+  nameFa: 'لئونارد اویلر',
+  nameEn: 'Leonhard Euler',
+  years: '۱۷۰۷ – ۱۷۸۳',
+  portraitSrc: '/figures/euler.jpg',
+  bioFa: 'بزرگ‌ترین ریاضیدان قرن هجدهم؛ فرمول ه‍شگون او e^(iθ) = cos(θ) + i·sin(θ) پل بین جبر مختلط و مثلثات است و کل زبان تبدیل فوریه روی همین فرمول بنا شده است.',
+  wikiUrl: 'https://fa.wikipedia.org/wiki/لئونارد_اویلر',
+};
+
+const FIG_STURM: HistoricalFigure = {
+  nameFa: 'شارل استورم',
+  nameEn: 'Charles-François Sturm',
+  years: '۱۸۰۳ – ۱۸۵۵',
+  portraitSrc: '/figures/sturm.jpg',
+  bioFa: 'ریاضیدان سوئیسی؛ همکار لیوویل در پاریس. قضیه شمارش ریشه‌های استورم و مسئله مقدار ویژه‌ای مشترکشان، چارچوب کلی «سیستم‌های متعامد در معادلات دیفرانسیل» را ساخت.',
+  wikiUrl: 'https://en.wikipedia.org/wiki/Jacques_Charles_Fran%C3%A7ois_Sturm',
+};
+
+const FIG_LIOUVILLE: HistoricalFigure = {
+  nameFa: 'ژوزف لیوویل',
+  nameEn: 'Joseph Liouville',
+  years: '۱۸۰۹ – ۱۸۸۲',
+  portraitSrc: '/figures/liouville.jpg',
+  bioFa: 'ریاضیدان فرانسوی و بنیان‌گذار مجله ریاضیات خالص و کاربردی (Journal de Mathématiques)؛ کار مشترکش با استورم (۱۸۳۶–۱۸۳۷) نظریه عمومی توابع ویژه و بسط هر تابع برحسب آن‌ها را بنیان گذاشت.',
+  wikiUrl: 'https://en.wikipedia.org/wiki/Joseph_Liouville',
+};
+
+export const MODULE_ENRICHMENT: Record<ModuleId, ModuleEnrichment> = {
+  module_0_prerequisites: {
+    figures: [FIG_EULER],
+    resources: [
+      {
+        labelFa: 'دوره فارسی: معادلات دیفرانسیل صفر تا صد (مکتب‌خونه)',
+        url: 'https://maktabkhooneh.org/course/%D8%A2%D9%85%D9%88%D8%B2%D8%B4-%D8%B5%D9%81%D8%B1-%D8%AA%D8%A7-%D8%B5%D8%AF-%D9%85%D8%B9%D8%A7%D8%AF%D9%84%D8%A7%D8%AA-%D8%AF%DB%8C%D9%81%D8%B1%D8%A7%D9%86%D8%B3%DB%8C%D9%84-mk1474',
+        kind: 'video',
+        noteFa: 'پیش‌نیاز چهارم (ODE مرتبه دوم) و هر جایی که جداسازی متغیرها لازم می‌شود، اینجا به فارسی تدریس شده است.',
+      },
+      {
+        labelFa: 'ویدیو: فرمول اویلر به زبان ساده (3Blue1Brown)',
+        url: 'https://www.youtube.com/watch?v=mvmuCPvRoLQ',
+        kind: 'video',
+        noteFa: 'چرخش روی دایره واحد؛ شهود بصری e^{iθ} که در پیش‌نیاز سوم به کار می‌رود.',
+      },
+      {
+        labelFa: 'انیمیشن تعاملی: موج‌ها را با هم جمع کنید (Jez Swanson)',
+        url: 'https://www.jezzamon.com/fourier/',
+        kind: 'demo',
+        noteFa: 'با اسلایدر بازی کنید تا ببینید چگونه سینوس‌ها یک موج مربعی می‌سازند.',
+      },
+    ],
+  },
+  module_1_definitions: {
+    figures: [],
+    resources: [
+      {
+        labelFa: 'ویدیوی فارسی: آشنایی با مفهوم سری فوریه (آپارات)',
+        url: 'https://www.aparat.com/v/vql1fhm',
+        kind: 'video',
+        noteFa: 'تدریس فارسی و آرام مفهوم بسط متناوب؛ مناسب قبل از ورود به تعامد و نُرم.',
+      },
+      {
+        labelFa: 'مقاله فارسی: سری فوریه به زبان ساده (مجله فرادرس)',
+        url: 'https://blog.faradars.org/fourier-series/',
+        kind: 'blog',
+        noteFa: 'مرور فارسی تعاریف، ضرایب و تقارن‌ها با مثال‌های ساده.',
+      },
+      {
+        labelFa: 'ویکی‌پدیا: دستگاه‌های متعامد توابع',
+        url: 'https://fa.wikipedia.org/wiki/سری_فوریه',
+        kind: 'wiki',
+        noteFa: 'مقدمه فارسی سری فوریه برای مرور سریع تعاریف و تقارن‌ها.',
+      },
+    ],
+  },
+  module_2_fourier_series: {
+    figures: [FIG_FOURIER],
+    resources: [
+      {
+        labelFa: 'ویدیوی فارسی: جلسه اول سری فوریه — ریاضی مهندسی (آپارات)',
+        url: 'https://www.aparat.com/v/n00vi7v',
+        kind: 'video',
+        noteFa: 'تدریس کلاسی فارسی دقیقاً روی سرفصل همین فصل (ضرایب اویلر-فوریه و بسط).',
+      },
+      {
+        labelFa: 'مقاله فارسی: رابطه پارسوال — از صفر تا صد (مجله فرادرس)',
+        url: 'https://blog.faradars.org/%d8%b1%d8%a7%d8%a8%d8%b7%d9%87-%d9%be%d8%a7%d8%b1%d8%b3%d9%88%d8%a7%d9%84-%d8%af%d8%b1-%d8%b3%d8%b1%db%8c-%d9%81%d9%88%d8%b1%db%8c%d9%87/',
+        kind: 'blog',
+        noteFa: 'توضیح فارسی اتحاد پارسوال و جمع سری‌های عددی — درس‌نامه ۵ همین فصل.',
+      },
+      {
+        labelFa: 'ویدیو: سری فوریه چیست؟ از جریان گرما تا رسم با دایره‌ها (3Blue1Brown)',
+        url: 'https://www.youtube.com/watch?v=r6sGWTCMz2k',
+        kind: 'video',
+        noteFa: 'بهترین شهود بصری برای اپ‌سایکل‌ها و همگرایی سری؛ دقیقاً همزمان با این فصل ببینید.',
+      },
+      {
+        labelFa: 'ابزار تعاملی: رسم هر شکل با فوریه (Jez Swanson)',
+        url: 'https://www.jezzamon.com/fourier/',
+        kind: 'demo',
+        noteFa: 'شکل بکشید و ببینید چند هارمونیک لازم است تا شبیه شود — آزمایشگاه این فصل به زبان دیگر!',
+      },
+    ],
+  },
+  module_3_fourier_integral: {
+    figures: [FIG_FOURIER],
+    resources: [
+      {
+        labelFa: 'مقاله فارسی: انتگرال فوریه و محاسبه آن (مجله فرادرس)',
+        url: 'https://blog.faradars.org/%d8%a7%d9%86%d8%aa%da%af%d8%b1%d8%a7%d9%84-%d9%81%d9%88%d8%b1%db%8c%d9%87/',
+        kind: 'blog',
+        noteFa: 'گذار از سری به انتگرال و ضرایب طیفی A(α) و B(α) به فارسی، همراه فیلم رایگان.',
+      },
+      {
+        labelFa: 'ویکی‌پدیا: انتگرال و تبدیل فوریه',
+        url: 'https://fa.wikipedia.org/wiki/تبدیل_فوریه',
+        kind: 'wiki',
+        noteFa: 'رابطه حد ℓ→∞ در سری فوریه با طیف پیوسته، به فارسی و خلاصه.',
+      },
+    ],
+  },
+  module_4_fourier_transform: {
+    figures: [FIG_FOURIER],
+    resources: [
+      {
+        labelFa: 'ویدیوی فارسی: جلسه ۱۹ — تبدیل فوریه (آپارات)',
+        url: 'https://www.aparat.com/v/cgb8b42',
+        kind: 'video',
+        noteFa: 'تدریس فارسی تعریف، وارون و خواص تبدیل — هم‌راستا با جدول جامع این فصل.',
+      },
+      {
+        labelFa: 'مقاله فارسی: تبدیل فوریه و محاسبه آن (مجله فرادرس)',
+        url: 'https://blog.faradars.org/fourier-transform/',
+        kind: 'blog',
+        noteFa: 'مرور فارسی خواص (خطی بودن، شیفت، پارسوال) با مثال‌های گام‌به‌گام.',
+      },
+      {
+        labelFa: 'ویدیو: تبدیل فوریه با شهود بصری (3Blue1Brown)',
+        url: 'https://www.youtube.com/watch?v=spUNpyF58BY',
+        kind: 'video',
+        noteFa: 'مفهوم «هر سیگنال، ترکیبی از فرکانس‌ها» را با مثال‌های واقعی نشان می‌دهد.',
+      },
+      {
+        labelFa: 'ویکی‌پدیا: تبدیل فوریه',
+        url: 'https://fa.wikipedia.org/wiki/تبدیل_فوریه',
+        kind: 'wiki',
+        noteFa: 'مرور ویژگی‌ها (خطی بودن، شیفت زمان/فرکانس، پارسوال) به فارسی.',
+      },
+    ],
+  },
+  module_5_sturm_liouville: {
+    figures: [FIG_STURM, FIG_LIOUVILLE],
+    resources: [
+      {
+        labelFa: 'ویدیوی فارسی: معادلات اشتورم-لیوویل بر اساس کتاب دکتر طائری (آپارات)',
+        url: 'https://www.aparat.com/v/f7483g8',
+        kind: 'video',
+        noteFa: 'درس‌گفتار دانشگاهی فارسی دقیقاً بر پایه همان کتاب مرجع این آزمایشگاه!',
+      },
+      {
+        labelFa: 'ویدیوی فارسی: حل تمرین مسائل اشتورم-لیوویل (آپارات)',
+        url: 'https://www.aparat.com/v/c956c3p',
+        kind: 'video',
+        noteFa: 'حل تست‌های کنکور ارشد — مکمل «مسائل حل‌شده» همین فصل.',
+      },
+      {
+        labelFa: 'ویکی‌پدیا: نظریه اشتورم–لیوویل (English)',
+        url: 'https://en.wikipedia.org/wiki/Sturm%E2%80%93Liouville_theory',
+        kind: 'wiki',
+        noteFa: 'مقاله انگلیسی کامل‌ترین مرور از فرم استاندارد مسئله و طیف ویژه‌مقادیر است.',
+      },
+    ],
+  },
+  module_6_heat_pde: {
+    figures: [FIG_FOURIER],
+    resources: [
+      {
+        labelFa: 'مقاله فارسی: معادله گرما به زبان ساده (مجله فرادرس)',
+        url: 'https://blog.faradars.org/%d9%85%d8%b9%d8%a7%d8%af%d9%84%d9%87-%da%af%d8%b1%d9%85%d8%a7/',
+        kind: 'blog',
+        noteFa: 'شهود فیزیکی معادله انتشار و نقش شرایط مرزی و اولیه به فارسی.',
+      },
+      {
+        labelFa: 'مقاله فارسی: معادلات دیفرانسیل با مشتقات جزئی — از صفر تا صد (فرادرس)',
+        url: 'https://blog.faradars.org/partial-differential-equations/',
+        kind: 'blog',
+        noteFa: 'روش جداسازی متغیرها که ستون فقرات درس‌نامه ۲ این فصل است، توضیح فارسی.',
+      },
+      {
+        labelFa: 'ویدیو: حل معادله گرما با فوریه (3Blue1Brown)',
+        url: 'https://www.youtube.com/watch?v=ToIXSwZ1pJU',
+        kind: 'video',
+        noteFa: 'همان داستان تولد سری فوریه: میله داغ، شرایط مرزی و میرایی هارمونیک‌ها — هم‌راستا با آزمایشگاه این فصل.',
+      },
+      {
+        labelFa: 'ویکی‌پدیا: معادله گرما',
+        url: 'https://fa.wikipedia.org/wiki/معادله_گرما',
+        kind: 'wiki',
+        noteFa: 'معادله انتشار، شرط مرزی و کاربردها به فارسی.',
+      },
+    ],
+  },
+};

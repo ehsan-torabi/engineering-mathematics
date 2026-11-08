@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import { Vazirmatn, IBM_Plex_Mono, Crimson_Pro } from 'next/font/google';
+import { Vazirmatn, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
 const vazirmatn = Vazirmatn({
@@ -13,14 +13,6 @@ const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   variable: '--font-mono',
-  display: 'swap',
-});
-
-const crimsonPro = Crimson_Pro({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-math',
   display: 'swap',
 });
 
@@ -39,14 +31,22 @@ export const metadata: Metadata = {
   },
 };
 
+// Applies the stored theme before first paint so a dark-mode reload never
+// flashes the light theme (the class must exist on <html> before hydration).
+const themeInitScript = `(function(){try{if(localStorage.getItem('eng_math_theme_v1')==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`;
+
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
-    <html lang="fa" dir="rtl" className={`${vazirmatn.variable} ${ibmPlexMono.variable} ${crimsonPro.variable}`}>
-      <body
-        suppressHydrationWarning
-        className="bg-[#F8FAFC] text-[#0F172A] antialiased selection:bg-[#0284C7]/15 selection:text-[#0369A1]"
-        style={{ fontFamily: 'var(--font-vazirmatn), system-ui, sans-serif' }}
-      >
+    <html
+      lang="fa"
+      dir="rtl"
+      className={`${vazirmatn.variable} ${ibmPlexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{__html: themeInitScript}} />
+      </head>
+      <body className="bg-paper font-sans text-ink antialiased">
         {children}
       </body>
     </html>

@@ -21,6 +21,8 @@ interface ChatRequestBody {
   thinkingLevel?: ReasoningLevel;
   includeModuleContext?: boolean;
   customSystemPrompt?: string;
+  /** When true the reply streams back as Server-Sent Events instead of one JSON payload */
+  stream?: boolean;
   moduleContext?: {
     moduleTitle?: string;
     moduleSubtitle?: string;
@@ -49,10 +51,50 @@ export async function GET() {
   });
 }
 
+/**
+ * Wraps an async producer into a Server-Sent Events response.
+ * The producer receives a `send` callback for JSON events and must not
+ * throw past `finally` — errors are reported as `{type:'error'}` events so
+ * the client can render them inline in the chat.
+ */
+function sseResponse(
+  produce: (send: (event: Record<string, unknown>) => void) => Promise<void>
+): Response {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (event: Record<string, unknown>) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+      };
+      try {
+        await produce(send);
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'خطای ناشناخته در جریان پاسخ هوش مصنوعی';
+        send({ type: 'error', error: message });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    },
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as ChatRequestBody;
-    const provider: AIProviderType = body.provider || 'gemini';
+    // Default path is the OpenAI-compatible custom provider; Gemini is opt-in.
+    const provider: AIProviderType = body.provider || 'openai_compatible';
     const messages = Array.isArray(body.messages) ? body.messages : [];
 
     if (messages.length === 0) {
@@ -71,6 +113,7 @@ export async function POST(req: NextRequest) {
       body.moduleContext
     );
 
+    /* ────────────────────────── OpenAI-Compatible provider ────────────────────────── */
     if (provider === 'openai_compatible') {
       const targetBaseUrl =
         body.customBaseUrl?.trim() ||
@@ -91,7 +134,7 @@ export async function POST(req: NextRequest) {
         headers['Authorization'] = `Bearer ${serverOpenAIKey}`;
       }
 
-      const openAIPayload = {
+      const openAIPayload: Record<string, unknown> = {
         model: selectedModel,
         messages: [
           { role: 'system', content: systemInstruction },
@@ -102,6 +145,68 @@ export async function POST(req: NextRequest) {
         ],
       };
 
+      /* ── Streaming path: relay upstream SSE deltas to the client ── */
+      if (body.stream) {
+        return sseResponse(async (send) => {
+          send({
+            type: 'meta',
+            providerUsed: 'openai_compatible',
+            modelUsed: selectedModel,
+          });
+
+          const upstreamRes = await fetch(endpointUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ ...openAIPayload, stream: true }),
+          });
+
+          if (!upstreamRes.ok || !upstreamRes.body) {
+            const errText = await upstreamRes.text().catch(() => '');
+            send({
+              type: 'error',
+              error: `خطا در ارتباط با ارائه‌دهنده سازگار با OpenAI (${endpointUrl}) — کد وضعیت ${upstreamRes.status}. جزئیات: ${errText.slice(0, 240)}`,
+            });
+            return;
+          }
+
+          const reader = upstreamRes.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed.startsWith('data:')) continue;
+              const payload = trimmed.slice(5).trim();
+              if (!payload || payload === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(payload);
+                const delta =
+                  parsed?.choices?.[0]?.delta?.content ??
+                  parsed?.choices?.[0]?.message?.content ??
+                  '';
+                if (typeof delta === 'string' && delta) {
+                  send({ type: 'delta', text: delta });
+                }
+              } catch {
+                // Ignore malformed keep-alive or partial frames
+              }
+            }
+          }
+
+          send({ type: 'done' });
+        });
+      }
+
+      /* ── Non-streaming path (kept for backward compatibility) ── */
       const upstreamRes = await fetch(endpointUrl, {
         method: 'POST',
         headers,
@@ -143,7 +248,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Default Provider: Server-side Google Gemini via @google/genai
+    /* ────────────────────────── Default: Google Gemini ────────────────────────── */
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -198,6 +303,33 @@ export async function POST(req: NextRequest) {
         thinkingLevel:
           thinkingLevelMap[body.thinkingLevel] || ThinkingLevel.MEDIUM,
       };
+    }
+
+    /* ── Streaming path: forward generateContentStream chunks ── */
+    if (body.stream) {
+      return sseResponse(async (send) => {
+        send({
+          type: 'meta',
+          providerUsed: 'gemini',
+          modelUsed: modelName,
+        });
+
+        const response = await ai.models.generateContentStream({
+          model: modelName,
+          contents,
+          config,
+        });
+
+        for await (const chunk of response) {
+          const chunkText =
+            typeof chunk?.text === 'string' ? chunk.text : (chunk?.text ?? '');
+          if (chunkText) {
+            send({ type: 'delta', text: chunkText });
+          }
+        }
+
+        send({ type: 'done' });
+      });
     }
 
     const response = await ai.models.generateContent({

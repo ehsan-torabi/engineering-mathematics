@@ -6,7 +6,6 @@ import {
   Table as TableIcon,
   Activity,
   FileText,
-  Sparkles,
   Sliders,
   Search,
   Filter,
@@ -19,6 +18,7 @@ import {
   Radio,
   Minimize2,
   Maximize2,
+  BookMarked,
 } from 'lucide-react';
 import MathFormula, { MathText } from './MathFormula';
 import {
@@ -169,24 +169,24 @@ export default function FourierTransformStage() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Top Banner Header */}
-      <div className="relative overflow-hidden rounded-2xl border border-[#BAE6FD] bg-linear-to-r from-[#0369A1] via-[#0284C7] to-[#0EA5E9] p-6 text-white shadow-md">
+      <div className="rounded-xl border border-accent-line bg-accent-soft p-6 text-ink">
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-lg bg-white/20 px-3 py-1 font-mono text-xs font-bold tracking-wider text-white backdrop-blur-xs">
                 بخش ۴ ریاضی مهندسی
               </span>
-              <span className="rounded-lg bg-[#FDE68A] px-2.5 py-1 text-xs font-bold text-[#92400E]">
+              <span className="rounded-lg bg-warn-tint px-2.5 py-1 text-xs font-bold text-warn-ink">
                 صفحات ۷۲ تا ۱۰۵ جزوه دکتر طائری
               </span>
-              <span className="rounded-lg bg-[#A7F3D0] px-2.5 py-1 text-xs font-bold text-[#065F46]">
+              <span className="rounded-lg bg-ok-tint px-2.5 py-1 text-xs font-bold text-ok-ink">
                 ۱۶ جفت تبدیل استاندارد
               </span>
             </div>
             <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
               جزوه جامع و شبیه‌ساز تحلیلی تبدیل فوریه و قضایای بنیادین
             </h2>
-            <p className="max-w-3xl text-xs leading-relaxed text-[#E0F2FE] sm:text-sm">
+            <p className="max-w-3xl text-xs leading-relaxed text-accent-deep sm:text-sm">
               کامل‌ترین مرجع آموزشی تبدیل فوریه مختلط، قضایای تقارن و دوگانی، انتقال زمان و فرکانس،
               مدولاسیون، مقیاس، اصل عدم قطعیت هایزنبرگ-گابور، مشتق، کانولوشن، اتحاد پارسوال و حل معادلات PDE.
             </p>
@@ -198,7 +198,7 @@ export default function FourierTransformStage() {
               onClick={() => setActiveTab('table')}
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-xs transition ${
                 activeTab === 'table'
-                  ? 'bg-white text-[#0369A1]'
+                  ? 'bg-surface text-accent-deep'
                   : 'bg-white/15 text-white hover:bg-white/25'
               }`}
             >
@@ -210,7 +210,7 @@ export default function FourierTransformStage() {
               onClick={() => setActiveTab('booklet')}
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-xs transition ${
                 activeTab === 'booklet'
-                  ? 'bg-white text-[#0369A1]'
+                  ? 'bg-surface text-accent-deep'
                   : 'bg-white/15 text-white hover:bg-white/25'
               }`}
             >
@@ -222,7 +222,7 @@ export default function FourierTransformStage() {
               onClick={() => setActiveTab('visualizer')}
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-xs transition ${
                 activeTab === 'visualizer'
-                  ? 'bg-white text-[#0369A1]'
+                  ? 'bg-surface text-accent-deep'
                   : 'bg-white/15 text-white hover:bg-white/25'
               }`}
             >
@@ -234,7 +234,7 @@ export default function FourierTransformStage() {
               onClick={() => setActiveTab('derivations')}
               className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold shadow-xs transition ${
                 activeTab === 'derivations'
-                  ? 'bg-white text-[#0369A1]'
+                  ? 'bg-surface text-accent-deep'
                   : 'bg-white/15 text-white hover:bg-white/25'
               }`}
             >
@@ -249,34 +249,34 @@ export default function FourierTransformStage() {
       {activeTab === 'table' && (
         <div className="space-y-6">
           {/* Search, Filter and Stat bar */}
-          <div className="rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E2E8F0] pb-4">
+          <div className="rounded-2xl border border-line-strong bg-surface p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-bold text-[#0369A1]">
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-tint px-2.5 py-0.5 text-xs font-bold text-accent-deep">
                   <TableIcon className="h-3.5 w-3.5" />
                   جدول مرجع جامع تبدیل فوریه (جدول ۱ جزوه - صفحه ۱۰۵)
                 </span>
-                <h3 className="mt-1 text-base font-extrabold text-[#0F172A]">
+                <h3 className="mt-1 text-base font-extrabold text-ink">
                   آرشیو کامل ۱۶ جفت تبدیل فوریه با فرمول دقیق، خواص، کاربرد و انرژی پارسوال
                 </h3>
               </div>
 
               <div className="relative w-full sm:w-72">
-                <Search className="absolute right-3 top-2.5 h-4 w-4 text-[#94A3B8]" />
+                <Search className="absolute right-3 top-2.5 h-4 w-4 text-ink-4" />
                 <input
                   type="text"
                   value={tableSearch}
                   onChange={(e) => setTableSearch(e.target.value)}
                   placeholder="جستجو بر اساس نام، فرمول، تقارن..."
-                  className="w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] py-1.5 pr-9 pl-3 text-xs text-[#0F172A] placeholder-[#94A3B8] transition focus:border-[#0284C7] focus:bg-white focus:outline-hidden"
+                  className="w-full rounded-xl border border-line-strong bg-panel py-1.5 pr-9 pl-3 text-xs text-ink placeholder-ink-4 transition focus:border-accent focus:bg-surface focus:outline-hidden"
                 />
               </div>
             </div>
 
             {/* Category Filter Pills */}
             <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
-              <span className="flex items-center gap-1 text-xs font-bold text-[#475569]">
-                <Filter className="h-3.5 w-3.5 text-[#0284C7]" />
+              <span className="flex items-center gap-1 text-xs font-bold text-ink-3">
+                <Filter className="h-3.5 w-3.5 text-accent" />
                 دسته‌بندی:
               </span>
               {[
@@ -293,8 +293,8 @@ export default function FourierTransformStage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
                     selectedCategory === cat.id
-                      ? 'bg-[#0284C7] text-white shadow-2xs'
-                      : 'border border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                      ? 'bg-accent-solid text-white'
+                      : 'border border-line-strong bg-panel text-ink-3 hover:bg-muted'
                   }`}
                 >
                   {cat.label}
@@ -315,38 +315,38 @@ export default function FourierTransformStage() {
                     onClick={() => setSelectedTableEntryId(entry.id)}
                     className={`cursor-pointer rounded-xl border p-4 transition ${
                       isSelected
-                        ? 'border-[#0284C7] bg-[#F0F9FF] ring-2 ring-[#0284C7]/20 shadow-sm'
-                        : 'border-[#E2E8F0] bg-white hover:border-[#BAE6FD] hover:bg-[#F8FAFC]'
+                        ? 'border-accent bg-accent-soft ring-2 ring-accent/20 shadow-sm'
+                        : 'border-line bg-surface hover:border-accent-line hover:bg-panel'
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#E0F2FE] font-mono text-xs font-bold text-[#0369A1]">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-tint font-mono text-xs font-bold text-accent-deep">
                           {index + 1}
                         </span>
-                        <h4 className="text-sm font-extrabold text-[#0F172A]">{entry.nameFa}</h4>
+                        <h4 className="text-sm font-extrabold text-ink">{entry.nameFa}</h4>
                       </div>
-                      <span className="rounded-md bg-[#F1F5F9] px-2 py-0.5 text-[11px] font-bold text-[#475569]">
+                      <span className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-bold text-ink-3">
                         {entry.categoryFa}
                       </span>
                     </div>
 
                     <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <div className="rounded-lg border border-[#E2E8F0] bg-white p-2.5">
-                        <span className="text-[10px] font-bold text-[#64748B]">
+                      <div className="rounded-lg border border-line bg-surface p-2.5">
+                        <span className="text-[10px] font-bold text-ink-4">
                           حوزه مکان / زمان f(x):
                         </span>
                         <MathFormula formula={entry.timeFormulaLatex} block />
                       </div>
-                      <div className="rounded-lg border border-[#BAE6FD] bg-[#F0F9FF]/50 p-2.5">
-                        <span className="text-[10px] font-bold text-[#0369A1]">
+                      <div className="rounded-lg border border-accent-line bg-accent-soft/50 p-2.5">
+                        <span className="text-[10px] font-bold text-accent-deep">
                           تبدیل فوریه F(α):
                         </span>
                         <MathFormula formula={entry.freqFormulaLatex} block highlight />
                       </div>
                     </div>
 
-                    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#475569]">
+                    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-ink-3">
                       <div className="flex items-center gap-3">
                         <span>
                           <strong>مقدار DC: </strong>
@@ -365,7 +365,7 @@ export default function FourierTransformStage() {
                             setVisPresetId(entry.associatedPresetId!);
                             setActiveTab('visualizer');
                           }}
-                          className="flex items-center gap-1 rounded bg-[#E0F2FE] px-2 py-0.5 font-bold text-[#0369A1] hover:bg-[#BAE6FD]"
+                          className="flex items-center gap-1 rounded bg-accent-tint px-2 py-0.5 font-bold text-accent-deep hover:bg-accent-tint"
                         >
                           <Activity className="h-3 w-3" />
                           <span>مشاهده در شبیه‌ساز</span>
@@ -377,7 +377,7 @@ export default function FourierTransformStage() {
               })}
 
               {filteredTableEntries.length === 0 && (
-                <div className="rounded-xl border border-dashed border-[#CBD5E1] p-8 text-center text-xs text-[#64748B]">
+                <div className="rounded-xl border border-dashed border-line-strong p-8 text-center text-xs text-ink-4">
                   هیچ تبدیل فوریه‌ای با جستجوی واردشده یافت نشد.
                 </div>
               )}
@@ -385,13 +385,13 @@ export default function FourierTransformStage() {
 
             {/* Selected Entry Detail Card (5 cols) */}
             <div className="lg:col-span-5">
-              <div className="sticky top-6 space-y-4 rounded-2xl border border-[#BAE6FD] bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <div className="sticky top-6 space-y-4 rounded-2xl border border-accent-line bg-surface p-5 shadow-sm">
+                <div className="flex items-center justify-between border-b border-line pb-3">
                   <div>
-                    <span className="rounded bg-[#E0F2FE] px-2 py-0.5 text-[10px] font-bold text-[#0369A1]">
+                    <span className="rounded bg-accent-tint px-2 py-0.5 text-[10px] font-bold text-accent-deep">
                       جزئیات تحلیلی جفت انتخابی
                     </span>
-                    <h3 className="mt-1 text-base font-extrabold text-[#0F172A]">
+                    <h3 className="mt-1 text-base font-extrabold text-ink">
                       {activeTableEntry.nameFa}
                     </h3>
                   </div>
@@ -402,7 +402,7 @@ export default function FourierTransformStage() {
                         setVisPresetId(activeTableEntry.associatedPresetId!);
                         setActiveTab('visualizer');
                       }}
-                      className="rounded-lg bg-[#0284C7] px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-[#0369A1]"
+                      className="rounded-lg bg-accent-solid px-3 py-1.5 text-xs font-bold text-white transition hover:bg-accent-solid"
                     >
                       شبیه‌سازی زنده
                     </button>
@@ -411,49 +411,49 @@ export default function FourierTransformStage() {
 
                 <div className="space-y-3">
                   <div>
-                    <span className="text-xs font-bold text-[#475569]">
+                    <span className="text-xs font-bold text-ink-3">
                       ضابطه در حوزه مکان f(x):
                     </span>
                     <MathFormula formula={activeTableEntry.timeFormulaLatex} block />
                     {activeTableEntry.timeConditionLatex && (
-                      <div className="text-[11px] text-[#64748B]">
+                      <div className="text-[11px] text-ink-4">
                         شرط پارامتر: <MathFormula formula={activeTableEntry.timeConditionLatex} />
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <span className="text-xs font-bold text-[#0369A1]">
+                    <span className="text-xs font-bold text-accent-deep">
                       تبدیل فوریه در حوزه فرکانس F(α):
                     </span>
                     <MathFormula formula={activeTableEntry.freqFormulaLatex} block highlight />
                   </div>
 
-                  <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5 space-y-2 text-xs">
+                  <div className="rounded-xl border border-line bg-panel p-3.5 space-y-2 text-xs">
                     <div>
-                      <strong className="text-[#0F172A]">مقدار در مبدأ فرکانس (مساحت کل):</strong>
+                      <strong className="text-ink">مقدار در مبدأ فرکانس (مساحت کل):</strong>
                       <div className="mt-1">
                         <MathFormula formula={activeTableEntry.fZeroLatex} />
                       </div>
                     </div>
 
                     <div>
-                      <strong className="text-[#0F172A]">اتحاد انرژی پارسوال:</strong>
+                      <strong className="text-ink">اتحاد انرژی پارسوال:</strong>
                       <div className="mt-1">
                         <MathFormula formula={activeTableEntry.parsevalEnergyLatex} />
                       </div>
                     </div>
 
                     <div>
-                      <strong className="text-[#0F172A]">روش اثبات و استخراج:</strong>
-                      <p className="mt-0.5 text-[#475569] leading-relaxed">
+                      <strong className="text-ink">روش اثبات و استخراج:</strong>
+                      <p className="mt-0.5 text-ink-3 leading-relaxed">
                         {activeTableEntry.derivationMethodFa}
                       </p>
                     </div>
 
                     <div>
-                      <strong className="text-[#0F172A]">کاربرد عملی در مهندسی:</strong>
-                      <p className="mt-0.5 text-[#047857] leading-relaxed font-semibold">
+                      <strong className="text-ink">کاربرد عملی در مهندسی:</strong>
+                      <p className="mt-0.5 text-ok-ink leading-relaxed font-semibold">
                         {activeTableEntry.engineeringApplicationFa}
                       </p>
                     </div>
@@ -469,14 +469,14 @@ export default function FourierTransformStage() {
       {activeTab === 'booklet' && (
         <div className="space-y-6">
           {/* Booklet Core Theorems Matrix */}
-          <div className="rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-xs">
-            <div className="mb-4 flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+          <div className="rounded-2xl border border-line-strong bg-surface p-5">
+            <div className="mb-4 flex items-center justify-between border-b border-line pb-3">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-[#FEF3C7] px-2.5 py-0.5 text-xs font-bold text-[#B45309]">
-                  <Sparkles className="h-3.5 w-3.5" />
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-warn-tint px-2.5 py-0.5 text-xs font-bold text-warn">
+                  <BookMarked className="h-3.5 w-3.5" />
                   ماتریس ۱۰ قضیه بنیادین تبدیل فوریه
                 </span>
-                <h3 className="mt-1 text-base font-extrabold text-[#0F172A]">
+                <h3 className="mt-1 text-base font-extrabold text-ink">
                   چکیده سریع و مقایسه‌ای تمام خواص جبر فوریه جهت حل مسائل امتحانی
                 </h3>
               </div>
@@ -535,12 +535,12 @@ export default function FourierTransformStage() {
                   note: 'بقای انرژی کل سیگنال بین حوزه مکان و فرکانس.',
                 },
               ].map((thm, i) => (
-                <div key={i} className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3.5">
-                  <div className="text-xs font-extrabold text-[#0F172A]">{thm.title}</div>
+                <div key={i} className="rounded-xl border border-line bg-panel p-3.5">
+                  <div className="text-xs font-extrabold text-ink">{thm.title}</div>
                   <div className="my-1.5">
                     <MathFormula formula={thm.formula} block highlight />
                   </div>
-                  <p className="text-[11px] leading-relaxed text-[#475569]">{thm.note}</p>
+                  <p className="text-[11px] leading-relaxed text-ink-3">{thm.note}</p>
                 </div>
               ))}
             </div>
@@ -551,38 +551,38 @@ export default function FourierTransformStage() {
             {module4Data.subtopics.map((sub, idx) => (
               <div
                 key={sub.id}
-                className="rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-xs"
+                className="rounded-2xl border border-line bg-surface p-5"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#E0F2FE] font-mono text-xs font-bold text-[#0369A1]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-tint font-mono text-xs font-bold text-accent-deep">
                       ۴.{idx + 1}
                     </span>
-                    <h3 className="text-base font-extrabold text-[#0F172A]">{sub.title}</h3>
+                    <h3 className="text-base font-extrabold text-ink">{sub.title}</h3>
                   </div>
-                  <span className="rounded bg-[#F1F5F9] px-2.5 py-1 text-xs font-bold text-[#475569]">
+                  <span className="rounded bg-muted px-2.5 py-1 text-xs font-bold text-ink-3">
                     {sub.pdfPages}
                   </span>
                 </div>
 
-                <p className="mt-3 text-xs leading-relaxed text-[#334155] sm:text-sm">
+                <p className="mt-3 text-xs leading-relaxed text-ink-2 sm:text-sm">
                   <MathText text={sub.summary} />
                 </p>
 
                 <div className="mt-4 space-y-3">
-                  <div className="text-xs font-bold text-[#0369A1]">فرمول‌های کلیدی این بخش:</div>
+                  <div className="text-xs font-bold text-accent-deep">فرمول‌های کلیدی این بخش:</div>
                   <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2">
                     {sub.keyFormulas.map((kf, kIdx) => (
                       <div
                         key={kIdx}
-                        className="rounded-xl border border-[#BAE6FD] bg-[#F0F9FF]/60 p-3"
+                        className="rounded-xl border border-accent-line bg-accent-soft/60 p-3"
                       >
-                        <div className="mb-1 text-xs font-bold text-[#0F172A]">
+                        <div className="mb-1 text-xs font-bold text-ink">
                           <MathText text={kf.label} />
                         </div>
                         <MathFormula formula={kf.formula} block />
                         {kf.note && (
-                          <div className="mt-1 text-[11px] text-[#475569] leading-relaxed">
+                          <div className="mt-1 text-[11px] text-ink-3 leading-relaxed">
                             <MathText text={kf.note} />
                           </div>
                         )}
@@ -592,11 +592,11 @@ export default function FourierTransformStage() {
                 </div>
 
                 {sub.conceptualPoints && sub.conceptualPoints.length > 0 && (
-                  <div className="mt-3.5 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-3">
-                    <strong className="text-xs font-bold text-[#92400E]">
+                  <div className="mt-3.5 rounded-xl border border-warn-line bg-warn-soft p-3">
+                    <strong className="text-xs font-bold text-warn-ink">
                       نکات مفهومی و آزمونی:
                     </strong>
-                    <ul className="mt-1 list-inside list-disc space-y-1 text-xs text-[#92400E]">
+                    <ul className="mt-1 list-inside list-disc space-y-1 text-xs text-warn-ink">
                       {sub.conceptualPoints.map((pt, pIdx) => (
                         <li key={pIdx}>
                           <MathText text={pt} />
@@ -618,13 +618,13 @@ export default function FourierTransformStage() {
             {/* Left 7 Cols: Spatial Plot and Frequency Plot */}
             <div className="space-y-4 lg:col-span-7">
               {/* Plot 1: Spatial Domain f(x) */}
-              <div className="rounded-2xl border border-[#CBD5E1] bg-white p-4 shadow-xs">
-                <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#0F172A]">
+              <div className="rounded-2xl border border-line-strong bg-surface p-4">
+                <div className="mb-2 flex items-center justify-between text-xs font-bold text-ink">
                   <span className="flex items-center gap-1.5">
-                    <Activity className="h-4 w-4 text-[#0284C7]" />
+                    <Activity className="h-4 w-4 text-accent" />
                     ۱. حوزه مکان / زمان: تابع <MathFormula formula="f(x)" />
                   </span>
-                  <span dir="ltr" className="font-mono text-[#0284C7]">
+                  <span dir="ltr" className="font-mono text-accent">
                     x ∈ [-{visData.xDomain.toFixed(1)}, +{visData.xDomain.toFixed(1)}]
                   </span>
                 </div>
@@ -634,18 +634,18 @@ export default function FourierTransformStage() {
                       data={visData.timePoints}
                       margin={{ top: 15, right: 15, left: -15, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                       <XAxis
                         dataKey="x"
                         type="number"
                         domain={[-visData.xDomain, visData.xDomain]}
-                        tick={{ fontSize: 11, fill: '#475569' }}
+                        tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                      <YAxis tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#FFFFFF',
-                          borderColor: '#CBD5E1',
+                          backgroundColor: 'var(--surface)',
+                          borderColor: 'var(--chart-grid)',
                           borderRadius: '8px',
                           fontSize: '11px',
                         }}
@@ -654,17 +654,17 @@ export default function FourierTransformStage() {
                       {timeShift !== 0 && (
                         <ReferenceLine
                           x={timeShift}
-                          stroke="#DC2626"
+                          stroke="var(--chart-danger)"
                           strokeDasharray="4 3"
-                          label={{ value: `x₀=${timeShift}`, fill: '#DC2626', fontSize: 10 }}
+                          label={{ value: `x₀=${timeShift}`, fill: 'var(--chart-danger)', fontSize: 10 }}
                         />
                       )}
                       <Area
                         type="monotone"
                         dataKey="fx"
                         name="f(x) تابع در مکان"
-                        stroke="#0284C7"
-                        fill="#0284C7"
+                        stroke="var(--chart-accent)"
+                        fill="var(--chart-accent)"
                         fillOpacity={0.15}
                         strokeWidth={2.5}
                         dot={false}
@@ -676,13 +676,13 @@ export default function FourierTransformStage() {
               </div>
 
               {/* Plot 2: Frequency Domain F(alpha) */}
-              <div className="rounded-2xl border border-[#CBD5E1] bg-white p-4 shadow-xs">
-                <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#0F172A]">
+              <div className="rounded-2xl border border-line-strong bg-surface p-4">
+                <div className="mb-2 flex items-center justify-between text-xs font-bold text-ink">
                   <span className="flex items-center gap-1.5">
-                    <Radio className="h-4 w-4 text-[#059669]" />
+                    <Radio className="h-4 w-4 text-ok" />
                     ۲. حوزه فرکانس پیوسته: طیف اندازه <MathFormula formula="|F(\alpha)|" /> و مؤلفه‌ها
                   </span>
-                  <span dir="ltr" className="font-mono text-[#059669]">
+                  <span dir="ltr" className="font-mono text-ok">
                     α ∈ [-{visData.alphaDomain.toFixed(1)}, +{visData.alphaDomain.toFixed(1)}] rad/s
                   </span>
                 </div>
@@ -692,18 +692,18 @@ export default function FourierTransformStage() {
                       data={visData.freqPoints}
                       margin={{ top: 15, right: 15, left: -15, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                       <XAxis
                         dataKey="alpha"
                         type="number"
                         domain={[-visData.alphaDomain, visData.alphaDomain]}
-                        tick={{ fontSize: 11, fill: '#475569' }}
+                        tick={{ fontSize: 11, fill: 'var(--chart-axis)' }}
                       />
-                      <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                      <YAxis tick={{ fontSize: 11, fill: 'var(--chart-axis)' }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#FFFFFF',
-                          borderColor: '#CBD5E1',
+                          backgroundColor: 'var(--surface)',
+                          borderColor: 'var(--chart-grid)',
                           borderRadius: '8px',
                           fontSize: '11px',
                         }}
@@ -712,17 +712,17 @@ export default function FourierTransformStage() {
                       {freqShift !== 0 && (
                         <ReferenceLine
                           x={freqShift}
-                          stroke="#7C3AED"
+                          stroke="var(--chart-violet)"
                           strokeDasharray="4 3"
-                          label={{ value: `ω₀=${freqShift}`, fill: '#7C3AED', fontSize: 10 }}
+                          label={{ value: `ω₀=${freqShift}`, fill: 'var(--chart-violet)', fontSize: 10 }}
                         />
                       )}
                       <Area
                         type="monotone"
                         dataKey="absF"
                         name="|F(α)| طیف اندازه"
-                        stroke="#059669"
-                        fill="#059669"
+                        stroke="var(--chart-ok)"
+                        fill="var(--chart-ok)"
                         fillOpacity={0.12}
                         strokeWidth={2.2}
                         dot={false}
@@ -732,7 +732,7 @@ export default function FourierTransformStage() {
                         type="monotone"
                         dataKey="realF"
                         name="Re F(α) بخش حقیقی"
-                        stroke="#0284C7"
+                        stroke="var(--chart-accent)"
                         strokeWidth={1.8}
                         dot={false}
                         isAnimationActive={false}
@@ -741,7 +741,7 @@ export default function FourierTransformStage() {
                         type="monotone"
                         dataKey="imagF"
                         name="Im F(α) بخش موهومی"
-                        stroke="#F59E0B"
+                        stroke="var(--chart-warn)"
                         strokeWidth={1.5}
                         strokeDasharray="4 3"
                         dot={false}
@@ -755,13 +755,13 @@ export default function FourierTransformStage() {
 
             {/* Right 5 Cols: Controls, Physics Indicators & Live Equations */}
             <div className="space-y-4 lg:col-span-5">
-              <div className="rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-xs space-y-4">
+              <div className="rounded-2xl border border-line-strong bg-surface p-5 space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-[#0F172A]">انتخاب سیگنال پایه:</label>
+                  <label className="text-xs font-bold text-ink">انتخاب سیگنال پایه:</label>
                   <select
                     value={visPresetId}
                     onChange={(e) => setVisPresetId(e.target.value as TransformPresetId)}
-                    className="mt-1 w-full rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] p-2 text-xs font-bold text-[#0F172A] transition focus:border-[#0284C7] focus:bg-white focus:outline-hidden"
+                    className="mt-1 w-full rounded-xl border border-line-strong bg-panel p-2 text-xs font-bold text-ink transition focus:border-accent focus:bg-surface focus:outline-hidden"
                   >
                     <option value="two_sided_exp">نمایی دوطرفه متقارن e^(-a|x|)</option>
                     <option value="rect_pulse">پالس مستطیلی متقارن p_a(x)</option>
@@ -773,9 +773,9 @@ export default function FourierTransformStage() {
 
                 {/* Slider a */}
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#334155]">
+                  <div className="flex items-center justify-between text-xs font-bold text-ink-2">
                     <span>پارامتر مقیاس پهنا / واپاشی (a):</span>
-                    <span dir="ltr" className="font-mono text-[#0284C7]">
+                    <span dir="ltr" className="font-mono text-accent">
                       a = {paramA.toFixed(1)}
                     </span>
                   </div>
@@ -786,9 +786,9 @@ export default function FourierTransformStage() {
                     step={0.1}
                     value={paramA}
                     onChange={(e) => setParamA(Number(e.target.value))}
-                    className="w-full accent-[#0284C7]"
+                    className="w-full accent-accent"
                   />
-                  <div className="flex justify-between text-[10px] text-[#64748B]">
+                  <div className="flex justify-between text-[10px] text-ink-4">
                     <span>پالس پهن‌تر در مکان (طیف فرکانسی تیز)</span>
                     <span>پالس تیز (طیف گسترده)</span>
                   </div>
@@ -796,9 +796,9 @@ export default function FourierTransformStage() {
 
                 {/* Slider Time Shift x0 */}
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#334155]">
+                  <div className="flex items-center justify-between text-xs font-bold text-ink-2">
                     <span>انتقال زمان / مکان (Time Shift x₀):</span>
-                    <span dir="ltr" className="font-mono text-[#DC2626]">
+                    <span dir="ltr" className="font-mono text-danger-ink">
                       x₀ = {timeShift.toFixed(1)}
                     </span>
                   </div>
@@ -809,9 +809,9 @@ export default function FourierTransformStage() {
                     step={0.5}
                     value={timeShift}
                     onChange={(e) => setTimeShift(Number(e.target.value))}
-                    className="w-full accent-[#DC2626]"
+                    className="w-full accent-danger"
                   />
-                  <div className="flex justify-between text-[10px] text-[#64748B]">
+                  <div className="flex justify-between text-[10px] text-ink-4">
                     <span>تأخیر فاز منفی (-3)</span>
                     <span>بدون شیفت (0)</span>
                     <span>پیش‌افتاد فاز (+3)</span>
@@ -820,9 +820,9 @@ export default function FourierTransformStage() {
 
                 {/* Slider Frequency Modulation w0 */}
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-[#334155]">
+                  <div className="flex items-center justify-between text-xs font-bold text-ink-2">
                     <span>انتقال فرکانس / حامل مدولاسیون (ω₀):</span>
-                    <span dir="ltr" className="font-mono text-[#7C3AED]">
+                    <span dir="ltr" className="font-mono text-accent">
                       ω₀ = {freqShift} rad/s
                     </span>
                   </div>
@@ -833,9 +833,9 @@ export default function FourierTransformStage() {
                     step={1}
                     value={freqShift}
                     onChange={(e) => setFreqShift(Number(e.target.value))}
-                    className="w-full accent-[#7C3AED]"
+                    className="w-full accent-accent"
                   />
-                  <div className="flex justify-between text-[10px] text-[#64748B]">
+                  <div className="flex justify-between text-[10px] text-ink-4">
                     <span>باند پایه (0)</span>
                     <span>مدولاسیون حامل (8 rad/s)</span>
                   </div>
@@ -844,27 +844,27 @@ export default function FourierTransformStage() {
 
               {/* Physical Readout Cards */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-[#BAE6FD] bg-[#F0F9FF] p-3">
-                  <span className="text-[10px] font-bold text-[#0369A1]">
+                <div className="rounded-xl border border-accent-line bg-accent-soft p-3">
+                  <span className="text-[10px] font-bold text-accent-deep">
                     مساحت مکان = مؤلفه DC:
                   </span>
-                  <div className="mt-1 font-mono text-xs font-extrabold text-[#0F172A]" dir="ltr">
+                  <div className="mt-1 font-mono text-xs font-extrabold text-ink" dir="ltr">
                     F(0) = {visData.dcValue.toFixed(4)}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[#A7F3D0] bg-[#ECFDF5] p-3">
-                  <span className="text-[10px] font-bold text-[#065F46]">
+                <div className="rounded-xl border border-ok-line bg-ok-soft p-3">
+                  <span className="text-[10px] font-bold text-ok-ink">
                     برابری انرژی پارسوال:
                   </span>
-                  <div className="mt-1 font-mono text-[11px] font-extrabold text-[#065F46]" dir="ltr">
+                  <div className="mt-1 font-mono text-[11px] font-extrabold text-ok-ink" dir="ltr">
                     Ex: {visData.timeEnergy.toFixed(3)} ≃ Eα: {visData.freqEnergyNormalized.toFixed(3)}
                   </div>
                 </div>
               </div>
 
               {/* Heisenberg Uncertainty Note */}
-              <div className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] p-3 text-xs leading-relaxed text-[#92400E]">
+              <div className="rounded-xl border border-warn-line bg-warn-soft p-3 text-xs leading-relaxed text-warn-ink">
                 <strong>اصل عدم قطعیت فوریه: </strong>
                 <MathText text="کاهش پهنای پالس در حوزه مکان ($a$ بزرگتر) مستلزم افزایش پهنای باند طیف فرکانس است: ($\Delta x \cdot \Delta \alpha \ge 1/2$). این نامساوی پایه مخابرات مدرن و مکانیک کوانتوم است." />
               </div>
@@ -877,14 +877,14 @@ export default function FourierTransformStage() {
       {activeTab === 'derivations' && (
         <div className="space-y-6">
           {/* Examples Selector Bar */}
-          <div className="rounded-2xl border border-[#CBD5E1] bg-white p-5 shadow-xs">
-            <div className="mb-3 flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+          <div className="rounded-2xl border border-line-strong bg-surface p-5">
+            <div className="mb-3 flex items-center justify-between border-b border-line pb-3">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-bold text-[#0369A1]">
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-tint px-2.5 py-0.5 text-xs font-bold text-accent-deep">
                   <FileText className="h-3.5 w-3.5" />
                   ۶ مثال تشریحی حل‌شده کامل بدون پرش محاسباتی
                 </span>
-                <h3 className="mt-1 text-base font-extrabold text-[#0F172A]">
+                <h3 className="mt-1 text-base font-extrabold text-ink">
                   مسائل آزمونی و کاربردی با حل گام‌به‌گام تحلیلی
                 </h3>
               </div>
@@ -898,8 +898,8 @@ export default function FourierTransformStage() {
                   onClick={() => setSelectedExampleId(ex.id)}
                   className={`rounded-xl px-3.5 py-2 text-xs font-bold transition ${
                     selectedExampleId === ex.id
-                      ? 'bg-[#0284C7] text-white shadow-xs'
-                      : 'border border-[#CBD5E1] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9]'
+                      ? 'bg-accent-solid text-white'
+                      : 'border border-line-strong bg-panel text-ink-3 hover:bg-muted'
                   }`}
                 >
                   <span>مثال {i + 1}: </span>
@@ -910,25 +910,25 @@ export default function FourierTransformStage() {
           </div>
 
           {/* Active Worked Example Card */}
-          <div className="rounded-2xl border border-[#BAE6FD] bg-white p-6 shadow-xs space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
+          <div className="rounded-2xl border border-accent-line bg-surface p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
               <div>
-                <span className="text-xs font-bold text-[#0284C7]">
+                <span className="text-xs font-bold text-accent">
                   {activeWorkedExample.pdfReference}
                 </span>
-                <h3 className="mt-0.5 text-lg font-extrabold text-[#0F172A]">
+                <h3 className="mt-0.5 text-lg font-extrabold text-ink">
                   {activeWorkedExample.title}
                 </h3>
               </div>
-              <span className="rounded-md bg-[#FEF3C7] px-2.5 py-1 text-xs font-bold text-[#B45309]">
+              <span className="rounded-md bg-warn-tint px-2.5 py-1 text-xs font-bold text-warn">
                 درجه سختی: {activeWorkedExample.difficulty}
               </span>
             </div>
 
             {/* Problem Statement */}
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 space-y-2">
-              <strong className="text-xs text-[#0F172A]">صورت مسئله:</strong>
-              <p className="text-xs leading-relaxed text-[#334155] sm:text-sm">
+            <div className="rounded-xl border border-line bg-panel p-4 space-y-2">
+              <strong className="text-xs text-ink">صورت مسئله:</strong>
+              <p className="text-xs leading-relaxed text-ink-2 sm:text-sm">
                 <MathText text={activeWorkedExample.problemStatement} />
               </p>
               {activeWorkedExample.problemFormula && (
@@ -940,37 +940,37 @@ export default function FourierTransformStage() {
 
             {/* Step by Step Derivations */}
             <div className="space-y-3.5">
-              <div className="text-xs font-bold text-[#0369A1]">مراحل حل تحلیلی بدون جهش:</div>
+              <div className="text-xs font-bold text-accent-deep">مراحل حل تحلیلی بدون جهش:</div>
               {activeWorkedExample.steps.map((st) => (
                 <div
                   key={st.stepNumber}
-                  className="rounded-xl border border-[#BAE6FD] bg-[#F0F9FF]/50 p-4 space-y-2"
+                  className="rounded-xl border border-accent-line bg-accent-soft/50 p-4 space-y-2"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0284C7] text-[11px] font-bold text-white">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-solid text-[11px] font-bold text-white">
                       {st.stepNumber}
                     </span>
-                    <h4 className="text-xs font-extrabold text-[#0F172A]">
+                    <h4 className="text-xs font-extrabold text-ink">
                       <MathText text={st.title} />
                     </h4>
                   </div>
 
-                  <p className="text-xs leading-relaxed text-[#475569]">
+                  <p className="text-xs leading-relaxed text-ink-3">
                     <MathText text={st.explanation} />
                   </p>
 
                   <MathFormula formula={st.formula} block />
 
                   {st.whyHint && (
-                    <div className="text-[11px] font-medium text-[#0369A1] leading-relaxed">
+                    <div className="text-[11px] font-medium text-accent-deep leading-relaxed">
                       💡 <strong>چرا این گام؟ </strong>
                       <MathText text={st.whyHint} />
                     </div>
                   )}
 
                   {st.highlightNote && (
-                    <div className="rounded-lg border border-[#FDE68A] bg-[#FFFBEB] p-2 text-[11px] text-[#92400E]">
-                      ⚡ <strong>نکته کلیدی: </strong>
+                    <div className="rounded-lg border border-warn-line bg-warn-soft p-2 text-[11px] text-warn-ink">
+                      <strong>نکته کلیدی: </strong>
                       <MathText text={st.highlightNote} />
                     </div>
                   )}
@@ -979,8 +979,8 @@ export default function FourierTransformStage() {
             </div>
 
             {/* Final Answer Formula Box */}
-            <div className="rounded-xl border border-[#A7F3D0] bg-[#ECFDF5] p-4">
-              <div className="text-xs font-bold text-[#065F46]">پاسخ نهایی تحلیلی:</div>
+            <div className="rounded-xl border border-ok-line bg-ok-soft p-4">
+              <div className="text-xs font-bold text-ok-ink">پاسخ نهایی تحلیلی:</div>
               <div className="mt-1">
                 <MathFormula formula={activeWorkedExample.finalAnswerFormula} block highlight />
               </div>
@@ -988,14 +988,14 @@ export default function FourierTransformStage() {
           </div>
 
           {/* Interactive Exam Practice Quiz (6 Questions) */}
-          <div className="rounded-2xl border border-[#CBD5E1] bg-white p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+          <div className="rounded-2xl border border-line-strong bg-surface p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-bold text-[#475569]">
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-0.5 text-xs font-bold text-ink-3">
                   <HelpCircle className="h-3.5 w-3.5" />
                   آزمونک سنجش یادگیری تبدیل فوریه
                 </span>
-                <h3 className="mt-1 text-base font-extrabold text-[#0F172A]">
+                <h3 className="mt-1 text-base font-extrabold text-ink">
                   ۶ تست مفهومی و امتحانی استاندارد با پاسخ تشریحی جامع
                 </h3>
               </div>
@@ -1011,13 +1011,13 @@ export default function FourierTransformStage() {
                 return (
                   <div
                     key={q.id}
-                    className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 space-y-3"
+                    className="rounded-xl border border-line bg-panel p-4 space-y-3"
                   >
                     <div className="flex items-start gap-2">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0284C7] text-[11px] font-bold text-white">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-solid text-[11px] font-bold text-white">
                         {qIndex + 1}
                       </span>
-                      <div className="text-xs font-bold text-[#0F172A] leading-relaxed">
+                      <div className="text-xs font-bold text-ink leading-relaxed">
                         <MathText text={q.question} />
                       </div>
                     </div>
@@ -1025,12 +1025,12 @@ export default function FourierTransformStage() {
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       {q.options.map((opt, optIndex) => {
                         let btnStyle =
-                          'border-[#CBD5E1] bg-white text-[#334155] hover:bg-[#F1F5F9]';
+                          'border-line-strong bg-surface text-ink-2 hover:bg-muted';
                         if (isAnswered) {
                           if (optIndex === q.correctIndex) {
-                            btnStyle = 'border-[#059669] bg-[#ECFDF5] text-[#065F46] font-bold';
+                            btnStyle = 'border-ok bg-ok-soft text-ok-ink font-bold';
                           } else if (selected === optIndex) {
-                            btnStyle = 'border-[#DC2626] bg-[#FEF2F2] text-[#991B1B] font-bold';
+                            btnStyle = 'border-danger bg-danger-soft text-danger-ink font-bold';
                           }
                         }
 
@@ -1054,11 +1054,11 @@ export default function FourierTransformStage() {
                       <div
                         className={`mt-2 rounded-lg p-3 text-xs leading-relaxed ${
                           isCorrect
-                            ? 'border border-[#A7F3D0] bg-[#ECFDF5] text-[#065F46]'
-                            : 'border border-[#FDE68A] bg-[#FFFBEB] text-[#92400E]'
+                            ? 'border border-ok-line bg-ok-soft text-ok-ink'
+                            : 'border border-warn-line bg-warn-soft text-warn-ink'
                         }`}
                       >
-                        <strong>{isCorrect ? '✓ پاسخ کاملاً صحیح: ' : '✕ پاسخ نادرست: '}</strong>
+                        <strong>{isCorrect ? 'پاسخ صحیح: ' : 'پاسخ نادرست: '}</strong>
                         <MathText text={q.explanation} />
                       </div>
                     )}

@@ -282,31 +282,31 @@ export default function HeatEquationStage() {
 
   const tempToColor = (temp: number) => {
     const ratio = Math.max(0, Math.min(1, temp / 100));
-    if (ratio < 0.35) return '#0284C7';
-    if (ratio < 0.7) return '#D97706';
-    return '#DC2626';
+    if (ratio < 0.35) return 'var(--chart-accent)';
+    if (ratio < 0.7) return 'var(--chart-warn)';
+    return 'var(--chart-danger)';
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-xs transition-colors sm:p-5 dark:border-[#1E293B] dark:bg-[#111827]">
+    <div className="space-y-4 rounded-xl border border-line bg-surface p-4 transition-colors sm:p-5">
       {/* Header & Sub-Tab Navigation Bar */}
-      <div className="flex flex-col gap-3 border-b border-[#E2E8F0] pb-3.5 lg:flex-row lg:items-center lg:justify-between dark:border-[#1E293B]">
+      <div className="flex flex-col gap-3 border-b border-line pb-3.5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#DC2626] text-white shadow-2xs">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-danger-solid text-white">
               <Flame className="h-4 w-4" />
             </div>
-            <h3 className="text-base font-bold text-[#0F172A] sm:text-lg dark:text-[#F8FAFC]">
+            <h3 className="text-base font-bold text-ink sm:text-lg">
               آزمایشگاه جامع و شبیه‌ساز تحلیلی معادله گرما (1D Heat PDE)
             </h3>
           </div>
-          <p className="mt-0.5 text-xs text-[#475569] dark:text-[#94A3B8]">
+          <p className="mt-0.5 text-xs text-ink-3">
             مدل‌سازی پدیده‌های نفوذ و اتلاف حرارت، جداسازی متغیرها، میرایی هارمونیک‌ها و هسته گاوسی
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] p-1 dark:border-[#334155] dark:bg-[#0F172A]">
+        <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-line-strong bg-panel p-1">
           {[
             {
               id: 'simulation',
@@ -338,8 +338,8 @@ export default function HeatEquationStage() {
                 onClick={() => setActiveTab(tab.id as HeatTabId)}
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition ${
                   isActive
-                    ? 'bg-[#0284C7] text-white shadow-2xs'
-                    : 'text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0F172A] dark:text-[#94A3B8] dark:hover:bg-[#1E293B] dark:hover:text-[#F8FAFC]'
+                    ? 'bg-accent-solid text-white'
+                    : 'text-ink-3 hover:bg-muted hover:text-ink'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -354,20 +354,20 @@ export default function HeatEquationStage() {
       {activeTab === 'simulation' && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
           {/* Left/Top 7 Cols: Thermal Rod Curve & Gradient */}
-          <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-2xs lg:col-span-7 dark:border-[#1E293B] dark:bg-[#0F172A]/70">
+          <div className="space-y-4 rounded-xl border border-line bg-surface p-4 lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="rounded bg-[#F0F9FF] px-2 py-0.5 font-mono text-xs font-bold text-[#0369A1] dark:bg-[#0C4A6E]/40 dark:text-[#7DD3FC]">
+                <span className="rounded bg-accent-soft px-2 py-0.5 font-mono text-xs font-bold text-accent-deep">
                   u_t = k² u_xx
                 </span>
-                <span className="text-xs font-semibold text-[#475569] dark:text-[#CBD5E1]">
+                <span className="text-xs font-semibold text-ink-3">
                   طول میله: L = π m
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span
                   dir="ltr"
-                  className="rounded-md bg-[#FEF2F2] px-2.5 py-1 font-mono text-xs font-bold text-[#DC2626] dark:bg-[#7F1D1D]/30 dark:text-[#FCA5A5]"
+                  className="rounded-md bg-danger-soft px-2.5 py-1 font-mono text-xs font-bold text-danger-ink"
                 >
                   t = {timeT.toFixed(2)} s | u(L/2, t) ={' '}
                   {heatData.midTemp.toFixed(1)}°C
@@ -376,7 +376,7 @@ export default function HeatEquationStage() {
             </div>
 
             {/* SVG Temperature Curve Plot */}
-            <div className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] dark:border-[#1E293B] dark:bg-[#0B1120]">
+            <div className="overflow-hidden rounded-xl border border-line bg-panel">
               <svg
                 viewBox={`0 0 ${svgWidth} ${svgHeight}`}
                 className="h-56 w-full"
@@ -389,7 +389,7 @@ export default function HeatEquationStage() {
                   y1={mapY(0)}
                   x2={svgWidth - 35}
                   y2={mapY(0)}
-                  stroke="#94A3B8"
+                  stroke="var(--chart-muted)"
                   strokeWidth="1.2"
                 />
                 <line
@@ -397,7 +397,7 @@ export default function HeatEquationStage() {
                   y1={mapY(50)}
                   x2={svgWidth - 35}
                   y2={mapY(50)}
-                  stroke="#CBD5E1"
+                  stroke="var(--chart-grid)"
                   strokeWidth="0.8"
                   strokeDasharray="3 3"
                 />
@@ -406,7 +406,7 @@ export default function HeatEquationStage() {
                   y1={mapY(100)}
                   x2={svgWidth - 35}
                   y2={mapY(100)}
-                  stroke="#CBD5E1"
+                  stroke="var(--chart-grid)"
                   strokeWidth="0.8"
                   strokeDasharray="3 3"
                 />
@@ -417,7 +417,7 @@ export default function HeatEquationStage() {
                   y1={16}
                   x2={35}
                   y2={svgHeight - 20}
-                  stroke="#475569"
+                  stroke="var(--chart-axis)"
                   strokeWidth="2"
                 />
                 <line
@@ -425,7 +425,7 @@ export default function HeatEquationStage() {
                   y1={16}
                   x2={svgWidth - 35}
                   y2={svgHeight - 20}
-                  stroke="#475569"
+                  stroke="var(--chart-axis)"
                   strokeWidth="2"
                 />
 
@@ -433,7 +433,7 @@ export default function HeatEquationStage() {
                 <path
                   d={initialPath}
                   fill="none"
-                  stroke="#94A3B8"
+                  stroke="var(--chart-muted)"
                   strokeWidth="1.8"
                   strokeDasharray="5 4"
                 />
@@ -442,7 +442,7 @@ export default function HeatEquationStage() {
                 <path
                   d={steadyPath}
                   fill="none"
-                  stroke="#059669"
+                  stroke="var(--chart-ok)"
                   strokeWidth="1.8"
                   strokeDasharray="2 3"
                 />
@@ -451,7 +451,7 @@ export default function HeatEquationStage() {
                 <path
                   d={currentPath}
                   fill="none"
-                  stroke="#DC2626"
+                  stroke="var(--chart-danger)"
                   strokeWidth="3.2"
                 />
 
@@ -459,21 +459,21 @@ export default function HeatEquationStage() {
                 <text
                   x={30}
                   y={svgHeight - 8}
-                  className="fill-[#334155] font-mono text-[11px] font-bold dark:fill-[#CBD5E1]"
+                  className="fill-(--chart-axis) font-mono text-[11px] font-bold"
                 >
                   x = 0
                 </text>
                 <text
                   x={svgWidth / 2 - 15}
                   y={svgHeight - 8}
-                  className="fill-[#334155] font-mono text-[11px] dark:fill-[#CBD5E1]"
+                  className="fill-(--chart-axis) font-mono text-[11px]"
                 >
                   x = L/2
                 </text>
                 <text
                   x={svgWidth - 52}
                   y={svgHeight - 8}
-                  className="fill-[#334155] font-mono text-[11px] font-bold dark:fill-[#CBD5E1]"
+                  className="fill-(--chart-axis) font-mono text-[11px] font-bold"
                 >
                   x = L
                 </text>
@@ -481,14 +481,14 @@ export default function HeatEquationStage() {
             </div>
 
             {/* Physical 1D Rod Heat-Map Visualization */}
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 dark:border-[#1E293B] dark:bg-[#0B1120]">
-              <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-[#334155] dark:text-[#CBD5E1]">
+            <div className="rounded-xl border border-line bg-panel p-3">
+              <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-ink-2">
                 <span>نمای بصری رسانایی حرارتی میله در لحظه t = {timeT.toFixed(2)}s:</span>
-                <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
+                <span className="text-[11px] text-ink-4">
                   آبی (سرد ۰°C) ← کهربایی (گرم) ← قرمز (داغ ۱۰۰°C)
                 </span>
               </div>
-              <div className="flex h-7 w-full overflow-hidden rounded-lg border border-[#CBD5E1] dark:border-[#334155]">
+              <div className="flex h-7 w-full overflow-hidden rounded-lg border border-line-strong">
                 {heatData.points
                   .filter((_, idx) => idx % 2 === 0)
                   .map((pt, i) => (
@@ -506,12 +506,12 @@ export default function HeatEquationStage() {
             </div>
 
             {/* Playback Controls & Legend */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E2E8F0] pt-3 dark:border-[#1E293B]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setIsPlaying((p) => !p)}
-                  className="flex items-center gap-1.5 rounded-lg bg-[#0284C7] px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-[#0369A1]"
+                  className="flex items-center gap-1.5 rounded-lg bg-accent-solid px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-accent-solid"
                 >
                   {isPlaying ? (
                     <>
@@ -531,7 +531,7 @@ export default function HeatEquationStage() {
                     setIsPlaying(false);
                     setTimeT(0);
                   }}
-                  className="flex items-center gap-1 rounded-lg border border-[#CBD5E1] bg-white px-3 py-1.5 text-xs font-semibold text-[#475569] transition hover:bg-[#F1F5F9] dark:border-[#334155] dark:bg-[#1E293B] dark:text-[#CBD5E1]"
+                  className="flex items-center gap-1 rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-ink-3 transition hover:bg-muted"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   لحظه اولیه (t = 0)
@@ -541,23 +541,23 @@ export default function HeatEquationStage() {
                   onClick={() =>
                     setPlaybackSpeed((s) => (s === 1 ? 2 : s === 2 ? 0.5 : 1))
                   }
-                  className="rounded-lg border border-[#CBD5E1] bg-white px-2.5 py-1.5 font-mono text-xs font-bold text-[#334155] dark:border-[#334155] dark:bg-[#1E293B] dark:text-[#CBD5E1]"
+                  className="rounded-lg border border-line-strong bg-surface px-2.5 py-1.5 font-mono text-xs font-bold text-ink-2"
                 >
                   {playbackSpeed}x
                 </button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs text-[#475569] dark:text-[#CBD5E1]">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-ink-3">
                 <span className="flex items-center gap-1">
-                  <span className="inline-block h-0.5 w-3.5 bg-[#94A3B8]" />
+                  <span className="inline-block h-0.5 w-3.5 bg-line-strong" />
                   دمای اولیه u(x,0)
                 </span>
-                <span className="flex items-center gap-1 font-bold text-[#DC2626] dark:text-[#F87171]">
-                  <span className="inline-block h-1 w-3.5 bg-[#DC2626]" />
+                <span className="flex items-center gap-1 font-bold text-danger-ink">
+                  <span className="inline-block h-1 w-3.5 bg-danger-solid" />
                   دمای لحظه‌ای u(x,t)
                 </span>
-                <span className="flex items-center gap-1 text-[#059669] dark:text-[#34D399]">
-                  <span className="inline-block h-0.5 w-3.5 bg-[#059669]" />
+                <span className="flex items-center gap-1 text-ok">
+                  <span className="inline-block h-0.5 w-3.5 bg-ok-solid" />
                   تعادل ماندگار v(x)
                 </span>
               </div>
@@ -565,15 +565,15 @@ export default function HeatEquationStage() {
           </div>
 
           {/* Right/Bottom 5 Cols: PDE Parameter Deck */}
-          <div className="space-y-4 rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-2xs lg:col-span-5 dark:border-[#1E293B] dark:bg-[#0F172A]/70">
-            <h4 className="flex items-center gap-1.5 text-sm font-bold text-[#0F172A] dark:text-[#F8FAFC]">
-              <Sliders className="h-4 w-4 text-[#0284C7] dark:text-[#38BDF8]" />
+          <div className="space-y-4 rounded-xl border border-line bg-surface p-4 lg:col-span-5">
+            <h4 className="flex items-center gap-1.5 text-sm font-bold text-ink">
+              <Sliders className="h-4 w-4 text-accent" />
               <span>تنظیم شرایط مرزی، اولیه و فیزیکی میله</span>
             </h4>
 
             {/* Boundary Condition Selector */}
             <div>
-              <label className="mb-1.5 block text-xs font-bold text-[#334155] dark:text-[#CBD5E1]">
+              <label className="mb-1.5 block text-xs font-bold text-ink-2">
                 ۱. شرایط مرزی دو سر میله (Boundary Conditions):
               </label>
               <div className="grid grid-cols-1 gap-1.5">
@@ -612,8 +612,8 @@ export default function HeatEquationStage() {
                     }}
                     className={`rounded-lg border px-3 py-1.5 text-right text-xs font-semibold transition ${
                       bcType === b.id
-                        ? 'border-[#0284C7] bg-[#F0F9FF] text-[#0369A1] dark:border-[#38BDF8] dark:bg-[#0C4A6E]/40 dark:text-[#7DD3FC]'
-                        : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#475569] hover:bg-[#F1F5F9] dark:border-[#1E293B] dark:bg-[#1E293B] dark:text-[#94A3B8]'
+                        ? 'border-accent bg-accent-soft text-accent-deep'
+                        : 'border-line bg-panel text-ink-3 hover:bg-muted'
                     }`}
                   >
                     {b.label}
@@ -624,9 +624,9 @@ export default function HeatEquationStage() {
 
             {/* Non-homogeneous Temperatures Slider */}
             {bcType === 'nonhomog_steady' && (
-              <div className="grid grid-cols-2 gap-3 rounded-lg border border-[#0284C7]/30 bg-[#F0F9FF] p-3 dark:border-[#38BDF8]/30 dark:bg-[#0C4A6E]/20">
+              <div className="grid grid-cols-2 gap-3 rounded-lg border border-accent/30 bg-accent-soft p-3 dark:border-accent/30">
                 <div>
-                  <label className="mb-1 flex justify-between text-xs font-bold text-[#0369A1] dark:text-[#7DD3FC]">
+                  <label className="mb-1 flex justify-between text-xs font-bold text-accent-deep">
                     <span>دمای سر چپ T₁:</span>
                     <span className="font-mono">{leftTempT1}°C</span>
                   </label>
@@ -637,11 +637,11 @@ export default function HeatEquationStage() {
                     step={5}
                     value={leftTempT1}
                     onChange={(e) => setLeftTempT1(Number(e.target.value))}
-                    className="w-full accent-[#0284C7]"
+                    className="w-full accent-accent"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 flex justify-between text-xs font-bold text-[#0369A1] dark:text-[#7DD3FC]">
+                  <label className="mb-1 flex justify-between text-xs font-bold text-accent-deep">
                     <span>دمای سر راست T₂:</span>
                     <span className="font-mono">{rightTempT2}°C</span>
                   </label>
@@ -652,7 +652,7 @@ export default function HeatEquationStage() {
                     step={5}
                     value={rightTempT2}
                     onChange={(e) => setRightTempT2(Number(e.target.value))}
-                    className="w-full accent-[#0284C7]"
+                    className="w-full accent-accent"
                   />
                 </div>
               </div>
@@ -660,8 +660,8 @@ export default function HeatEquationStage() {
 
             {/* Internal Source Strength Slider */}
             {bcType === 'internal_source' && (
-              <div className="rounded-lg border border-[#D97706]/30 bg-[#FFFBEB] p-3 dark:border-[#F59E0B]/30 dark:bg-[#78350F]/20">
-                <label className="mb-1 flex justify-between text-xs font-bold text-[#B45309] dark:text-[#FDE68A]">
+              <div className="rounded-lg border border-warn/30 bg-warn-soft p-3 dark:border-warn/30">
+                <label className="mb-1 flex justify-between text-xs font-bold text-warn">
                   <span>شدت چشمه تولید گرما Q₀:</span>
                   <span className="font-mono">{internalSourceQ} W/m</span>
                 </label>
@@ -672,7 +672,7 @@ export default function HeatEquationStage() {
                   step={5}
                   value={internalSourceQ}
                   onChange={(e) => setInternalSourceQ(Number(e.target.value))}
-                  className="w-full accent-[#D97706]"
+                  className="w-full accent-warn"
                 />
               </div>
             )}
@@ -680,7 +680,7 @@ export default function HeatEquationStage() {
             {/* Initial Profile Selector */}
             {bcType !== 'semi_infinite_sine' && bcType !== 'infinite_heat_kernel' && (
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#334155] dark:text-[#CBD5E1]">
+                <label className="mb-1.5 block text-xs font-bold text-ink-2">
                   ۲. توزیع دمای اولیه میله u(x,0) = f(x):
                 </label>
                 <select
@@ -688,7 +688,7 @@ export default function HeatEquationStage() {
                   onChange={(e) =>
                     setInitialProfile(e.target.value as HeatInitialProfileId)
                   }
-                  className="w-full rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] px-3 py-2 text-xs font-semibold text-[#0F172A] dark:border-[#334155] dark:bg-[#1E293B] dark:text-[#F8FAFC]"
+                  className="w-full rounded-lg border border-line-strong bg-panel px-3 py-2 text-xs font-semibold text-ink"
                 >
                   {INITIAL_PROFILES.map((pr) => (
                     <option key={pr.id} value={pr.id}>
@@ -702,9 +702,9 @@ export default function HeatEquationStage() {
             {/* Time & Diffusivity Sliders */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 flex justify-between text-xs font-bold text-[#334155] dark:text-[#CBD5E1]">
+                <label className="mb-1 flex justify-between text-xs font-bold text-ink-2">
                   <span>زمان (t):</span>
-                  <span dir="ltr" className="font-mono text-[#DC2626] dark:text-[#F87171]">
+                  <span dir="ltr" className="font-mono text-danger-ink">
                     {timeT.toFixed(2)} s
                   </span>
                 </label>
@@ -715,14 +715,14 @@ export default function HeatEquationStage() {
                   step={0.05}
                   value={timeT}
                   onChange={(e) => setTimeT(Number(e.target.value))}
-                  className="w-full accent-[#DC2626]"
+                  className="w-full accent-danger"
                 />
               </div>
 
               <div>
-                <label className="mb-1 flex justify-between text-xs font-bold text-[#334155] dark:text-[#CBD5E1]">
+                <label className="mb-1 flex justify-between text-xs font-bold text-ink-2">
                   <span>ضریب پخش (k):</span>
-                  <span dir="ltr" className="font-mono text-[#0284C7] dark:text-[#38BDF8]">
+                  <span dir="ltr" className="font-mono text-accent">
                     k = {diffusivityK.toFixed(1)}
                   </span>
                 </label>
@@ -733,20 +733,20 @@ export default function HeatEquationStage() {
                   step={0.1}
                   value={diffusivityK}
                   onChange={(e) => setDiffusivityK(Number(e.target.value))}
-                  className="w-full accent-[#0284C7]"
+                  className="w-full accent-accent"
                 />
               </div>
             </div>
 
             {/* Telemetry card for Relaxation time */}
-            <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs leading-6 dark:border-[#1E293B] dark:bg-[#111827]">
-              <div className="flex items-center justify-between text-[#334155] dark:text-[#CBD5E1]">
+            <div className="rounded-lg border border-line bg-panel p-3 text-xs leading-6">
+              <div className="flex items-center justify-between text-ink-2">
                 <span className="font-bold">ثابت زمانی فرونشست مد اول (τ₁):</span>
-                <span className="font-mono font-bold text-[#0284C7] dark:text-[#38BDF8]">
+                <span className="font-mono font-bold text-accent">
                   {heatData.tau1.toFixed(2)} ثانیه
                 </span>
               </div>
-              <p className="mt-1 text-[11px] text-[#64748B] dark:text-[#94A3B8]">
+              <p className="mt-1 text-[11px] text-ink-4">
                 <MathText text="فرمول $\tau_1 = \frac{L^2}{\pi^2 k^2}$ نشان می‌دهد که با گذشت هر $\tau_1$ ثانیه، دامنه هماهنگ پایه بیش از ۶۳٪ افت می‌کند." />
               </p>
             </div>
@@ -757,16 +757,16 @@ export default function HeatEquationStage() {
       {/* Tab 2: Spectral Fourier Mode Decay */}
       {activeTab === 'spectrum' && (
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 dark:border-[#1E293B] dark:bg-[#0F172A]/70">
+          <div className="rounded-xl border border-line bg-panel p-4">
             <div className="mb-2 flex items-center justify-between">
-              <h4 className="text-sm font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+              <h4 className="text-sm font-bold text-ink">
                 طیف دامنه‌های هارمونیک‌های فوریه و میرایی نمایی با زمان
               </h4>
-              <span className="rounded bg-[#ECFDF5] px-2.5 py-1 text-xs font-bold text-[#065F46] dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]">
+              <span className="rounded bg-ok-soft px-2.5 py-1 text-xs font-bold text-ok-ink">
                 <MathText text="فرکانس‌های بالا ($n \ge 3$) سریع‌تر از بین می‌روند" />
               </span>
             </div>
-            <p className="text-xs text-[#475569] dark:text-[#94A3B8]">
+            <p className="text-xs text-ink-3">
               <MathText text="مقایسه دامنه اولیه $|c_n(0)|$ با دامنه لحظه‌ای $|c_n(t)| = |c_n(0)| e^{-(n\pi k/L)^2 t}$ برای مدهای $n=1$ تا $n=8$:" />
             </p>
 
@@ -793,35 +793,35 @@ export default function HeatEquationStage() {
                         : 'دامنه در لحظه جاری t'
                     }
                   />
-                  <Bar dataKey="initialAmp" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="currentAmp" fill="#DC2626" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="initialAmp" fill="var(--chart-muted)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="currentAmp" fill="var(--chart-danger)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-2xs dark:border-[#1E293B] dark:bg-[#111827]">
-              <div className="mb-1 text-xs font-bold text-[#0284C7] dark:text-[#38BDF8]">
+            <div className="rounded-xl border border-line bg-surface p-3.5">
+              <div className="mb-1 text-xs font-bold text-accent">
                 <MathText text="نرخ زوال مدهای فرکانس بالا ($n^2$)" />
               </div>
-              <p className="text-xs leading-6 text-[#475569] dark:text-[#94A3B8]">
+              <p className="text-xs leading-6 text-ink-3">
                 <MathText text="به دلیل وجود ضریب $n^2$ در توان منفی نمایی، مد $n=2$ با سرعت ۴ برابر و مد $n=3$ با سرعت ۹ برابر مد پایه $n=1$ خاموش می‌شوند." />
               </p>
             </div>
-            <div className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-2xs dark:border-[#1E293B] dark:bg-[#111827]">
-              <div className="mb-1 text-xs font-bold text-[#059669] dark:text-[#34D399]">
+            <div className="rounded-xl border border-line bg-surface p-3.5">
+              <div className="mb-1 text-xs font-bold text-ok">
                 <MathText text="هموارسازی تحلیلی آنی ($C^\infty$)" />
               </div>
-              <p className="text-xs leading-6 text-[#475569] dark:text-[#94A3B8]">
+              <p className="text-xs leading-6 text-ink-3">
                 <MathText text="حتی اگر توزیع اولیه دارای شکستگی‌های ناپیوسته باشد، پس از گذشت حتی $t = 0.01$ ثانیه تمام تیزی‌ها هموار شده و منحنی مشتق‌پذیر پیوسته می‌شود." />
               </p>
             </div>
-            <div className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-2xs dark:border-[#1E293B] dark:bg-[#111827]">
-              <div className="mb-1 text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">
+            <div className="rounded-xl border border-line bg-surface p-3.5">
+              <div className="mb-1 text-xs font-bold text-warn">
                 پایستگی انرژی در میله عایق
               </div>
-              <p className="text-xs leading-6 text-[#475569] dark:text-[#94A3B8]">
+              <p className="text-xs leading-6 text-ink-3">
                 <MathText text="در شرایط نیومن عایق ($u_x = 0$)، هیچ گرمایی از مرزها خارج نمی‌شود و مقدار میانگین دمای میله در تمام زمان‌ها دقیقاً ثابت می‌ماند." />
               </p>
             </div>
@@ -833,11 +833,11 @@ export default function HeatEquationStage() {
       {activeTab === 'kernel' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-            <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:col-span-6 dark:border-[#1E293B] dark:bg-[#0F172A]/70">
-              <h4 className="text-sm font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+            <div className="space-y-3 rounded-xl border border-line bg-panel p-4 lg:col-span-6">
+              <h4 className="text-sm font-bold text-ink">
                 هسته حرارتی گاوسی پواسون (تابع گرین میله نامتناهی)
               </h4>
-              <p className="text-xs leading-6 text-[#334155] dark:text-[#CBD5E1]">
+              <p className="text-xs leading-6 text-ink-2">
                 <MathText text="در میله نامتناهی، پاسخ پالس حرارتی نقطه‌ای اولیه (چشمه ضربه دیراک $\delta(x)$) به صورت یک زنگوله گاوسی منتشر می‌شود:" />
               </p>
               <MathFormula
@@ -845,18 +845,18 @@ export default function HeatEquationStage() {
                 block
                 highlight
               />
-              <p className="text-xs leading-6 text-[#475569] dark:text-[#94A3B8]">
+              <p className="text-xs leading-6 text-ink-3">
                 <MathText text="مساحت زیر منحنی هسته گاوسی در هر زمان همواره برابر ۱ است (پایستگی گرمای ورودی ضربه)، اما انحراف معیار فضایی نفوذ گرما با $\sqrt{t}$ گسترش می‌یابد." />
               </p>
             </div>
 
-            <div className="space-y-3 rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-2xs lg:col-span-6 dark:border-[#1E293B] dark:bg-[#111827]">
-              <h4 className="text-sm font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+            <div className="space-y-3 rounded-xl border border-line bg-surface p-4 lg:col-span-6">
+              <h4 className="text-sm font-bold text-ink">
                 <MathText text="محاسبه‌گر تعاملی تابع خطا $\operatorname{erf}(z)$ و متمم $\operatorname{erfc}(z)$" />
               </h4>
-              <div className="flex items-center justify-between text-xs font-bold text-[#334155] dark:text-[#CBD5E1]">
+              <div className="flex items-center justify-between text-xs font-bold text-ink-2">
                 <span>متغیر ورودی z:</span>
-                <span className="font-mono text-[#0284C7] dark:text-[#38BDF8]">
+                <span className="font-mono text-accent">
                   z = {kernelZ.toFixed(2)}
                 </span>
               </div>
@@ -867,27 +867,27 @@ export default function HeatEquationStage() {
                 step={0.1}
                 value={kernelZ}
                 onChange={(e) => setKernelZ(Number(e.target.value))}
-                className="w-full accent-[#0284C7]"
+                className="w-full accent-accent"
               />
               <div className="grid grid-cols-2 gap-2 text-center text-xs">
-                <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-2.5 dark:border-[#1E293B] dark:bg-[#0B1120]">
-                  <div className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
+                <div className="rounded-lg border border-line bg-panel p-2.5">
+                  <div className="text-[11px] text-ink-4">
                     تابع خطا:
                   </div>
-                  <div className="font-mono font-bold text-[#0284C7] dark:text-[#38BDF8]">
+                  <div className="font-mono font-bold text-accent">
                     erf({kernelZ.toFixed(2)}) = {mathErf(kernelZ).toFixed(5)}
                   </div>
                 </div>
-                <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-2.5 dark:border-[#1E293B] dark:bg-[#0B1120]">
-                  <div className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
+                <div className="rounded-lg border border-line bg-panel p-2.5">
+                  <div className="text-[11px] text-ink-4">
                     تابع خطای متمم:
                   </div>
-                  <div className="font-mono font-bold text-[#059669] dark:text-[#34D399]">
+                  <div className="font-mono font-bold text-ok">
                     erfc({kernelZ.toFixed(2)}) = {mathErfc(kernelZ).toFixed(5)}
                   </div>
                 </div>
               </div>
-              <p className="text-[11px] leading-5 text-[#64748B] dark:text-[#94A3B8]">
+              <p className="text-[11px] leading-5 text-ink-4">
                 <MathText text="کاربرد در میله نیمه‌نامتناهی: توزیع دمای ناشی از نگه‌داشتن دمای سطح روی $T_0$ برابر است با $u(x,t) = T_0 \operatorname{erfc}\left(\frac{x}{2k\sqrt{t}}\right)$." />
               </p>
             </div>
@@ -898,21 +898,21 @@ export default function HeatEquationStage() {
       {/* Tab 4: PDE Classifier & Canonical Transformer (Example 43) */}
       {activeTab === 'classifier' && (
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 dark:border-[#1E293B] dark:bg-[#0F172A]/70">
+          <div className="rounded-xl border border-line bg-panel p-4">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-[#0284C7] dark:text-[#38BDF8]" />
-                <h4 className="text-sm font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+                <Layers className="h-4 w-4 text-accent" />
+                <h4 className="text-sm font-bold text-ink">
                   <MathText text="دسته‌بندی PDE خطی مرتبه دوم با مبین $\Delta = B^2 - 4AC$ و مشخصه‌ها (مثال ۴۳ جزوه)" />
                 </h4>
               </div>
               <span
                 className={`inline-flex items-center gap-2 rounded-md px-3 py-1 text-xs font-bold ${
                   pdeClass.typeEn === 'parabolic'
-                    ? 'bg-[#FEF3C7] text-[#B45309] dark:bg-[#78350F]/40 dark:text-[#FDE68A]'
+                    ? 'bg-warn-tint text-warn'
                     : pdeClass.typeEn === 'hyperbolic'
-                    ? 'bg-[#F0F9FF] text-[#0369A1] dark:bg-[#0C4A6E]/40 dark:text-[#7DD3FC]'
-                    : 'bg-[#ECFDF5] text-[#059669] dark:bg-[#064E3B]/40 dark:text-[#A7F3D0]'
+                    ? 'bg-accent-soft text-accent-deep'
+                    : 'bg-ok-soft text-ok'
                 }`}
               >
                 <MathFormula
@@ -925,7 +925,7 @@ export default function HeatEquationStage() {
 
             <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-4">
               <div>
-                <label className="mb-1 flex justify-between text-xs font-semibold text-[#334155] dark:text-[#CBD5E1]">
+                <label className="mb-1 flex justify-between text-xs font-semibold text-ink-2">
                   <span>ضریب A (مشتق u_xx):</span>
                   <span className="font-mono font-bold">{coeffA}</span>
                 </label>
@@ -936,11 +936,11 @@ export default function HeatEquationStage() {
                   step={1}
                   value={coeffA}
                   onChange={(e) => setCoeffA(Number(e.target.value))}
-                  className="w-full accent-[#0284C7]"
+                  className="w-full accent-accent"
                 />
               </div>
               <div>
-                <label className="mb-1 flex justify-between text-xs font-semibold text-[#334155] dark:text-[#CBD5E1]">
+                <label className="mb-1 flex justify-between text-xs font-semibold text-ink-2">
                   <span>ضریب B (مشتق u_xy):</span>
                   <span className="font-mono font-bold">{coeffB}</span>
                 </label>
@@ -951,11 +951,11 @@ export default function HeatEquationStage() {
                   step={1}
                   value={coeffB}
                   onChange={(e) => setCoeffB(Number(e.target.value))}
-                  className="w-full accent-[#0284C7]"
+                  className="w-full accent-accent"
                 />
               </div>
               <div>
-                <label className="mb-1 flex justify-between text-xs font-semibold text-[#334155] dark:text-[#CBD5E1]">
+                <label className="mb-1 flex justify-between text-xs font-semibold text-ink-2">
                   <span>ضریب C (مشتق u_yy):</span>
                   <span className="font-mono font-bold">{coeffC}</span>
                 </label>
@@ -966,10 +966,10 @@ export default function HeatEquationStage() {
                   step={1}
                   value={coeffC}
                   onChange={(e) => setCoeffC(Number(e.target.value))}
-                  className="w-full accent-[#0284C7]"
+                  className="w-full accent-accent"
                 />
               </div>
-              <div className="rounded-lg border border-[#E2E8F0] bg-white p-2 text-center dark:border-[#1E293B] dark:bg-[#1E293B]">
+              <div className="rounded-lg border border-line bg-surface p-2 text-center">
                 <MathFormula
                   formula={`${coeffA}\\,u_{xx} + (${coeffB})\\,u_{xy} + (${coeffC})\\,u_{yy} = 0`}
                   block
@@ -979,27 +979,27 @@ export default function HeatEquationStage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3 text-xs leading-6">
-            <div className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-2xs dark:border-[#1E293B] dark:bg-[#111827]">
-              <div className="font-bold text-[#B45309] dark:text-[#FBBF24]">
+            <div className="rounded-xl border border-line bg-surface p-3.5">
+              <div className="font-bold text-warn">
                 <MathText text="۱. سهموی (Parabolic): $\Delta = 0$" />
               </div>
-              <p className="mt-1 text-[#475569] dark:text-[#94A3B8]">
+              <p className="mt-1 text-ink-3">
                 <MathText text="یک دسته مشخصه حقیقی مکرر. فرم کانونی $u_{\eta\eta} = \Phi$. مثال فیزیکی: معادله گرما و انتشار $u_t = k^2 u_{xx}$." />
               </p>
             </div>
-            <div className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-2xs dark:border-[#1E293B] dark:bg-[#111827]">
-              <div className="font-bold text-[#0369A1] dark:text-[#38BDF8]">
+            <div className="rounded-xl border border-line bg-surface p-3.5">
+              <div className="font-bold text-accent-deep">
                 <MathText text="۲. هذلولوی (Hyperbolic): $\Delta > 0$" />
               </div>
-              <p className="mt-1 text-[#475569] dark:text-[#94A3B8]">
+              <p className="mt-1 text-ink-3">
                 <MathText text="دو دسته مشخصه حقیقی متمایز. فرم کانونی $u_{\xi\eta} = \Phi$. مثال فیزیکی: معادله موج و ارتعاش تار $u_{tt} = c^2 u_{xx}$." />
               </p>
             </div>
-            <div className="rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-2xs dark:border-[#1E293B] dark:bg-[#111827]">
-              <div className="font-bold text-[#065F46] dark:text-[#34D399]">
+            <div className="rounded-xl border border-line bg-surface p-3.5">
+              <div className="font-bold text-ok-ink">
                 <MathText text="۳. بیضوی (Elliptic): $\Delta < 0$" />
               </div>
-              <p className="mt-1 text-[#475569] dark:text-[#94A3B8]">
+              <p className="mt-1 text-ink-3">
                 <MathText text="دو دسته مشخصه مختلط مزدوج. فرم کانونی $u_{\alpha\alpha} + u_{\beta\beta} = \Phi$. مثال فیزیکی: معادله لاپلاس و پتانسیل $\nabla^2 u = 0$." />
               </p>
             </div>

@@ -36,11 +36,11 @@ interface InteractiveScratchpadProps {
 }
 
 const INK_COLORS = [
-  { id: 'slate', value: '#0F172A', label: 'مشکی' },
-  { id: 'blue', value: '#0284C7', label: 'آبی مهندسی' },
-  { id: 'red', value: '#DC2626', label: 'قرمز' },
-  { id: 'emerald', value: '#059669', label: 'سبز' },
-  { id: 'amber', value: '#D97706', label: 'نارنجی' },
+  { id: 'slate', value: 'var(--chart-axis)', label: 'مشکی' },
+  { id: 'blue', value: 'var(--chart-accent)', label: 'آبی مهندسی' },
+  { id: 'red', value: 'var(--chart-danger)', label: 'قرمز' },
+  { id: 'emerald', value: 'var(--chart-ok)', label: 'سبز' },
+  { id: 'amber', value: 'var(--chart-warn)', label: 'نارنجی' },
 ];
 
 const STROKE_SIZES = [
@@ -62,7 +62,7 @@ export default function InteractiveScratchpad({
   };
 
   const [tool, setTool] = useState<ScratchpadTool>('pen');
-  const [color, setColor] = useState<string>('#0284C7');
+  const [color, setColor] = useState<string>('var(--chart-accent)');
   const [strokeSize, setStrokeSize] = useState<number>(2.5);
   const [backdrop, setBackdrop] = useState<ScratchpadBackdrop>('transparent');
   const [passThroughMode, setPassThroughMode] = useState<boolean>(false);
@@ -242,7 +242,7 @@ export default function InteractiveScratchpad({
   const handleStampAxes = () => {
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
-    const axisStrokes = createCoordinateAxisStrokes(cx, cy, 120, '#334155');
+    const axisStrokes = createCoordinateAxisStrokes(cx, cy, 120, 'var(--chart-axis)');
     setHistory((prev) => {
       let next = prev;
       for (const st of axisStrokes) {
@@ -281,7 +281,7 @@ export default function InteractiveScratchpad({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 left-16 z-40 flex items-center gap-2 rounded-xl border border-[#0284C7] bg-[#0284C7] px-4 py-3 text-xs font-bold text-white shadow-lg transition hover:bg-[#0369A1]"
+          className="fixed bottom-5 left-16 z-40 flex items-center gap-2 rounded-xl border border-accent bg-accent-solid px-4 py-3 text-xs font-bold text-white shadow-lg transition hover:bg-accent-solid"
           aria-label="باز کردن تخته یادداشت و حل دستی (Scratchpad)"
         >
           <PenTool className="h-4 w-4" />
@@ -307,9 +307,9 @@ export default function InteractiveScratchpad({
           <div
             className={`absolute inset-0 transition-colors ${
               backdrop === 'whiteboard'
-                ? 'bg-[#F8FAFC]/95'
+                ? 'bg-panel/95'
                 : backdrop === 'grid'
-                ? 'bg-[#F8FAFC]/75'
+                ? 'bg-panel/75'
                 : 'bg-transparent'
             }`}
             style={
@@ -340,18 +340,18 @@ export default function InteractiveScratchpad({
           />
 
           {/* Floating Control Dock (Always interactive even when passThroughMode is true) */}
-          <div className="pointer-events-auto fixed bottom-5 left-1/2 z-50 w-[95vw] max-w-4xl -translate-x-1/2 rounded-2xl border border-[#CBD5E1] bg-white/95 p-3 shadow-xl backdrop-blur-md">
+          <div className="pointer-events-auto fixed bottom-5 left-1/2 z-50 w-[95vw] max-w-4xl -translate-x-1/2 rounded-2xl border border-line-strong bg-surface/95 p-3 shadow-xl backdrop-blur-md">
             {/* Top Status & Collapse Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
               <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0284C7] text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-solid text-white">
                   <PenTool className="h-3.5 w-3.5" />
                 </span>
                 <div>
-                  <span className="text-xs font-bold text-[#0F172A]">
+                  <span className="text-xs font-bold text-ink">
                     تخته یادداشت تعاملی (Interactive Scratchpad)
                   </span>
-                  <span className="mr-2 hidden text-[11px] text-[#64748B] sm:inline">
+                  <span className="mr-2 hidden text-[11px] text-ink-4 sm:inline">
                     • با ماوس یا قلم لمسی روابط و مشتقات را مستقیماً روی صفحه بنویسید
                   </span>
                 </div>
@@ -364,8 +364,8 @@ export default function InteractiveScratchpad({
                   onClick={() => setPassThroughMode((p) => !p)}
                   className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold transition ${
                     passThroughMode
-                      ? 'border-[#059669] bg-[#ECFDF5] text-[#065F46]'
-                      : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#334155] hover:bg-[#F1F5F9]'
+                      ? 'border-ok bg-ok-soft text-ok-ink'
+                      : 'border-line-strong bg-panel text-ink-2 hover:bg-muted'
                   }`}
                   title="در حالت تعامل با صفحه، دست‌خط شما باقی می‌ماند اما می‌توانید اسلایدرها و دکمه‌های زیر صفحه را تغییر دهید"
                 >
@@ -378,7 +378,7 @@ export default function InteractiveScratchpad({
                 <button
                   type="button"
                   onClick={() => setIsToolbarCollapsed((c) => !c)}
-                  className="rounded-lg border border-[#CBD5E1] bg-white p-1.5 text-[#475569] hover:bg-[#F1F5F9]"
+                  className="rounded-lg border border-line-strong bg-surface p-1.5 text-ink-3 hover:bg-muted"
                   title={isToolbarCollapsed ? 'باز کردن ابزارها' : 'کوچک کردن نوار ابزار'}
                   aria-label="تغییر اندازه نوار ابزار"
                 >
@@ -392,7 +392,7 @@ export default function InteractiveScratchpad({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-1 rounded-lg border border-[#DC2626]/30 bg-[#FEF2F2] px-2.5 py-1 text-xs font-bold text-[#DC2626] hover:bg-[#FEE2E2]"
+                  className="flex items-center gap-1 rounded-lg border border-danger/30 bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger-ink hover:bg-danger-tint"
                   aria-label="بستن تخته یادداشت"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -404,7 +404,7 @@ export default function InteractiveScratchpad({
             {!isToolbarCollapsed && (
               <div className="mt-2.5 flex flex-wrap items-center justify-between gap-3">
                 {/* Tool Selection */}
-                <div className="flex flex-wrap items-center gap-1 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-1">
+                <div className="flex flex-wrap items-center gap-1 rounded-xl border border-line bg-panel p-1">
                   {[
                     { id: 'pen', label: 'قلم', icon: PenTool },
                     { id: 'highlighter', label: 'هایلایت', icon: Highlighter },
@@ -423,8 +423,8 @@ export default function InteractiveScratchpad({
                         }}
                         className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition ${
                           active
-                            ? 'bg-[#0284C7] text-white shadow-2xs'
-                            : 'text-[#475569] hover:bg-white hover:text-[#0F172A]'
+                            ? 'bg-accent-solid text-white'
+                            : 'text-ink-3 hover:bg-surface hover:text-ink'
                         }`}
                       >
                         <Icon className="h-3.5 w-3.5" />
@@ -436,7 +436,7 @@ export default function InteractiveScratchpad({
                   <button
                     type="button"
                     onClick={handleStampAxes}
-                    className="flex items-center gap-1 rounded-lg border border-[#CBD5E1] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#334155] hover:border-[#0284C7] hover:text-[#0284C7]"
+                    className="flex items-center gap-1 rounded-lg border border-line-strong bg-surface px-2.5 py-1.5 text-xs font-semibold text-ink-2 hover:border-accent hover:text-accent"
                     title="درج محور مختصات (x,y) در مرکز صفحه"
                   >
                     <PlusSquare className="h-3.5 w-3.5" />
@@ -462,7 +462,7 @@ export default function InteractiveScratchpad({
                         }}
                         className={`h-6 w-6 rounded-full border-2 transition-transform ${
                           color === c.value && tool !== 'eraser'
-                            ? 'scale-110 border-[#0F172A] ring-2 ring-[#0284C7]/40'
+                            ? 'scale-110 border-ink ring-2 ring-accent/40'
                             : 'border-white shadow-2xs'
                         }`}
                         style={{ backgroundColor: c.value }}
@@ -472,7 +472,7 @@ export default function InteractiveScratchpad({
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-1 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-1">
+                  <div className="flex items-center gap-1 rounded-lg border border-line bg-panel p-1">
                     {STROKE_SIZES.map((s) => (
                       <button
                         key={s.label}
@@ -480,8 +480,8 @@ export default function InteractiveScratchpad({
                         onClick={() => setStrokeSize(s.size)}
                         className={`rounded px-2 py-1 text-[11px] font-bold transition ${
                           strokeSize === s.size
-                            ? 'bg-[#0F172A] text-white'
-                            : 'text-[#475569] hover:bg-white'
+                            ? 'bg-ink-solid text-white'
+                            : 'text-ink-3 hover:bg-surface'
                         }`}
                       >
                         {s.label}
@@ -492,7 +492,7 @@ export default function InteractiveScratchpad({
 
                 {/* Backdrop Mode & History Controls */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <div className="flex items-center gap-1 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-1">
+                  <div className="flex items-center gap-1 rounded-lg border border-line bg-panel p-1">
                     {[
                       { id: 'transparent', label: 'شفاف' },
                       { id: 'grid', label: 'شطرنجی' },
@@ -506,8 +506,8 @@ export default function InteractiveScratchpad({
                         }
                         className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-bold transition ${
                           backdrop === b.id
-                            ? 'bg-[#0284C7] text-white'
-                            : 'text-[#475569] hover:bg-white'
+                            ? 'bg-accent-solid text-white'
+                            : 'text-ink-3 hover:bg-surface'
                         }`}
                       >
                         {b.id === 'grid' && <Grid className="h-3 w-3" />}
@@ -520,7 +520,7 @@ export default function InteractiveScratchpad({
                     type="button"
                     disabled={history.past.length === 0}
                     onClick={() => setHistory((prev) => undoStroke(prev))}
-                    className="rounded-lg border border-[#CBD5E1] bg-white p-1.5 text-[#334155] hover:bg-[#F1F5F9] disabled:opacity-40"
+                    className="rounded-lg border border-line-strong bg-surface p-1.5 text-ink-2 hover:bg-muted disabled:opacity-40"
                     title="بازگشت (Undo)"
                     aria-label="بازگشت (Undo)"
                   >
@@ -531,7 +531,7 @@ export default function InteractiveScratchpad({
                     type="button"
                     disabled={history.future.length === 0}
                     onClick={() => setHistory((prev) => redoStroke(prev))}
-                    className="rounded-lg border border-[#CBD5E1] bg-white p-1.5 text-[#334155] hover:bg-[#F1F5F9] disabled:opacity-40"
+                    className="rounded-lg border border-line-strong bg-surface p-1.5 text-ink-2 hover:bg-muted disabled:opacity-40"
                     title="انجام مجدد (Redo)"
                     aria-label="انجام مجدد (Redo)"
                   >
@@ -542,7 +542,7 @@ export default function InteractiveScratchpad({
                     type="button"
                     disabled={history.present.length === 0}
                     onClick={() => setHistory((prev) => clearStrokes(prev))}
-                    className="flex items-center gap-1 rounded-lg border border-[#CBD5E1] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#DC2626] hover:bg-[#FEF2F2] disabled:opacity-40"
+                    className="flex items-center gap-1 rounded-lg border border-line-strong bg-surface px-2.5 py-1.5 text-xs font-semibold text-danger-ink hover:bg-danger-soft disabled:opacity-40"
                     title="پاک کردن کل صفحه"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -553,7 +553,7 @@ export default function InteractiveScratchpad({
                     type="button"
                     disabled={history.present.length === 0}
                     onClick={handleDownloadImage}
-                    className="flex items-center gap-1 rounded-lg border border-[#0284C7]/30 bg-[#F0F9FF] px-2.5 py-1.5 text-xs font-bold text-[#0369A1] hover:bg-[#E0F2FE] disabled:opacity-40"
+                    className="flex items-center gap-1 rounded-lg border border-accent/30 bg-accent-soft px-2.5 py-1.5 text-xs font-bold text-accent-deep hover:bg-accent-tint disabled:opacity-40"
                     title="ذخیره یادداشت‌ها به صورت تصویر PNG"
                   >
                     <Download className="h-3.5 w-3.5" />
