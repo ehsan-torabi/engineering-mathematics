@@ -193,13 +193,19 @@ export function buildOpenAIChatCompletionsUrl(rawBaseUrl: string): string {
 /**
  * Builds the comprehensive Engineering Mathematics system instruction in Persian,
  * enforcing unskipped step-by-step derivations and strict LaTeX ($...$ and $$...$$) delimiters.
+ * When the server resolves the active lesson, `knowledgeContext` carries the
+ * official درس‌نامه block (from lib/ai-context) that grounds the reply in the
+ * exact notation and formulas the student is studying.
  */
 export function buildMathTutorSystemInstruction(
   settings: Pick<AISettings, 'detailLevel' | 'customSystemPrompt' | 'includeModuleContext'>,
   moduleContext?: {
+    moduleId?: string;
     moduleTitle?: string;
     moduleSubtitle?: string;
+    subtopicId?: string;
     subtopicTitle?: string;
+    knowledgeContext?: string;
   }
 ): string {
   const detailInstruction =
@@ -209,10 +215,22 @@ export function buildMathTutorSystemInstruction(
       ? 'پاسخ را با تمرکز بر نکات کلیدی امتحانی، دام‌های متداول دانشجویان مهندسی، شرایط همگرایی دیریکله، تقارن زوج و فرد برای صفر شدن سریع ضرایب و فرمول نهایی ارائه بده.'
       : 'ابتدا شهود فیزیکی و هندسی مفهوم را به زبان ساده برای دانشجوی کارشناسی مهندسی شرح بده و سپس مراحل اصلی فرمول‌بندی ریاضی را بنویس.';
 
-  const contextSection =
-    settings.includeModuleContext && moduleContext?.moduleTitle
-      ? `\nمبحث فعلی دانشجو در اپلیکیشن:\n- فصل: ${moduleContext.moduleTitle}\n- زیرمجموعه: ${moduleContext.moduleSubtitle || ''}\n- بخش فعال: ${moduleContext.subtopicTitle || ''}`
-      : '';
+  const groundingInstruction =
+    'اگر بخش «محتوای رسمی درس‌نامه» در زمینه ارسال شده است، پاسخ‌ها را دقیقاً با همان نمادگذاری، فرمول‌ها و قراردادهای آن درس‌نامه هماهنگ کن و از نمادگذاری متناقض استفاده نکن.';
+
+  const contextParts: string[] = [];
+  if (settings.includeModuleContext && moduleContext?.moduleTitle) {
+    contextParts.push(
+      `\nمبحث فعلی دانشجو در اپلیکیشن:\n- فصل: ${moduleContext.moduleTitle}\n- زیرمجموعه: ${moduleContext.moduleSubtitle || ''}\n- بخش فعال: ${moduleContext.subtopicTitle || ''}`
+    );
+  }
+  const knowledge = moduleContext?.knowledgeContext?.trim();
+  if (settings.includeModuleContext && knowledge) {
+    contextParts.push(
+      `\nمحتوای رسمی درس‌نامه برای مبحث فعال دانشجو (مبنای پاسخ‌دهی):\n${knowledge}`
+    );
+  }
+  const contextSection = contextParts.join('\n');
 
   const customSection = settings.customSystemPrompt?.trim()
     ? `\nدستورالعمل اختصاصی کاربر:\n${settings.customSystemPrompt.trim()}`
@@ -221,6 +239,7 @@ export function buildMathTutorSystemInstruction(
   return [
     'تو استاد راهنما و دستیار هوشمند درس «ریاضیات مهندسی» (مقطع کارشناسی مهندسی) بر اساس سرفصل‌های آنالیز فوریه، سری فوریه، انتگرال و تبدیل فوریه، مسئله مقدار مرزی اشتورم-لیوویل و معادلات دیفرانسیل با مشتقات جزئی (معادله گرما) هستی.',
     detailInstruction,
+    groundingInstruction,
     'قانون بسیار مهم نگارش فرمول‌های ریاضی:',
     '۱. تمام عبارات، متغیرها، بازه‌ها (مانند $[-\\pi, \\pi]$) و فرمول‌های درون‌متنی در میان متن فارسی را حتماً داخل علامت دلار تکی `$...$` قرار بده تا جهت چپ‌به‌راست (LTR) آن‌ها در متن فارسی کاملاً حفظ شود.',
     '۲. فرمول‌های مهم، انتگرال‌های مرحله‌ای و معادلات اصلی هر گام را در یک خط مستقل داخل `$$...$$` بنویس.',

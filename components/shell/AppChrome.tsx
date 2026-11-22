@@ -20,6 +20,7 @@ import ExamModal from '@/components/overlays/ExamModal';
 import RequirementsModal from '@/components/overlays/RequirementsModal';
 
 interface LessonContextHint {
+  subtopicId?: string;
   subtopicTitle: string;
 }
 
@@ -173,14 +174,18 @@ function useAiModuleContext(lessonHint?: LessonContextHint) {
   const activeModule = useContext(ActiveModuleContext);
   if (!activeModule) {
     return {
+      moduleId: undefined,
       moduleTitle: 'آزمایشگاه تعاملی ریاضیات مهندسی (نقشه دوره)',
       moduleSubtitle: '',
+      subtopicId: undefined,
       subtopicTitle: lessonHint?.subtopicTitle || '',
     };
   }
   return {
+    moduleId: activeModule.id,
     moduleTitle: activeModule.title,
     moduleSubtitle: activeModule.subtitle,
+    subtopicId: lessonHint?.subtopicId,
     subtopicTitle: lessonHint?.subtopicTitle || '',
   };
 }

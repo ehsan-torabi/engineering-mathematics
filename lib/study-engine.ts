@@ -534,4 +534,16 @@ export const REQUIREMENTS_SPECIFICATION: RequirementEngineeringItem[] = [
     priority: 'حیاتی (Must-Have)',
     implemented: true,
   },
+  {
+    id: 'REQ-TOOL-05',
+    category: 'نیازمندی‌های دستیار هوشمند و ابزارهای کمک‌آموزشی (AI & Study Tools)',
+    title: 'زمینه‌سازی علمی هوشمند: ارسال محتوای رسمی زیرمبحث فعال به مدل',
+    description:
+      'به‌جای ارسال صرف عنوان فصل، شناسه فصل و زیرمبحث فعال به مسیر /api/ai/chat ارسال می‌شود و سرور با ساخت بلوک «محتوای رسمی درس‌نامه» (خلاصه، فرمول‌های کلیدی، نکات مفهومی و دام‌های رایج همان زیرمبحث) از داده‌های درس‌نامه، پاسخ دستیار را به نمادگذاری و قراردادهای درس متصل می‌کند — شامل مباحث پیش‌نیاز ضرب و انتگرال توابع زوج و فرد، قواعد e و ln، گرفتن و بررسی ریشه معادله و محاسبه دلتا.',
+    acceptanceCriteria:
+      'تابع خالص buildKnowledgeContext در lib/ai-context.ts با تست واحد node:test و اتصال آن به buildMathTutorSystemInstruction از طریق /api/ai/chat.',
+    targetComponent: 'lib/ai-context.ts + /api/ai/chat/route.ts + AIAssistantDrawer.tsx',
+    priority: 'حیاتی (Must-Have)',
+    implemented: true,
+  },
 ];

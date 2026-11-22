@@ -74,7 +74,12 @@ test('evaluateExamResults scores practice questions and identifies strong and we
   }
 
   const evalAll = evaluateExamResults(answers, 'all');
-  assert.equal(evalAll.correctCount, 4);
+  // Module 0 grew to 8 questions (parity, e/ln, roots, delta) — every one of
+  // them is answered correctly here, so the count must track the bank size.
+  assert.equal(
+    evalAll.correctCount,
+    allQuestions.filter((q) => q.moduleId === 'module_0_prerequisites').length
+  );
   assert.ok(evalAll.strongModules.some((m) => m.includes('بخش ۰')));
   assert.ok(evalAll.weakModules.some((m) => m.includes('بخش ۱')));
 
@@ -153,7 +158,7 @@ test('validates comprehensive textbook lecture notes, common pitfalls, and engin
     }
   }
 
-  assert.equal(totalSubtopicsCount, 43, `Expected 43 total subtopics, found ${totalSubtopicsCount}`);
+  assert.equal(totalSubtopicsCount, 48, `Expected 48 total subtopics, found ${totalSubtopicsCount}`);
 });
 
 

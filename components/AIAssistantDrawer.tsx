@@ -40,8 +40,11 @@ interface AIAssistantDrawerProps {
   draftPrompt?: string;
   onDraftPromptChange?: (prompt: string) => void;
   moduleContext: {
+    /** Sent to /api/ai/chat so the server can ground the reply in the official درس‌نامه */
+    moduleId?: string;
     moduleTitle: string;
     moduleSubtitle: string;
+    subtopicId?: string;
     subtopicTitle: string;
   };
 }
@@ -1039,7 +1042,8 @@ export default function AIAssistantDrawer({
                     ارسال خودکار مبحث فعلی درس به دستیار
                   </div>
                   <div className="text-[11px] text-ink-3">
-                    فصل و درس‌نامه فعال به‌عنوان زمینه علمی ارسال می‌شود
+                    فصل، زیرمبحث فعال و فرمول‌ها و نکات رسمی درس‌نامه به‌عنوان
+                    زمینه علمی ارسال می‌شود
                   </div>
                 </div>
                 <input

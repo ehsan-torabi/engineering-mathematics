@@ -7,6 +7,7 @@ import {
   ReasoningLevel,
   SolutionDetailLevel,
 } from '@/lib/ai-settings';
+import { buildKnowledgeContext } from '@/lib/ai-context';
 
 interface IncomingChatMessage {
   role: 'user' | 'assistant';
@@ -26,8 +27,10 @@ interface ChatRequestBody {
   /** When true the reply streams back as Server-Sent Events instead of one JSON payload */
   stream?: boolean;
   moduleContext?: {
+    moduleId?: string;
     moduleTitle?: string;
     moduleSubtitle?: string;
+    subtopicId?: string;
     subtopicTitle?: string;
   };
   messages: IncomingChatMessage[];
@@ -106,6 +109,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Ground the tutor in the official درس‌نامه of the active lesson:
+    // the client only sends ids; the knowledge block is resolved server-side
+    // from curriculum data (empty string when ids are missing/unknown).
+    const knowledgeContext = buildKnowledgeContext(
+      body.moduleContext?.moduleId,
+      body.moduleContext?.subtopicId
+    );
+
     const systemInstruction = buildMathTutorSystemInstruction(
       {
         detailLevel: body.detailLevel || 'full_step_by_step',
@@ -113,6 +124,8 @@ export async function POST(req: NextRequest) {
         includeModuleContext: body.includeModuleContext ?? true,
       },
       body.moduleContext
+        ? { ...body.moduleContext, knowledgeContext }
+        : undefined
     );
 
     /* ────────────────────────── OpenAI-Compatible provider ────────────────────────── */

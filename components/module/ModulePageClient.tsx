@@ -100,12 +100,24 @@ export default function ModulePageClient({
 
   const handleAskAI = useCallback(
     (promptText: string, subtopicTitle?: string) => {
+      // Resolve the hint to the exact subtopic (id + title) so the AI
+      // assistant receives the official درس‌نامه of what the student sees;
+      // prompt-only callers fall back to the active lesson in the URL.
+      const activeSubtopic =
+        (subtopicTitle &&
+          workspaceModule.subtopics.find((s) => s.title === subtopicTitle)) ||
+        workspaceModule.subtopics[query.lesson];
       openAssistant(
         promptText,
-        subtopicTitle ? { subtopicTitle } : undefined
+        activeSubtopic
+          ? {
+              subtopicId: activeSubtopic.id,
+              subtopicTitle: activeSubtopic.title,
+            }
+          : undefined
       );
     },
-    [openAssistant]
+    [openAssistant, workspaceModule, query.lesson]
   );
 
   return (
