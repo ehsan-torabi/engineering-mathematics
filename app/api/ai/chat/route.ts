@@ -3,6 +3,7 @@ import {
   AIProviderType,
   buildMathTutorSystemInstruction,
   buildOpenAIChatCompletionsUrl,
+  isLoopbackBaseUrl,
   ReasoningLevel,
   SolutionDetailLevel,
 } from '@/lib/ai-settings';
@@ -140,6 +141,21 @@ export async function POST(req: NextRequest) {
         process.env.OPENAI_COMPATIBLE_BASE_URL ||
         'https://api.openai.com/v1';
       const endpointUrl = buildOpenAIChatCompletionsUrl(targetBaseUrl);
+
+      // Loopback targets point at THIS server's own machine, never at the
+      // visitor's. Local model servers (Ollama, LM Studio, …) are contacted
+      // directly by the browser (lib/ai-chat-client), so a loopback body
+      // arriving here means the request took the wrong transport.
+      if (isLoopbackBaseUrl(targetBaseUrl)) {
+        return NextResponse.json(
+          {
+            error:
+              'ارائه‌دهنده محلی (localhost/127.0.0.1) فقط از مرورگر همان دستگاه قابل دسترسی است و از سرور ابری قابل تماس نیست. درخواست‌های ارائه‌دهنده محلی مستقیماً از مرورگر ارسال می‌شوند و نباید به این مسیر برسند.',
+          },
+          { status: 400 }
+        );
+      }
+
       const selectedModel =
         (isLegacyGemini && !body.model?.trim()
           ? 'gemini-3.8-flash'

@@ -7,6 +7,7 @@ import {
   OPENAI_COMPATIBLE_PRESETS,
   OpenAICompatiblePresetId,
   buildOpenAIChatCompletionsUrl,
+  isLoopbackBaseUrl,
 } from '@/lib/ai-settings';
 import type { AiServerStatus } from '@/lib/ai-chat-client';
 import {
@@ -18,6 +19,7 @@ import {
   EyeOff,
   KeyRound,
   Check,
+  MonitorSmartphone,
 } from 'lucide-react';
 
 /**
@@ -206,6 +208,25 @@ export default function AISettingsPanel({
             </code>
           </div>
         </div>
+
+        {isLoopbackBaseUrl(settings.customBaseUrl) && (
+          <div className="flex gap-2 rounded-lg border border-accent bg-accent-soft p-3 text-[11px] leading-5 text-ink-2">
+            <MonitorSmartphone className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            <p>
+              سرور محلی مستقیماً از همین مرورگر تماس گرفته می‌شود (نه از سرور
+              سایت)؛ بنابراین فقط وقتی کار می‌کند که Ollama یا LM Studio روی
+              همین دستگاه روشن باشد. برای Ollama مبدأ این سایت را مجاز کنید:
+              متغیر محیطی{' '}
+              <code
+                dir="ltr"
+                className="rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-accent-deep dark:text-accent"
+              >
+                {'OLLAMA_ORIGINS=\'*\''}
+              </code>{' '}
+              و در LM Studio گزینه CORS را فعال کنید.
+            </p>
+          </div>
+        )}
 
         <div>
           <label

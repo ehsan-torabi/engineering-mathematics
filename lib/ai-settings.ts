@@ -214,6 +214,30 @@ export function normalizeOpenAIBaseUrl(rawUrl: string): string {
 }
 
 /**
+ * True when the endpoint points at a loopback address on the device running
+ * the browser (localhost / 127.0.0.1 / ::1 / 0.0.0.0). Local model servers
+ * (Ollama, LM Studio, vLLM) live on the *user's* machine, so the deployed
+ * server proxy can never reach them — these requests must be fetched
+ * directly from the browser instead of being relayed by /api/ai/chat.
+ */
+export function isLoopbackBaseUrl(rawUrl: string): boolean {
+  try {
+    const url = new URL(buildOpenAIChatCompletionsUrl(rawUrl));
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+    const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+    return (
+      host === 'localhost' ||
+      host.endsWith('.localhost') ||
+      host === '127.0.0.1' ||
+      host === '0.0.0.0' ||
+      host === '::1'
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Constructs the full OpenAI-compatible `/chat/completions` endpoint URL from a base URL.
  * Handles inputs like:
  * - `https://api.openai.com` -> `https://api.openai.com/v1/chat/completions`
