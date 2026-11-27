@@ -1356,6 +1356,288 @@ export function evaluateHeatEquation1D(
   };
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+ * Module 7 (Wave Equation): 1D string vibration u_tt = a^2 u_xx.
+ * Normal-mode solution on a finite string with fixed (Dirichlet) or free
+ * (Neumann) ends — the exact series taught in lessons m7_1 and m7_2.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+export type WaveInitialProfileId =
+  | 'sine_mode_1' // f = 100 sin(pi x / L), g = 0 (pure fundamental mode)
+  | 'two_modes' // f = 80 sin(pi x / L) + 50 sin(2 pi x / L), g = 0
+  | 'pluck_tent' // triangular pluck peaked at L/2, g = 0 (released from rest)
+  | 'pluck_quarter' // triangular pluck peaked at L/4 (asymmetric, travelling mix)
+  | 'strike_center' // f = 0, g = Gaussian velocity impulse centered at L/2 (piano hammer)
+  | 'flat_displacement' // f = constant 60, g = 0 (Neumann: drifting center mode)
+  | 'gaussian_pluck' // f = 90 exp(-30 ((x - L/2)/L)^2), g = 0
+  | 'sine_forcing_first'; // g = 40 sin(pi x / L), f = 0 (first-mode velocity kick)
+
+export interface WaveSimulationParams {
+  stringLengthL: number;
+  waveSpeedA: number; // a in u_tt = a^2 u_xx  (a = sqrt(T/rho))
+  timeT: number;
+  bcType: 'dirichlet_fixed' | 'neumann_free';
+  initialProfile: WaveInitialProfileId;
+}
+
+/** Evaluate the preset displacement f(x) and velocity g(x) of the string. */
+export function evaluateWaveInitialProfile(
+  profileId: WaveInitialProfileId,
+  x: number,
+  L: number
+): { f: number; g: number } {
+  const z = (x - L / 2) / L;
+  switch (profileId) {
+    case 'sine_mode_1':
+      return { f: 100 * Math.sin((Math.PI * x) / L), g: 0 };
+    case 'two_modes':
+      return {
+        f: 80 * Math.sin((Math.PI * x) / L) + 50 * Math.sin((2 * Math.PI * x) / L),
+        g: 0,
+      };
+    case 'pluck_tent':
+      return { f: x <= L / 2 ? (100 * x) / L : (100 * (L - x)) / L, g: 0 };
+    case 'pluck_quarter':
+      return x <= L / 4
+        ? { f: (200 * x) / L, g: 0 }
+        : { f: (200 / 3) * ((L - x) / L), g: 0 };
+    case 'strike_center':
+      return { f: 0, g: 120 * Math.exp(-60 * z * z) };
+    case 'flat_displacement':
+      return { f: 60, g: 0 };
+    case 'gaussian_pluck':
+      return { f: 90 * Math.exp(-30 * z * z), g: 0 };
+    case 'sine_forcing_first':
+      return { f: 0, g: 40 * Math.sin((Math.PI * x) / L) };
+  }
+}
+export interface WaveModeData {
+  bcType: 'dirichlet_fixed' | 'neumann_free';
+  L: number;
+  A0: number; // Neumann zero-mode displacement (mean of f)
+  B0: number; // Neumann zero-mode velocity (mean of g)
+  Cn: number[]; // displacement projections (index 0 ↔ n = 1)
+  Dn: number[]; // velocity projections, already divided by ωn
+  omegaN: number[]; // ωn = a·nπ/L
+  fundamentalOmega: number; // ω1
+}
+
+/** Fourier-project the initial data f, g onto the normal modes of the string. */
+export function computeWaveModeData(
+  params: WaveSimulationParams,
+  numModes = 16
+): WaveModeData {
+  const { stringLengthL: L, waveSpeedA: a, bcType, initialProfile } = params;
+
+  const proj = (weight: (xi: number) => number) =>
+    integrateSimpson(weight, 0, L, 160);
+  const data = (xi: number) => evaluateWaveInitialProfile(initialProfile, xi, L);
+  const shape =
+    bcType === 'dirichlet_fixed'
+      ? (xi: number, n: number) => Math.sin((n * Math.PI * xi) / L)
+      : (xi: number, n: number) => Math.cos((n * Math.PI * xi) / L);
+
+  const A0 = bcType === 'neumann_free' ? (1 / L) * proj((xi) => data(xi).f) : 0;
+  const B0 = bcType === 'neumann_free' ? (1 / L) * proj((xi) => data(xi).g) : 0;
+
+  const Cn: number[] = [];
+  const Dn: number[] = [];
+  const omegaN: number[] = [];
+  for (let n = 1; n <= numModes; n++) {
+    const omega = (a * n * Math.PI) / L;
+    Cn.push((2 / L) * proj((xi) => data(xi).f * shape(xi, n)));
+    Dn.push((2 / (L * omega)) * proj((xi) => data(xi).g * shape(xi, n)));
+    omegaN.push(omega);
+  }
+
+  return { bcType, L, A0, B0, Cn, Dn, omegaN, fundamentalOmega: (a * Math.PI) / L };
+}
+
+/** Fast evaluation of the normal-mode series u(x, t) and u_t(x, t). */
+export function evaluateWaveSeriesAt(
+  x: number,
+  t: number,
+  modeData: WaveModeData
+): { u: number; v: number } {
+  const { bcType, L, A0, B0, Cn, Dn, omegaN } = modeData;
+  const safeT = Math.max(0, t);
+  let uVal = bcType === 'neumann_free' ? A0 + B0 * safeT : 0;
+  let vVal = bcType === 'neumann_free' ? B0 : 0;
+
+  for (let k = 0; k < Cn.length; k++) {
+    const n = k + 1;
+    const omega = omegaN[k];
+    const cosW = Math.cos(omega * safeT);
+    const sinW = Math.sin(omega * safeT);
+    const amp = Cn[k] * cosW + Dn[k] * sinW;
+    const vel = omega * (Dn[k] * cosW - Cn[k] * sinW);
+    const mode =
+      bcType === 'dirichlet_fixed'
+        ? Math.sin((n * Math.PI * x) / L)
+        : Math.cos((n * Math.PI * x) / L);
+    uVal += amp * mode;
+    vVal += vel * mode;
+  }
+  return { u: uVal, v: vVal };
+}
+
+/**
+ * Convenience single-point evaluation (computes projections each call).
+ * For animated sampling, compute the mode data once with
+ * computeWaveModeData and sample repeatedly via evaluateWaveSeriesAt.
+ */
+export function evaluateWaveEquation1D(
+  params: WaveSimulationParams,
+  x: number,
+  numModes = 16
+): {
+  u_xt: number;
+  velocity_t: number;
+  modeCoefficients: number[];
+  modeFrequencies: number[];
+  fundamentalOmega: number; // ω1 = aπ/L
+} {
+  const modeData = computeWaveModeData(params, numModes);
+  const { u, v } = evaluateWaveSeriesAt(x, params.timeT, modeData);
+  return {
+    u_xt: u,
+    velocity_t: v,
+    modeCoefficients:
+      modeData.bcType === 'neumann_free'
+        ? [modeData.A0, ...modeData.Cn]
+        : modeData.Cn,
+    modeFrequencies:
+      modeData.bcType === 'neumann_free'
+        ? [0, ...modeData.omegaN]
+        : modeData.omegaN,
+    fundamentalOmega: modeData.fundamentalOmega,
+  };
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Module 8 (Laplace Equation): steady-state potential in a rectangle with
+ * zero left/right/bottom edges and prescribed top-edge data — the exact
+ * sinh series of lesson m8_2 (PDF Example 47).
+ * ───────────────────────────────────────────────────────────────────────── */
+
+export type LaplaceTopProfileId =
+  | 'top_constant' // f = 100 (uniform hot edge)
+  | 'top_parabolic' // f = 400 x (W - x) / W^2 (parabolic arch, zero corners)
+  | 'top_tent' // triangular peak at W/2
+  | 'top_sine_bump' // f = 100 sin(pi x / W) (pure first mode — single term solution)
+  | 'top_step' // f = 100 for x <= W/2 else 0 (sharp jump at middle)
+  | 'top_gaussian'; // f = 100 exp(-20 ((x - W/2)/W)^2) localized hot spot
+
+export interface LaplaceSimulationParams {
+  rectWidthW: number;
+  rectHeightH: number;
+  topProfile: LaplaceTopProfileId;
+}
+
+/** Evaluate the preset top-edge potential f(x) at x ∈ [0, W]. */
+export function evaluateLaplaceTopProfile(
+  profileId: LaplaceTopProfileId,
+  x: number,
+  W: number
+): number {
+  const z = (x - W / 2) / W;
+  switch (profileId) {
+    case 'top_constant':
+      return 100;
+    case 'top_parabolic':
+      return (400 * x * (W - x)) / (W * W);
+    case 'top_tent':
+      return x <= W / 2 ? (100 * x) / (W / 2) : (100 * (W - x)) / (W / 2);
+    case 'top_sine_bump':
+      return 100 * Math.sin((Math.PI * x) / W);
+    case 'top_step':
+      return x <= W / 2 ? 100 : 0;
+    case 'top_gaussian':
+      return 100 * Math.exp(-20 * z * z);
+  }
+}
+
+export interface LaplaceModeData {
+  bn: number[]; // Fourier-sine coefficients of the top edge (index 0 ↔ n = 1)
+  W: number;
+  H: number;
+  topMean: number; // (1/W)∫ f dx
+}
+
+/** Compute once: sine coefficients of the top-edge data + rectangle metrics. */
+export function computeLaplaceRectangleCoefficients(
+  params: LaplaceSimulationParams,
+  numModes = 24
+): LaplaceModeData {
+  const { rectWidthW: W, rectHeightH: H, topProfile } = params;
+  const bn: number[] = [];
+  for (let n = 1; n <= numModes; n++) {
+    bn.push(
+      (2 / W) *
+        integrateSimpson(
+          (xi) =>
+            evaluateLaplaceTopProfile(topProfile, xi, W) * Math.sin((n * Math.PI * xi) / W),
+          0,
+          W,
+          160
+        )
+    );
+  }
+  const topMean =
+    (1 / W) *
+    integrateSimpson((xi) => evaluateLaplaceTopProfile(topProfile, xi, W), 0, W, 160);
+  return { bn, W, H, topMean };
+}
+
+/** Fast evaluation of the sinh series potential u(x, y) (0 ≤ x ≤ W, 0 ≤ y ≤ H). */
+export function evaluateLaplaceSeriesAt(
+  x: number,
+  y: number,
+  modeData: LaplaceModeData,
+  numModes = modeData.bn.length
+): number {
+  const X = Math.min(Math.max(x, 0), modeData.W);
+  const Y = Math.min(Math.max(y, 0), modeData.H);
+  let uVal = 0;
+  const count = Math.min(numModes, modeData.bn.length);
+  for (let k = 0; k < count; k++) {
+    const n = k + 1;
+    const sinhY = Math.sinh((n * Math.PI * Y) / modeData.W);
+    const sinhH = Math.sinh((n * Math.PI * modeData.H) / modeData.W);
+    uVal += modeData.bn[k] * Math.sin((n * Math.PI * X) / modeData.W) * (sinhY / sinhH);
+  }
+  return uVal;
+}
+
+/**
+ * Convenience single-point evaluation (computes coefficients each call).
+ * For grid/heatmap sampling, compute the coefficients once with
+ * computeLaplaceRectangleCoefficients and sample via evaluateLaplaceSeriesAt.
+ */
+export function evaluateLaplaceRectangle(
+  params: LaplaceSimulationParams,
+  x: number,
+  y: number,
+  numModes = 24
+): {
+  u_xy: number;
+  modeCoefficients: number[]; // bn values (before sinh normalization)
+  firstModeDecay: number; // sinh(πy/W)/sinh(πH/W) — depth attenuation of mode 1
+  topMean: number; // (1/W)∫f dx — mean of the top-edge data
+} {
+  const modeData = computeLaplaceRectangleCoefficients(params, numModes);
+  const firstModeDecay =
+    Math.sinh((Math.PI * Math.min(Math.max(y, 0), params.rectHeightH)) / params.rectWidthW) /
+    Math.sinh((Math.PI * params.rectHeightH) / params.rectWidthW);
+  return {
+    u_xy: evaluateLaplaceSeriesAt(x, y, modeData, numModes),
+    modeCoefficients: modeData.bn,
+    firstModeDecay,
+    topMean: modeData.topMean,
+  };
+}
+
+
 /**
  * Lesson 0 (Prerequisites): Exact Trigonometric & Parity Boundary Evaluator for integer n
  * Used to explain why sin(n*pi)=0, cos(n*pi)=(-1)^n, 1-(-1)^n, and sin((2n-1)*pi/2)=(-1)^(n-1)

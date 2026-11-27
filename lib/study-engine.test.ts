@@ -16,12 +16,12 @@ import {
 } from './curriculum-data.ts';
 import { TEXTBOOK_NOTES } from './textbook-notes.ts';
 
-test('extractAllFormulas aggregates formulas from all 7 curriculum modules', () => {
+test('extractAllFormulas aggregates formulas from all 9 curriculum modules', () => {
   const allFormulas = extractAllFormulas();
   assert.ok(allFormulas.length >= 25, `Expected at least 25 formulas, got ${allFormulas.length}`);
 
   const moduleIdsRepresented = new Set(allFormulas.map((f) => f.moduleId));
-  assert.equal(moduleIdsRepresented.size, 7);
+  assert.equal(moduleIdsRepresented.size, 9);
 });
 
 test('filterFormulas filters accurately by moduleId and Persian/LaTeX keywords', () => {
@@ -38,7 +38,7 @@ test('filterFormulas filters accurately by moduleId and Persian/LaTeX keywords',
 test('computeCourseProgress calculates mastery percentages and recommends next action', () => {
   const initialReport = computeCourseProgress(INITIAL_STUDY_PROGRESS);
   assert.equal(initialReport.overallMasteryPercent, 0);
-  assert.equal(initialReport.moduleSummaries.length, 7);
+  assert.equal(initialReport.moduleSummaries.length, 9);
   assert.equal(initialReport.recommendedNextAction.moduleId, 'module_0_prerequisites');
 
   const firstMod = CURRICULUM_MODULES[0];
@@ -94,8 +94,10 @@ test('REQUIREMENTS_SPECIFICATION covers all 4 engineering categories and is mark
   assert.ok(REQUIREMENTS_SPECIFICATION.every((req) => req.implemented));
 });
 
-test('validates adaptive module complexity layout profiles across all 7 curriculum modules', () => {
+test('validates adaptive module complexity layout profiles across all 9 curriculum modules', () => {
   // Heat Equation must use wide_canvas for rod diffusion and spatial temperature distribution
+  assert.equal(getModuleDefaultLayout('module_8_laplace_pde'), 'wide_canvas');
+  assert.equal(getModuleDefaultLayout('module_7_wave_pde'), 'wide_canvas');
   assert.equal(getModuleDefaultLayout('module_6_heat_pde'), 'wide_canvas');
   // Sturm-Liouville must use wide_canvas
   assert.equal(getModuleDefaultLayout('module_5_sturm_liouville'), 'wide_canvas');
@@ -159,7 +161,58 @@ test('validates comprehensive textbook lecture notes, common pitfalls, and engin
     }
   }
 
-  assert.equal(totalSubtopicsCount, 49, `Expected 49 total subtopics, found ${totalSubtopicsCount}`);
+  assert.equal(totalSubtopicsCount, 63, `Expected 63 total subtopics, found ${totalSubtopicsCount}`);
+});
+
+test('validates Module 7 (Wave Equation) comprehensive academic and engineering depth', () => {
+  const waveMod = CURRICULUM_MODULES.find((m) => m.id === 'module_7_wave_pde');
+  assert.ok(waveMod, 'Module 7 must exist');
+  assert.equal(waveMod.subtopics.length, 7, 'Must have 7 comprehensive subtopics');
+  assert.equal(waveMod.workedExamples.length, 7, 'Must have 7 fully expanded worked examples');
+  assert.equal(waveMod.practiceQuestions.length, 8, 'Must have 8 high-level practice questions');
+
+  for (const ex of waveMod.workedExamples) {
+    assert.ok(ex.steps.length >= 4, `Example ${ex.id} must have at least 4 detailed steps`);
+    assert.ok(ex.problemFormula.length > 0);
+    assert.ok(ex.finalAnswerFormula.length > 0);
+  }
+
+  for (const sub of waveMod.subtopics) {
+    assert.ok(sub.keyFormulas.length >= 2, `Subtopic ${sub.id} must have key formulas`);
+    assert.ok(sub.conceptualPoints.length >= 1);
+  }
+
+  // Quiz correctness sanity: the d'Alembert answer must reference the half-sum form
+  const q7 = waveMod.practiceQuestions.find((q) => q.id === 'q7_m7');
+  assert.ok(q7 && q7.correctIndex === 0);
+  assert.ok(q7.options[0].includes('x+at') && q7.options[0].includes('x-at'));
+});
+
+test('validates Module 8 (Laplace Equation) comprehensive academic and engineering depth', () => {
+  const lapMod = CURRICULUM_MODULES.find((m) => m.id === 'module_8_laplace_pde');
+  assert.ok(lapMod, 'Module 8 must exist');
+  assert.equal(lapMod.subtopics.length, 7, 'Must have 7 comprehensive subtopics');
+  assert.equal(lapMod.workedExamples.length, 7, 'Must have 7 fully expanded worked examples');
+  assert.equal(lapMod.practiceQuestions.length, 8, 'Must have 8 high-level practice questions');
+
+  for (const ex of lapMod.workedExamples) {
+    assert.ok(ex.steps.length >= 4, `Example ${ex.id} must have at least 4 detailed steps`);
+    assert.ok(ex.problemFormula.length > 0);
+    assert.ok(ex.finalAnswerFormula.length > 0);
+  }
+
+  for (const sub of lapMod.subtopics) {
+    assert.ok(sub.keyFormulas.length >= 2, `Subtopic ${sub.id} must have key formulas`);
+    assert.ok(sub.conceptualPoints.length >= 1);
+  }
+
+  // The Poisson kernel must be normalized in the lesson data
+  const halfPlane = lapMod.subtopics.find((s) => s.id === 'm8_6_laplace_half_plane');
+  assert.ok(halfPlane);
+  assert.ok(
+    halfPlane.keyFormulas.some((kf) => kf.formula.includes('\\int_{-\\infty}^{\\infty} P_y(x) \\, dx = 1')),
+    'Poisson kernel normalization must be stated'
+  );
 });
 
 test('Parseval Fourier-integral identities hold numerically and lesson data carries correct constants', () => {

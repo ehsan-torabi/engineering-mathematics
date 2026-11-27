@@ -8,6 +8,8 @@ import FourierIntegralStage from '@/components/FourierIntegralStage';
 import FourierTransformStage from '@/components/FourierTransformStage';
 import SturmLiouvilleStage from '@/components/SturmLiouvilleStage';
 import HeatEquationStage from '@/components/HeatEquationStage';
+import WaveEquationStage from '@/components/WaveEquationStage';
+import LaplaceStage from '@/components/LaplaceStage';
 import PrerequisiteStage from '@/components/PrerequisiteStage';
 
 interface LabPanelProps {
@@ -29,6 +31,10 @@ const LAB_HINTS: Record<string, string> = {
     'پارامترهای مسئله مقدار مرزی را تغییر بده تا مقادیر ویژه تغییر کنند.',
   heat_pde:
     'شرایط اولیه و مرزی میله را تنظیم کن و پخش گرما را در زمان ببین.',
+  wave_pde:
+    'تار را زخش بزن یا ضربه بده؛ انتشار موج، بازتاب از سرها و مدهای ایستاده را ببین.',
+  laplace_pde:
+    'داده لبه را عوض کن و عمق را ورق بزن؛ میرایی نمایی و فراموشی جزئیات مرز را ببین.',
 };
 
 /**
@@ -54,6 +60,8 @@ export default function LabPanel({ module }: LabPanelProps) {
       {module.simulatorType === 'fourier_transform' && <FourierTransformStage />}
       {module.simulatorType === 'sturm_liouville' && <SturmLiouvilleStage />}
       {module.simulatorType === 'heat_pde' && <HeatEquationStage />}
+      {module.simulatorType === 'wave_pde' && <WaveEquationStage />}
+      {module.simulatorType === 'laplace_pde' && <LaplaceStage />}
     </div>
   );
 }

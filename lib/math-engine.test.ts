@@ -10,6 +10,12 @@ import {
   solveSturmLiouvilleCase,
   classifyPDE,
   evaluateHeatEquation1D,
+  evaluateWaveEquation1D,
+  computeWaveModeData,
+  evaluateWaveSeriesAt,
+  computeLaplaceRectangleCoefficients,
+  evaluateLaplaceSeriesAt,
+  evaluateLaplaceRectangle,
   mathErf,
   mathErfc,
   evaluateFourierBoundaryTrig,
@@ -536,6 +542,131 @@ describe('Engineering Mathematics Pure Logic Engine', () => {
     // Mode 3 should have 2 interior nodes
     const simDirichlet3 = computeSLEigenfunctionData('case_a_dirichlet', L, 3, 100);
     assert.equal(simDirichlet3.interiorNodesCount, 2);
+  });
+});
+
+describe('Wave Equation evaluators (Module 7)', () => {
+  it('pure first mode oscillates harmonically with omega1 = a*pi/L and vanishes at the ends', () => {
+    const L = Math.PI;
+    const a = 2;
+    const omega1 = (a * Math.PI) / L; // = 2
+
+    const t0 = evaluateWaveEquation1D(
+      {
+        stringLengthL: L,
+        waveSpeedA: a,
+        timeT: 0,
+        bcType: 'dirichlet_fixed',
+        initialProfile: 'sine_mode_1',
+      },
+      L / 2,
+      8
+    );
+    // u(x, 0) = 100 sin(pi/2) = 100 and u_t(x, 0) = 0
+    assert.ok(Math.abs(t0.u_xt - 100) < 0.1);
+    assert.ok(Math.abs(t0.velocity_t) < 0.05);
+
+    // Quarter period: u(L/2, T1/4) = 100 cos(omega1 * T1/4) = 0, velocity at max
+    const tQ = evaluateWaveEquation1D(
+      {
+        stringLengthL: L,
+        waveSpeedA: a,
+        timeT: (2 * Math.PI) / omega1 / 4,
+        bcType: 'dirichlet_fixed',
+        initialProfile: 'sine_mode_1',
+      },
+      L / 2,
+      8
+    );
+    assert.ok(Math.abs(tQ.u_xt) < 0.1);
+    assert.ok(Math.abs(Math.abs(tQ.velocity_t) - 100 * omega1) < 1);
+
+    // Fixed ends must stay clamped at every time
+    for (const t of [0, 0.3, 1.1]) {
+      const end0 = evaluateWaveEquation1D(
+        { stringLengthL: L, waveSpeedA: a, timeT: t, bcType: 'dirichlet_fixed', initialProfile: 'pluck_tent' },
+        0,
+        8
+      );
+      const endL = evaluateWaveEquation1D(
+        { stringLengthL: L, waveSpeedA: a, timeT: t, bcType: 'dirichlet_fixed', initialProfile: 'pluck_tent' },
+        L,
+        8
+      );
+      assert.ok(Math.abs(end0.u_xt) < 1e-9 && Math.abs(endL.u_xt) < 1e-9);
+    }
+
+    // Neumann free ends: flat displacement keeps the zero mode alive (A0 = 60) and ends' slope zero
+    const free = evaluateWaveEquation1D(
+      {
+        stringLengthL: L,
+        waveSpeedA: 1,
+        timeT: 2.0,
+        bcType: 'neumann_free',
+        initialProfile: 'flat_displacement',
+      },
+      L / 2,
+      8
+    );
+    // u(x,0)=60 everywhere; only the drifting zero mode survives => u stays exactly 60
+    assert.ok(Math.abs(free.u_xt - 60) < 0.05);
+  });
+
+  it('computeWaveModeData + evaluateWaveSeriesAt fast path matches the wrapper', () => {
+    const params = {
+      stringLengthL: 2,
+      waveSpeedA: 1.5,
+      timeT: 0.7,
+      bcType: 'dirichlet_fixed' as const,
+      initialProfile: 'pluck_quarter' as const,
+    };
+    const modeData = computeWaveModeData(params, 12);
+    const fast = evaluateWaveSeriesAt(1.3, params.timeT, modeData);
+    const slow = evaluateWaveEquation1D(params, 1.3, 12);
+    assert.ok(Math.abs(fast.u - slow.u_xt) < 1e-12);
+    assert.ok(Math.abs(fast.v - slow.velocity_t) < 1e-12);
+  });
+});
+
+describe('Laplace Equation evaluators (Module 8)', () => {
+  it('sinh-series reproduces the top edge, zeroes the other edges, and decays with depth', () => {
+    const params = {
+      rectWidthW: 2,
+      rectHeightH: 2,
+      topProfile: 'top_sine_bump' as const,
+    };
+    const modeData = computeLaplaceRectangleCoefficients(params, 12);
+    // Pure first-mode data: bn = [100, 0, 0, ...]
+    assert.ok(Math.abs(modeData.bn[0] - 100) < 0.05);
+    for (let k = 1; k < 4; k++) assert.ok(Math.abs(modeData.bn[k]) < 0.05);
+
+    // Top edge midpoint reproduces f(W/2) = 100
+    const topMid = evaluateLaplaceSeriesAt(1, 2, modeData);
+    assert.ok(Math.abs(topMid - 100) < 0.2);
+
+    // Bottom edge and both side edges are zero
+    assert.ok(Math.abs(evaluateLaplaceSeriesAt(1, 0, modeData)) < 1e-9);
+    assert.ok(Math.abs(evaluateLaplaceSeriesAt(0, 1, modeData)) < 1e-9);
+    assert.ok(Math.abs(evaluateLaplaceSeriesAt(2, 1, modeData)) < 1e-9);
+
+    // Depth decay: at half depth the potential drops below half of the top value
+    const half = evaluateLaplaceSeriesAt(1, 1, modeData);
+    assert.ok(half < 50 && half > 0);
+
+    // Parabolic data excites only odd modes (symmetry) — checks bn formula.
+    // Engine profile is f = 400x(W-x)/W² (peak 100): bn_odd = 2·400·4/(n³π³)
+    const para = computeLaplaceRectangleCoefficients(
+      { rectWidthW: 1, rectHeightH: 1, topProfile: 'top_parabolic' },
+      6
+    );
+    assert.ok(Math.abs(para.bn[0] - 3200 / (Math.PI ** 3)) < 0.05);
+    assert.ok(Math.abs(para.bn[1]) < 0.05);
+    assert.ok(Math.abs(para.bn[2] - 3200 / (27 * Math.PI ** 3)) < 0.02);
+
+    // evaluateLaplaceRectangle wrapper stays consistent with the fast path
+    const wrapper = evaluateLaplaceRectangle(params, 0.7, 1.3, 12);
+    assert.ok(Math.abs(wrapper.u_xy - evaluateLaplaceSeriesAt(0.7, 1.3, modeData)) < 1e-12);
+    assert.ok(wrapper.firstModeDecay > 0 && wrapper.firstModeDecay < 1);
   });
 });
 
