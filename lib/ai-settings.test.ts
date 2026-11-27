@@ -29,8 +29,8 @@ test('isLoopbackBaseUrl rejects cloud and LAN endpoints', () => {
   assert.equal(isLoopbackBaseUrl('not a url'), false);
 });
 
-test('local presets (Ollama / LM Studio) resolve to loopback base URLs', () => {
-  for (const presetId of ['ollama', 'lmstudio'] as const) {
+test('local presets (Ollama / LM Studio / 9Router) resolve to loopback base URLs', () => {
+  for (const presetId of ['ollama', 'lmstudio', 'router9'] as const) {
     const preset = OPENAI_COMPATIBLE_PRESETS.find((p) => p.id === presetId);
     assert.ok(preset, `${presetId} preset expected`);
     assert.equal(isLoopbackBaseUrl(preset.baseUrl), true);

@@ -15,6 +15,7 @@ export type OpenAICompatiblePresetId =
   | 'deepseek'
   | 'ollama'
   | 'lmstudio'
+  | 'router9'
   | 'custom';
 
 export type SolutionDetailLevel = 'full_step_by_step' | 'conceptual' | 'exam_prep';
@@ -138,6 +139,20 @@ export const OPENAI_COMPATIBLE_PRESETS: OpenAICompatiblePreset[] = [
     baseUrl: 'http://localhost:1234/v1',
     defaultModel: 'local-model',
     suggestedModels: ['local-model'],
+  },
+  {
+    id: 'router9',
+    label: '9Router (روتر محلی چندارائه‌دهنده)',
+    description:
+      'روتر محلی رایگان بیش از ۴۰ ارائه‌دهنده (Claude/GPT/Gemini/GLM/…) با نقطه پایانی سازگار با OpenAI روی پورت ۲۰۱۲۸؛ شناسه مدل‌ها پیشوند ارائه‌دهنده دارند (مانند cc/ یا glm/)',
+    baseUrl: 'http://localhost:20128/v1',
+    defaultModel: 'glm/glm-5.1',
+    suggestedModels: [
+      'cc/claude-sonnet-4-6',
+      'cx/gpt-5.5',
+      'glm/glm-5.1',
+      'kimi/kimi-k2.5-thinking',
+    ],
   },
   {
     id: 'custom',
