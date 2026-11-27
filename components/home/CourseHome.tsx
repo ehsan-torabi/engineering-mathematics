@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
@@ -90,10 +91,9 @@ export default function CourseHome() {
           const isUntouched = summary.statusLabel === 'شروع‌نشده';
 
           return (
-            <button
+            <Link
               key={mod.id}
-              type="button"
-              onClick={() => openModule(mod.id)}
+              href={`/module/${mod.id}`}
               style={{ animationDelay: `${Math.min(idx * 40, 280)}ms` }}
               className="animate-rise group flex w-full items-center gap-4 rounded-xl border border-line bg-surface p-4 text-start transition-colors hover:border-line-strong"
             >
@@ -143,7 +143,7 @@ export default function CourseHome() {
                 </span>
                 <ArrowLeft className="h-4 w-4 text-ink-4 transition-transform group-hover:-translate-x-0.5 group-hover:text-accent" />
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>
@@ -197,9 +197,8 @@ export default function CourseHome() {
 
       {/* Course-wide tools */}
       <div className="mt-10 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => router.push('/exams')}
+        <Link
+          href="/exams"
           className="flex items-center gap-3 rounded-xl border border-accent-line bg-accent-soft p-4 text-start transition-colors hover:bg-accent-tint"
         >
           <GraduationCap className="h-5 w-5 shrink-0 text-accent" />
@@ -209,7 +208,7 @@ export default function CourseHome() {
               {EXAM_PAPERS.length} برگه · {TOTAL_EXAM_QUESTIONS} سؤال با حل کامل
             </span>
           </span>
-        </button>
+        </Link>
 
         <button
           type="button"

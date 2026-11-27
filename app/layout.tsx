@@ -1,5 +1,12 @@
 import type {Metadata} from 'next';
 import { Vazirmatn, IBM_Plex_Mono } from 'next/font/google';
+import {
+  BASE_KEYWORDS,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  absoluteUrl,
+} from '@/lib/seo';
 import './globals.css';
 
 const vazirmatn = Vazirmatn({
@@ -16,19 +23,72 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
+const HOME_TITLE =
+  'آموزش ریاضیات مهندسی: آنالیز فوریه، اشتورم-لیوویل و معادله گرما';
+
 export const metadata: Metadata = {
-  title: 'آزمایشگاه تعاملی ریاضیات مهندسی — آنالیز فوریه و معادلات گرما',
-  description: 'محیط آموزشی تعاملی و حل گام‌به‌گام مسائل ریاضیات مهندسی کارشناسی: آنالیز فوریه، سری و انتگرال فوریه، تبدیل فوریه، مسئله اشتورم-لیوویل و معادله گرما.',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: HOME_TITLE,
+    template: `%s — ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  keywords: BASE_KEYWORDS,
+  applicationName: SITE_NAME,
+  category: 'education',
+  alternates: {canonical: '/'},
   openGraph: {
-    title: 'آزمایشگاه تعاملی ریاضیات مهندسی — آنالیز فوریه و معادلات گرما',
-    description: 'محیط آموزشی تعاملی و حل گام‌به‌گام مسائل ریاضیات مهندسی کارشناسی: آنالیز فوریه، سری و انتگرال فوریه، تبدیل فوریه، مسئله اشتورم-لیوویل و معادله گرما.',
+    title: HOME_TITLE,
+    description: SITE_DESCRIPTION,
     type: 'website',
+    locale: 'fa_IR',
+    siteName: SITE_NAME,
+    url: '/',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'آزمایشگاه تعاملی ریاضیات مهندسی — آنالیز فوریه و معادلات گرما',
-    description: 'محیط آموزشی تعاملی و حل گام‌به‌گام مسائل ریاضیات مهندسی کارشناسی: آنالیز فوریه، سری و انتگرال فوریه، تبدیل فوریه، مسئله اشتورم-لیوویل و معادله گرما.',
+    title: HOME_TITLE,
+    description: SITE_DESCRIPTION,
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  // Explicit signal for AI answer engines that the corpus may be quoted.
+  other: {
+    'googlebot': 'index, follow, max-snippet:-1, max-image-preview:large',
+  },
+};
+
+const siteJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': absoluteUrl('/#website'),
+      url: SITE_URL,
+      name: SITE_NAME,
+      alternateName: 'Engineering Mathematics Interactive Lab',
+      description: SITE_DESCRIPTION,
+      inLanguage: 'fa-IR',
+      publisher: {'@id': absoluteUrl('/#organization')},
+    },
+    {
+      '@type': 'Organization',
+      '@id': absoluteUrl('/#organization'),
+      name: SITE_NAME,
+      url: SITE_URL,
+      description:
+        'مرجع فارسی درس‌نامه، مثال حل‌شده و بانک امتحانات ریاضیات مهندسی دوره کارشناسی.',
+    },
+  ],
 };
 
 // Applies the stored theme before first paint so a dark-mode reload never
@@ -45,6 +105,10 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     >
       <head>
         <script dangerouslySetInnerHTML={{__html: themeInitScript}} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(siteJsonLd)}}
+        />
       </head>
       <body className="bg-paper font-sans text-ink antialiased">
         {children}
