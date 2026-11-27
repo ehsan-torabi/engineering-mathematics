@@ -1,15 +1,26 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, ArrowDown, Bot, Check, Copy, RotateCcw, Square } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowDown,
+  Bot,
+  Check,
+  Copy,
+  Pencil,
+  RotateCcw,
+  Square,
+  Trash2,
+} from 'lucide-react';
 import type { ChatMessageItem } from '@/lib/ai-settings';
 import ChatMarkdown from '@/components/ai/ChatMarkdown';
 
 /**
  * Shared conversation transcript for the assistant drawer and the full-page
- * assistant: message bubbles, the streaming bubble with stop, the error row
- * with retry, scroll-following that never fights a reader who scrolled up,
- * and a log role so screen readers follow the conversation.
+ * assistant: message bubbles with copy/edit/delete/regenerate actions, the
+ * streaming bubble with stop, the error row with retry, scroll-following
+ * that never fights a reader who scrolled up, and a log role so screen
+ * readers follow the conversation.
  */
 
 interface ChatTranscriptProps {
@@ -20,6 +31,12 @@ interface ChatTranscriptProps {
   errorBanner: string | null;
   onRegenerate: () => void;
   onStop: () => void;
+  /** Saves the edited user message and regenerates from it (fork semantics) */
+  onEditMessage?: (messageId: string, newContent: string) => void;
+  /** Removes a single message from the conversation */
+  onDeleteMessage?: (messageId: string) => void;
+  /** Regenerates a reply, dropping the branch after it */
+  onRegenerateMessage?: (messageId: string) => void;
   /** Rendered instead of bubbles while the session has no messages yet */
   emptyState: React.ReactNode;
   className?: string;
@@ -33,6 +50,9 @@ export default function ChatTranscript({
   errorBanner,
   onRegenerate,
   onStop,
+  onEditMessage,
+  onDeleteMessage,
+  onRegenerateMessage,
   emptyState,
   className = '',
 }: ChatTranscriptProps) {
@@ -40,6 +60,8 @@ export default function ChatTranscript({
   const isNearBottomRef = useRef(true);
   const [showJumpToBottom, setShowJumpToBottom] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState('');
 
   const handleScrollAreaScroll = () => {
     const el = scrollAreaRef.current;
@@ -77,9 +99,23 @@ export default function ChatTranscript({
     }, 1600);
   };
 
-  const lastAssistantId = [...messages]
-    .reverse()
-    .find((m) => m.role === 'assistant')?.id;
+  const startEditing = (msg: ChatMessageItem) => {
+    setEditingId(msg.id);
+    setEditDraft(msg.content);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditDraft('');
+  };
+
+  const saveEditing = (msg: ChatMessageItem) => {
+    const text = editDraft.trim();
+    if (!text || !onEditMessage) return;
+    setEditingId(null);
+    setEditDraft('');
+    onEditMessage(msg.id, text);
+  };
 
   const isEmpty = messages.length === 0 && streamingText === null;
 
@@ -99,6 +135,7 @@ export default function ChatTranscript({
           <>
             {messages.map((msg) => {
               const isUser = msg.role === 'user';
+              const isEditingThis = isUser && editingId === msg.id;
               return (
                 <div
                   key={msg.id}
@@ -144,32 +181,122 @@ export default function ChatTranscript({
                               <Copy className="h-3.5 w-3.5" />
                             )}
                           </button>
-                          {msg.id === lastAssistantId && (
+                          <button
+                            type="button"
+                            onClick={
+                              onRegenerateMessage
+                                ? () => onRegenerateMessage(msg.id)
+                                : onRegenerate
+                            }
+                            disabled={isBusy}
+                            aria-label="تولید مجدد پاسخ"
+                            title={
+                              onRegenerateMessage
+                                ? 'تولید مجدد از این پاسخ (پاسخ‌های بعدی حذف می‌شوند)'
+                                : 'پاسخ جدید با همین پرسش'
+                            }
+                            className="flex h-6 w-6 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-muted hover:text-ink disabled:opacity-40"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </button>
+                          {onDeleteMessage && (
                             <button
                               type="button"
-                              onClick={onRegenerate}
-                              disabled={isBusy}
-                              aria-label="تولید مجدد پاسخ"
-                              title="پاسخ جدید با همین پرسش"
-                              className="flex h-6 w-6 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-muted hover:text-ink disabled:opacity-40"
+                              onClick={() => onDeleteMessage(msg.id)}
+                              aria-label="حذف پاسخ"
+                              title="حذف این پاسخ"
+                              className="flex h-6 w-6 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-muted hover:text-danger-ink"
                             >
-                              <RotateCcw className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           )}
                         </div>
                       </div>
                     )}
 
-                    <div className="text-[13px] leading-8 text-ink">
-                      <ChatMarkdown content={msg.content} />
-                    </div>
-
-                    {msg.timestamp && (
-                      <div className="mt-1.5 text-[10px] text-ink-4">
-                        {msg.timestamp}
+                    {isEditingThis ? (
+                      <div>
+                        <textarea
+                          value={editDraft}
+                          onChange={(e) => setEditDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              e.preventDefault();
+                              cancelEditing();
+                            } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                              e.preventDefault();
+                              saveEditing(msg);
+                            }
+                          }}
+                          dir="auto"
+                          rows={Math.min(8, editDraft.split('\n').length + 1)}
+                          autoFocus
+                          aria-label="ویرایش متن پرسش"
+                          className="w-full resize-y rounded-lg border border-line-strong bg-panel px-3 py-2 text-[13px] leading-7 text-ink outline-none transition-colors focus:border-accent focus:bg-surface"
+                        />
+                        <div className="mt-2 flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={cancelEditing}
+                            aria-label="انصراف از ویرایش"
+                            className="rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-3 transition-colors hover:text-ink"
+                          >
+                            انصراف
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => saveEditing(msg)}
+                            disabled={!editDraft.trim() || isBusy}
+                            aria-label="ذخیره ویرایش و تولید مجدد"
+                            className="rounded-lg bg-accent-solid px-3 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-accent-deep disabled:opacity-40"
+                          >
+                            ذخیره و تولید مجدد
+                          </button>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <div className="text-[13px] leading-8 text-ink">
+                          <ChatMarkdown content={msg.content} />
+                        </div>
+
+                        {msg.timestamp && (
+                          <div className="mt-1.5 text-[10px] text-ink-4">
+                            {msg.timestamp}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
+
+                  {/* User-message actions: edit fork + delete */}
+                  {isUser && !isEditingThis && (onEditMessage || onDeleteMessage) && (
+                    <div className="mt-1 flex items-center gap-1">
+                      {onEditMessage && (
+                        <button
+                          type="button"
+                          onClick={() => startEditing(msg)}
+                          disabled={isBusy}
+                          aria-label="ویرایش پرسش"
+                          title="ویرایش پرسش و تولید مجدد پاسخ"
+                          className="flex h-6 w-6 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-muted hover:text-ink disabled:opacity-40"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {onDeleteMessage && (
+                        <button
+                          type="button"
+                          onClick={() => onDeleteMessage(msg.id)}
+                          aria-label="حذف پرسش"
+                          title="حذف این پرسش"
+                          className="flex h-6 w-6 items-center justify-center rounded-md text-ink-4 transition-colors hover:bg-muted hover:text-danger-ink"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

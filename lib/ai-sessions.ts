@@ -167,6 +167,80 @@ export function appendMessage(
   };
 }
 
+/**
+ * ChatGPT-style fork semantics shared by edit and regenerate: keep the
+ * history strictly BEFORE `messageId` (the target itself is dropped) and
+ * refresh updatedAt. Returns null when the id is unknown so callers can
+ * bail out without touching the store.
+ */
+export function truncateBeforeMessage(
+  session: ChatSession,
+  messageId: string
+): ChatSession | null {
+  const index = session.messages.findIndex((m) => m.id === messageId);
+  if (index === -1) return null;
+  return {
+    ...session,
+    updatedAt: new Date().toISOString(),
+    messages: session.messages.slice(0, index),
+  };
+}
+
+/**
+ * Keep the history up to AND including `messageId`, dropping everything
+ * after it (the retry/replay fork: re-stream the same prompt). Returns
+ * null when the id is unknown.
+ */
+export function truncateAfterMessage(
+  session: ChatSession,
+  messageId: string
+): ChatSession | null {
+  const index = session.messages.findIndex((m) => m.id === messageId);
+  if (index === -1) return null;
+  return {
+    ...session,
+    updatedAt: new Date().toISOString(),
+    messages: session.messages.slice(0, index + 1),
+  };
+}
+
+/**
+ * Replace a user message's content and drop everything after it — the
+ * assistant reply being edited away belongs to the old branch. The title
+ * stays untouched (it may name the original opening prompt).
+ */
+export function editUserMessageInSession(
+  session: ChatSession,
+  messageId: string,
+  newContent: string
+): ChatSession | null {
+  const index = session.messages.findIndex(
+    (m) => m.id === messageId && m.role === 'user'
+  );
+  if (index === -1) return null;
+  return {
+    ...session,
+    updatedAt: new Date().toISOString(),
+    messages: [
+      ...session.messages.slice(0, index),
+      { ...session.messages[index], content: newContent },
+    ],
+  };
+}
+
+/** Remove a single message; the rest of the conversation is kept */
+export function deleteMessageFromSession(
+  session: ChatSession,
+  messageId: string
+): ChatSession | null {
+  if (!session.messages.some((m) => m.id === messageId)) return null;
+  return {
+    ...session,
+    updatedAt: new Date().toISOString(),
+    messages: session.messages.filter((m) => m.id !== messageId),
+  };
+}
+
 export interface LoadedSessions {
   sessions: ChatSession[];
   activeId: string;

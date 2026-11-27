@@ -186,6 +186,9 @@ export default function AssistantPageClient() {
     sendMessage,
     stop,
     regenerate,
+    editUserMessage,
+    deleteMessage,
+    regenerateMessage,
     newChat,
     selectSession,
     deleteSession,
@@ -501,6 +504,9 @@ export default function AssistantPageClient() {
           errorBanner={errorBanner}
           onRegenerate={regenerate}
           onStop={stop}
+          onEditMessage={(id, text) => void editUserMessage(id, text)}
+          onDeleteMessage={deleteMessage}
+          onRegenerateMessage={(id) => void regenerateMessage(id)}
           emptyState={<AssistantWelcome moduleContext={boundContext} />}
         />
 

@@ -6,6 +6,8 @@ import {
   createSession,
   createSessionId,
   DEFAULT_SESSION_TITLE,
+  deleteMessageFromSession,
+  editUserMessageInSession,
   faDigits,
   isSessionEmpty,
   LEGACY_STORAGE_KEY_CHAT,
@@ -19,6 +21,8 @@ import {
   sortSessions,
   sanitizeSessionTitle,
   trimSessions,
+  truncateAfterMessage,
+  truncateBeforeMessage,
   uniqueSessionTitle,
 } from './ai-sessions.ts';
 import type { ChatMessageItem } from './ai-settings.ts';
@@ -266,5 +270,69 @@ describe('loadSessions / saveSessions', () => {
     saveSessions([a, b], 'missing-id', storage);
     const loaded = loadSessions(storage);
     assert.equal(loaded.activeId, b.id);
+  });
+});
+
+describe('message fork helpers (edit / regenerate / delete)', () => {
+  function makeSession(messages: ChatMessageItem[]): ChatSession {
+    // Pinned old updatedAt so a helper's refresh is observable even when
+    // the test runs within the same millisecond as the fixture creation
+    return {
+      ...createSession(null),
+      updatedAt: '2020-01-01T00:00:00.000Z',
+      messages,
+    };
+  }
+
+  const u1 = makeMessage('user', 'پرسش اول');
+  const a1 = makeMessage('assistant', 'پاسخ اول');
+  const u2 = makeMessage('user', 'پرسش دوم');
+  const a2 = makeMessage('assistant', 'پاسخ دوم');
+
+  test('truncateBeforeMessage keeps everything before the target only', () => {
+    const session = makeSession([u1, a1, u2, a2]);
+    const next = truncateBeforeMessage(session, u2.id);
+    assert.ok(next);
+    assert.deepEqual(
+      next.messages.map((m) => m.id),
+      [u1.id, a1.id]
+    );
+    assert.notEqual(next.updatedAt, session.updatedAt);
+    assert.equal(truncateBeforeMessage(session, 'no-such-id'), null);
+  });
+
+  test('truncateAfterMessage keeps the target and drops the rest (retry)', () => {
+    const session = makeSession([u1, a1, u2, a2]);
+    const next = truncateAfterMessage(session, u2.id);
+    assert.ok(next);
+    assert.deepEqual(
+      next.messages.map((m) => m.id),
+      [u1.id, a1.id, u2.id]
+    );
+    assert.equal(truncateAfterMessage(session, 'no-such-id'), null);
+  });
+
+  test('editUserMessageInSession replaces content and drops the old branch', () => {
+    const session = makeSession([u1, a1, u2, a2]);
+    const next = editUserMessageInSession(session, u1.id, 'پرسش ویرایش‌شده');
+    assert.ok(next);
+    assert.equal(next.messages.length, 1);
+    assert.equal(next.messages[0].id, u1.id);
+    assert.equal(next.messages[0].content, 'پرسش ویرایش‌شده');
+    // Editing is only valid for user messages
+    assert.equal(editUserMessageInSession(session, a1.id, 'x'), null);
+    assert.equal(editUserMessageInSession(session, 'no-such-id', 'x'), null);
+  });
+
+  test('deleteMessageFromSession removes exactly one message', () => {
+    const session = makeSession([u1, a1, u2, a2]);
+    const next = deleteMessageFromSession(session, a1.id);
+    assert.ok(next);
+    assert.deepEqual(
+      next.messages.map((m) => m.id),
+      [u1.id, u2.id, a2.id]
+    );
+    assert.equal(next.updatedAt !== session.updatedAt, true);
+    assert.equal(deleteMessageFromSession(session, 'no-such-id'), null);
   });
 });

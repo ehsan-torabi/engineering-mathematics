@@ -76,6 +76,9 @@ export default function AIAssistantDrawer({
     sendMessage,
     stop,
     regenerate,
+    editUserMessage,
+    deleteMessage,
+    regenerateMessage,
     newChat,
     setSessionContext,
     serverStatus,
@@ -308,6 +311,9 @@ export default function AIAssistantDrawer({
               errorBanner={errorBanner}
               onRegenerate={regenerate}
               onStop={stop}
+              onEditMessage={(id, text) => void editUserMessage(id, text)}
+              onDeleteMessage={deleteMessage}
+              onRegenerateMessage={(id) => void regenerateMessage(id)}
               emptyState={<AssistantWelcome moduleContext={boundContext} />}
             />
 

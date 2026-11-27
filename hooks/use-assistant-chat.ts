@@ -11,6 +11,8 @@ import {
   appendMessage,
   createSession,
   DEFAULT_SESSION_TITLE,
+  deleteMessageFromSession,
+  editUserMessageInSession,
   getSessionsSnapshot,
   getServerSessionsSnapshot,
   messageTimeLabel,
@@ -18,6 +20,8 @@ import {
   sanitizeSessionTitle,
   sessionTitleFromText,
   subscribeToSessions,
+  truncateAfterMessage,
+  truncateBeforeMessage,
   uniqueSessionTitle,
 } from '@/lib/ai-sessions';
 import type {
@@ -156,57 +160,18 @@ export function useAssistantChat(
     abortControllerRef.current?.abort();
   }, []);
 
-  const sendMessage = useCallback(
-    async (promptText?: string, historyOverride?: ChatMessageItem[]) => {
-      const textToSend = (promptText ?? '').trim();
-      if (!textToSend || abortControllerRef.current) return;
-
+  /**
+   * Streams the reply for `history` into `sessionId` and persists it.
+   * Callers must have already committed the history (new user message,
+   * edited fork, or truncated regenerate) and guarded against a busy stream.
+   */
+  const runStream = useCallback(
+    async (
+      sessionId: string,
+      sessionContext: SessionModuleContext | null,
+      history: ChatMessageItem[]
+    ) => {
       setErrorBanner(null);
-
-      // Resolve (or create) the target session so grounding binds at send time
-      const snapshot = getSessionsSnapshot();
-      let target = snapshot.sessions.find((s) => s.id === snapshot.activeId);
-      if (!target) {
-        target = createSession(getNewSessionContext?.() ?? null);
-        saveSessions([target, ...snapshot.sessions], target.id);
-      } else {
-        // Page-first grounding: a send made from a lesson/examples/exam
-        // surface is always grounded in that page's subject, even if the
-        // open-time bind has not run yet
-        const liveCtx = getNewSessionContext?.() ?? null;
-        if (liveCtx) {
-          const bound = { ...target, moduleContext: liveCtx };
-          saveSessions(
-            snapshot.sessions.map((s) => (s.id === bound.id ? bound : s)),
-            snapshot.activeId
-          );
-          target = bound;
-        }
-      }
-      const sessionId = target.id;
-      const sessionContext = target.moduleContext;
-
-      const baseHistory = historyOverride ?? target.messages;
-      const userMsg: ChatMessageItem = {
-        id: `user-${Date.now()}-${randomSuffix()}`,
-        role: 'user',
-        content: textToSend,
-        timestamp: messageTimeLabel(),
-      };
-      const updatedHistory = [...baseHistory, userMsg];
-      updateSession(sessionId, (s) => {
-        const next = appendMessage(s, userMsg);
-        if (next.title !== s.title) {
-          // appendMessage auto-titled from the first prompt: keep it unique
-          next.title = uniqueSessionTitle(
-            getSessionsSnapshot().sessions,
-            next.title,
-            sessionId
-          );
-        }
-        return next;
-      });
-
       setIsLoading(true);
       setStreamingText('');
       setStreamingModel(null);
@@ -220,7 +185,7 @@ export function useAssistantChat(
         const result = await streamAssistantReply({
           settings,
           moduleContext: sessionContext,
-          history: updatedHistory,
+          history,
           signal: controller.signal,
           onMeta: (modelUsed) => setStreamingModel(modelUsed),
           onDelta: (text) => setStreamingText(text),
@@ -252,24 +217,141 @@ export function useAssistantChat(
         abortControllerRef.current = null;
       }
     },
-    [getNewSessionContext, settings, updateSession]
+    [settings, updateSession]
   );
 
-  /** Resend the last user prompt of the active session */
+  const sendMessage = useCallback(
+    async (promptText?: string, historyOverride?: ChatMessageItem[]) => {
+      const textToSend = (promptText ?? '').trim();
+      if (!textToSend || abortControllerRef.current) return;
+
+      // Resolve (or create) the target session so grounding binds at send time
+      const snapshot = getSessionsSnapshot();
+      let target = snapshot.sessions.find((s) => s.id === snapshot.activeId);
+      if (!target) {
+        target = createSession(getNewSessionContext?.() ?? null);
+        saveSessions([target, ...snapshot.sessions], target.id);
+      } else {
+        // Page-first grounding: a send made from a lesson/examples/exam
+        // surface is always grounded in that page's subject, even if the
+        // open-time bind has not run yet
+        const liveCtx = getNewSessionContext?.() ?? null;
+        if (liveCtx) {
+          const bound = { ...target, moduleContext: liveCtx };
+          saveSessions(
+            snapshot.sessions.map((s) => (s.id === bound.id ? bound : s)),
+            snapshot.activeId
+          );
+          target = bound;
+        }
+      }
+      const sessionId = target.id;
+
+      const baseHistory = historyOverride ?? target.messages;
+      const userMsg: ChatMessageItem = {
+        id: `user-${Date.now()}-${randomSuffix()}`,
+        role: 'user',
+        content: textToSend,
+        timestamp: messageTimeLabel(),
+      };
+      const updatedHistory = [...baseHistory, userMsg];
+      updateSession(sessionId, (s) => {
+        const next = appendMessage(s, userMsg);
+        if (next.title !== s.title) {
+          // appendMessage auto-titled from the first prompt: keep it unique
+          next.title = uniqueSessionTitle(
+            getSessionsSnapshot().sessions,
+            next.title,
+            sessionId
+          );
+        }
+        return next;
+      });
+
+      await runStream(sessionId, target.moduleContext, updatedHistory);
+    },
+    [getNewSessionContext, runStream, updateSession]
+  );
+
+  /**
+   * Saves an edited user message and regenerates from it (ChatGPT fork
+   * semantics): everything after the message belonged to the old branch
+   * and is dropped. The title stays as-is.
+   */
+  const editUserMessage = useCallback(
+    async (messageId: string, newContent: string) => {
+      const text = (newContent ?? '').trim();
+      if (!text || abortControllerRef.current) return;
+
+      const snapshot = getSessionsSnapshot();
+      const target = snapshot.sessions.find((s) => s.id === snapshot.activeId);
+      if (!target) return;
+
+      // Page-first grounding applies at edit time too: the regenerated
+      // branch must be grounded in the page the user is on right now
+      const liveCtx = getNewSessionContext?.() ?? null;
+      const bound = liveCtx ? { ...target, moduleContext: liveCtx } : target;
+      const edited = editUserMessageInSession(bound, messageId, text);
+      if (!edited) return;
+
+      updateSession(edited.id, () => edited);
+      await runStream(edited.id, edited.moduleContext, edited.messages);
+    },
+    [getNewSessionContext, runStream, updateSession]
+  );
+
+  /** Remove one message from the active session (safe during a stream) */
+  const deleteMessage = useCallback(
+    (messageId: string) => {
+      const snapshot = getSessionsSnapshot();
+      const target = snapshot.sessions.find((s) => s.id === snapshot.activeId);
+      if (!target) return;
+      const next = deleteMessageFromSession(target, messageId);
+      if (next) updateSession(target.id, () => next);
+    },
+    [updateSession]
+  );
+
+  /**
+   * Regenerates the reply for `assistantMessageId` (ChatGPT fork semantics):
+   * everything after that reply belonged to the old branch and is dropped,
+   * then the preceding user message is re-sent.
+   */
+  const regenerateMessage = useCallback(
+    async (assistantMessageId: string) => {
+      if (abortControllerRef.current) return;
+      const snapshot = getSessionsSnapshot();
+      const target = snapshot.sessions.find((s) => s.id === snapshot.activeId);
+      if (!target) return;
+      const index = target.messages.findIndex(
+        (m) => m.id === assistantMessageId && m.role === 'assistant'
+      );
+      if (index < 1 || target.messages[index - 1].role !== 'user') return;
+      const history = target.messages.slice(0, index);
+      const truncated = truncateBeforeMessage(target, assistantMessageId);
+      if (!truncated) return;
+      updateSession(target.id, () => truncated);
+      await runStream(target.id, target.moduleContext, history);
+    },
+    [runStream, updateSession]
+  );
+
+  /** Resend the last user prompt of the active session (error retry) */
   const regenerate = useCallback(() => {
     if (abortControllerRef.current) return;
     const snapshot = getSessionsSnapshot();
     const current = snapshot.sessions.find((s) => s.id === snapshot.activeId);
     if (!current) return;
-    for (let i = current.messages.length - 1; i >= 0; i--) {
-      if (current.messages[i].role === 'user') {
-        const truncated = current.messages.slice(0, i);
-        updateSession(current.id, (s) => ({ ...s, messages: truncated }));
-        void sendMessage(current.messages[i].content, truncated);
-        return;
-      }
-    }
-  }, [sendMessage, updateSession]);
+    const lastUser = [...current.messages]
+      .reverse()
+      .find((m) => m.role === 'user');
+    if (!lastUser) return;
+    // Keep the user message itself; only the broken branch after it is dropped
+    const truncated = truncateAfterMessage(current, lastUser.id);
+    if (!truncated) return;
+    updateSession(current.id, () => truncated);
+    void runStream(current.id, current.moduleContext, truncated.messages);
+  }, [runStream, updateSession]);
 
   /** Start a real new session instead of wiping the old conversation */
   const newChat = useCallback(() => {
@@ -357,6 +439,9 @@ export function useAssistantChat(
     sendMessage,
     stop,
     regenerate,
+    editUserMessage,
+    deleteMessage,
+    regenerateMessage,
     newChat,
     // status
     serverStatus,
