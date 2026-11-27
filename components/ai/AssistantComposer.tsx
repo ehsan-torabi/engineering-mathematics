@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import { Send, Square } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Send, Sigma, Square } from 'lucide-react';
+import MathKeyboard from '@/components/ai/MathKeyboard';
 
 /**
  * Shared prompt composer for the assistant drawer and the full-page
  * assistant: auto-growing textarea, Enter-to-send (skipped during IME
- * composition), stop button while streaming, optional quick-prompt chips.
+ * composition), stop button while streaming, optional quick-prompt chips,
+ * and a collapsible math keyboard that splices LaTeX snippets at the
+ * caret (wrapped in $…$/$$…$$ so both the model and the transcript
+ * renderer understand them).
  */
 
 interface AssistantComposerProps {
@@ -39,14 +43,19 @@ export default function AssistantComposer({
   id = 'assistant-prompt',
 }: AssistantComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
-  const handleTextareaChange = (next: string) => {
-    onChange(next);
+  const adjustHeight = () => {
     const el = textareaRef.current;
     if (el) {
       el.style.height = 'auto';
       el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
     }
+  };
+
+  const handleTextareaChange = (next: string) => {
+    onChange(next);
+    adjustHeight();
   };
 
   // Programmatic clears (send, new chat) bypass onChange — collapse back
@@ -55,6 +64,28 @@ export default function AssistantComposer({
       textareaRef.current.style.height = '';
     }
   }, [value]);
+
+  /**
+   * Splice `text` at the current selection and restore focus + caret
+   * position after React commits the controlled value. `caret` indexes
+   * into `text` (MathKeyboard already accounts for its $…$ wrapper).
+   */
+  const insertAtCaret = (text: string, caret: number) => {
+    const el = textareaRef.current;
+    const start = el?.selectionStart ?? value.length;
+    const end = el?.selectionEnd ?? start;
+    const safeCaret = Math.min(Math.max(caret, 0), text.length);
+    handleTextareaChange(value.slice(0, start) + text + value.slice(end));
+    requestAnimationFrame(() => {
+      const fresh = textareaRef.current;
+      if (fresh) {
+        fresh.focus();
+        const pos = start + safeCaret;
+        fresh.setSelectionRange(pos, pos);
+        adjustHeight();
+      }
+    });
+  };
 
   return (
     <div className="border-t border-line bg-surface p-3">
@@ -78,6 +109,13 @@ export default function AssistantComposer({
         </div>
       )}
 
+      {isKeyboardOpen && (
+        <MathKeyboard
+          id="math-keyboard"
+          onInsert={(text, caret) => insertAtCaret(text, caret)}
+        />
+      )}
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -85,6 +123,22 @@ export default function AssistantComposer({
         }}
         className="flex items-end gap-2"
       >
+        <button
+          type="button"
+          onClick={() => setIsKeyboardOpen((prev) => !prev)}
+          aria-expanded={isKeyboardOpen}
+          aria-controls="math-keyboard"
+          aria-label="کیبورد ریاضی: درج فرمول در متن"
+          title="کیبورد ریاضی (درج فرمول)"
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+            isKeyboardOpen
+              ? 'border-accent bg-accent-soft text-accent-deep dark:text-accent'
+              : 'border-line-strong bg-paper text-ink-3 hover:border-accent hover:text-accent'
+          }`}
+        >
+          <Sigma className="h-5 w-5" />
+        </button>
+
         <textarea
           ref={textareaRef}
           id={id}
