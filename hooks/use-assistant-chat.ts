@@ -93,6 +93,43 @@ export function useAssistantChat(
     []
   );
 
+  // Page-first binding: the moment a surface opens, the active session
+  // adopts the page's subject, so the context strip always shows what the
+  // next send will be grounded in («مبحث فعال» = همین صفحه). Sessions with
+  // no page context (home/exams) keep their existing binding.
+  const openBindKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!statusEnabled) return;
+    const ctx = getNewSessionContext?.() ?? null;
+    if (!ctx) return;
+    const snapshot = getSessionsSnapshot();
+    const current = snapshot.sessions.find((s) => s.id === snapshot.activeId);
+    const ctxKey = `${ctx.moduleId}|${ctx.subtopicId || ''}`;
+    const bindKey = `${snapshot.activeId || 'none'}>${ctxKey}`;
+    if (openBindKeyRef.current === bindKey) return;
+    openBindKeyRef.current = bindKey;
+    const currentKey = current?.moduleContext
+      ? `${current.moduleContext.moduleId}|${current.moduleContext.subtopicId || ''}`
+      : null;
+    if (current && currentKey === ctxKey) return;
+    if (!current) {
+      const fresh = createSession(ctx);
+      fresh.title = uniqueSessionTitle(
+        snapshot.sessions,
+        DEFAULT_SESSION_TITLE,
+        fresh.id
+      );
+      saveSessions([fresh, ...snapshot.sessions], fresh.id);
+    } else {
+      saveSessions(
+        snapshot.sessions.map((s) =>
+          s.id === current.id ? { ...s, moduleContext: ctx } : s
+        ),
+        snapshot.activeId
+      );
+    }
+  }, [statusEnabled, getNewSessionContext]);
+
   // Persist settings on every change
   const updateSettings = useCallback(
     (updater: (prev: AISettings) => AISettings) => {
@@ -132,6 +169,19 @@ export function useAssistantChat(
       if (!target) {
         target = createSession(getNewSessionContext?.() ?? null);
         saveSessions([target, ...snapshot.sessions], target.id);
+      } else {
+        // Page-first grounding: a send made from a lesson/examples/exam
+        // surface is always grounded in that page's subject, even if the
+        // open-time bind has not run yet
+        const liveCtx = getNewSessionContext?.() ?? null;
+        if (liveCtx) {
+          const bound = { ...target, moduleContext: liveCtx };
+          saveSessions(
+            snapshot.sessions.map((s) => (s.id === bound.id ? bound : s)),
+            snapshot.activeId
+          );
+          target = bound;
+        }
       }
       const sessionId = target.id;
       const sessionContext = target.moduleContext;

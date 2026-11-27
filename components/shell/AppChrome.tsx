@@ -2,8 +2,10 @@
 
 import React, {
   createContext,
+  useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { usePathname } from 'next/navigation';
@@ -107,11 +109,25 @@ function ChromeOverlayProvider({ children }: { children: React.ReactNode }) {
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
 
+  // Direct-send channel: the drawer registers its send engine here, so
+  // openAssistant(prompt) callers (exam bank, examples, lessons) get an
+  // immediate answer instead of a prefilled composer.
+  const assistantSendRef = useRef<((prompt: string) => void) | null>(null);
+  const registerAssistantSend = useCallback(
+    (send: ((prompt: string) => void) | null) => {
+      assistantSendRef.current = send;
+    },
+    []
+  );
+
   const openAssistant = (prompt?: string, lessonHint?: LessonContextHint) => {
-    if (prompt !== undefined) setAiDraftPrompt(prompt);
+    setAiDraftPrompt(prompt ?? '');
     setAiLessonHint(lessonHint);
     setAiInitialTab('chat');
     setIsAIAssistantOpen(true);
+    if (prompt) {
+      assistantSendRef.current?.(prompt);
+    }
   };
 
   const assistantValue = useMemo<AssistantContextValue>(
@@ -146,6 +162,7 @@ function ChromeOverlayProvider({ children }: { children: React.ReactNode }) {
             onClose={() => setIsAIAssistantOpen(false)}
             draftPrompt={aiDraftPrompt}
             onDraftPromptChange={setAiDraftPrompt}
+            onRegisterSend={registerAssistantSend}
             moduleContext={aiModuleContext}
           />
         )}

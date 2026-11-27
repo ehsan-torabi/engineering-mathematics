@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { OPENAI_COMPATIBLE_PRESETS } from '@/lib/ai-settings';
 import type { SessionModuleContext } from '@/lib/ai-sessions';
@@ -27,6 +27,8 @@ interface AIAssistantDrawerProps {
   onClose: () => void;
   draftPrompt?: string;
   onDraftPromptChange?: (prompt: string) => void;
+  /** Register a direct-send channel so openAssistant(prompt) sends right away */
+  onRegisterSend?: (send: ((prompt: string) => void) | null) => void;
   moduleContext: {
     /** Sent to /api/ai/chat so the server can ground the reply in the official درس‌نامه */
     moduleId?: string;
@@ -50,6 +52,7 @@ export default function AIAssistantDrawer({
   onClose,
   draftPrompt,
   onDraftPromptChange,
+  onRegisterSend,
   moduleContext,
 }: AIAssistantDrawerProps) {
   // The live page context, or none outside the workspace (home/exams)
@@ -94,6 +97,24 @@ export default function AIAssistantDrawer({
     setInputPrompt('');
     void sendMessage(text);
   };
+
+  // Direct-send channel for openAssistant(prompt) callers. While a stream is
+  // running the prompt falls back to the composer instead of being dropped.
+  const sendNow = (prompt: string) => {
+    if (isBusy) {
+      setInputPrompt(prompt);
+      return;
+    }
+    void sendMessage(prompt);
+  };
+  const sendNowRef = useRef(sendNow);
+  useEffect(() => {
+    sendNowRef.current = sendNow;
+  }, [sendNow]);
+  useEffect(() => {
+    onRegisterSend?.((prompt: string) => sendNowRef.current(prompt));
+    return () => onRegisterSend?.(null);
+  }, [onRegisterSend]);
 
   const handleNewChat = () => {
     newChat();
