@@ -16,12 +16,12 @@ import {
 } from './curriculum-data.ts';
 import { TEXTBOOK_NOTES } from './textbook-notes.ts';
 
-test('extractAllFormulas aggregates formulas from all 9 curriculum modules', () => {
+test('extractAllFormulas aggregates formulas from all 10 curriculum modules', () => {
   const allFormulas = extractAllFormulas();
   assert.ok(allFormulas.length >= 25, `Expected at least 25 formulas, got ${allFormulas.length}`);
 
   const moduleIdsRepresented = new Set(allFormulas.map((f) => f.moduleId));
-  assert.equal(moduleIdsRepresented.size, 9);
+  assert.equal(moduleIdsRepresented.size, 10);
 });
 
 test('filterFormulas filters accurately by moduleId and Persian/LaTeX keywords', () => {
@@ -38,7 +38,7 @@ test('filterFormulas filters accurately by moduleId and Persian/LaTeX keywords',
 test('computeCourseProgress calculates mastery percentages and recommends next action', () => {
   const initialReport = computeCourseProgress(INITIAL_STUDY_PROGRESS);
   assert.equal(initialReport.overallMasteryPercent, 0);
-  assert.equal(initialReport.moduleSummaries.length, 9);
+  assert.equal(initialReport.moduleSummaries.length, 10);
   assert.equal(initialReport.recommendedNextAction.moduleId, 'module_0_prerequisites');
 
   const firstMod = CURRICULUM_MODULES[0];
@@ -94,8 +94,9 @@ test('REQUIREMENTS_SPECIFICATION covers all 4 engineering categories and is mark
   assert.ok(REQUIREMENTS_SPECIFICATION.every((req) => req.implemented));
 });
 
-test('validates adaptive module complexity layout profiles across all 9 curriculum modules', () => {
+test('validates adaptive module complexity layout profiles across all 10 curriculum modules', () => {
   // Heat Equation must use wide_canvas for rod diffusion and spatial temperature distribution
+  assert.equal(getModuleDefaultLayout('module_9_complex_analysis'), 'wide_canvas');
   assert.equal(getModuleDefaultLayout('module_8_laplace_pde'), 'wide_canvas');
   assert.equal(getModuleDefaultLayout('module_7_wave_pde'), 'wide_canvas');
   assert.equal(getModuleDefaultLayout('module_6_heat_pde'), 'wide_canvas');
@@ -161,7 +162,36 @@ test('validates comprehensive textbook lecture notes, common pitfalls, and engin
     }
   }
 
-  assert.equal(totalSubtopicsCount, 63, `Expected 63 total subtopics, found ${totalSubtopicsCount}`);
+  assert.equal(totalSubtopicsCount, 70, `Expected 70 total subtopics, found ${totalSubtopicsCount}`);
+});
+
+test('validates Module 9 (Complex Analysis) comprehensive academic and engineering depth', () => {
+  const complexMod = CURRICULUM_MODULES.find((m) => m.id === 'module_9_complex_analysis');
+  assert.ok(complexMod, 'Module 9 must exist');
+  assert.equal(complexMod.subtopics.length, 7, 'Must have 7 comprehensive subtopics');
+  assert.equal(complexMod.workedExamples.length, 7, 'Must have 7 fully expanded worked examples');
+  assert.equal(complexMod.practiceQuestions.length, 8, 'Must have 8 high-level practice questions');
+
+  for (const ex of complexMod.workedExamples) {
+    assert.ok(ex.steps.length >= 4, `Example ${ex.id} must have at least 4 detailed steps`);
+    assert.ok(ex.problemFormula.length > 0);
+    assert.ok(ex.finalAnswerFormula.length > 0);
+  }
+
+  for (const sub of complexMod.subtopics) {
+    assert.ok(sub.keyFormulas.length >= 2, `Subtopic ${sub.id} must have key formulas`);
+    assert.ok(sub.conceptualPoints.length >= 1);
+  }
+
+  // The corrected Example 93 sign (Ln(-i) = -i*pi/2 => I = -pi^2) must be in the lesson data
+  const ex93 = complexMod.workedExamples.find((e) => e.id === 'ex_pdf_93_cauchy_goursat');
+  assert.ok(ex93);
+  assert.ok(ex93.finalAnswerFormula.includes('-\\pi^2'));
+
+  // Quiz: Laurent radius of convergence from Example 95 must be 1/sqrt(2)
+  const q1 = complexMod.practiceQuestions.find((q) => q.id === 'q1_m9');
+  assert.ok(q1 && q1.correctIndex === 0);
+  assert.ok(q1.options[0].includes('\\sqrt{2}'));
 });
 
 test('validates Module 7 (Wave Equation) comprehensive academic and engineering depth', () => {

@@ -16,6 +16,8 @@ import {
   computeLaplaceRectangleCoefficients,
   evaluateLaplaceSeriesAt,
   evaluateLaplaceRectangle,
+  evaluateComplexPreset,
+  computeContourIntegral,
   mathErf,
   mathErfc,
   evaluateFourierBoundaryTrig,
@@ -672,3 +674,61 @@ describe('Laplace Equation evaluators (Module 8)', () => {
 
 
 
+
+describe('Complex analysis evaluators (Module 9)', () => {
+  it('evaluates presets with correct branches and hyperbolic growth', () => {
+    // sin z at z = pi/2 + 2i: sin(x)cosh(y) + i cos(x)sinh(y) = cosh(2) + 0i
+    const s = evaluateComplexPreset('sin_z', Math.PI / 2, 2);
+    assert.ok(Math.abs(s.re - Math.cosh(2)) < 1e-12);
+    assert.ok(Math.abs(s.im) < 1e-12);
+
+    // e^z at z = i*pi equals -1 (periodicity / Euler identity)
+    const e = evaluateComplexPreset('exp_z', 0, Math.PI);
+    assert.ok(Math.abs(e.re + 1) < 1e-12 && Math.abs(e.im) < 1e-12);
+
+    // inverse is its own value on the real axis and NaN at the origin
+    const inv = evaluateComplexPreset('inverse', 2, 0);
+    assert.ok(Math.abs(inv.re - 0.5) < 1e-12);
+    const inv0 = evaluateComplexPreset('inverse', 0, 0);
+    assert.ok(Number.isNaN(inv0.re) && Number.isNaN(inv0.im));
+
+    // principal branch: Ln(-i) = -i*pi/2 — the exact correction from PDF Example 93
+    const lg = evaluateComplexPreset('log_principal', 0, -1);
+    assert.ok(Math.abs(lg.re) < 1e-12 && Math.abs(lg.im + Math.PI / 2) < 1e-12);
+
+    // conjugate flips only the imaginary sign (nowhere analytic)
+    const c = evaluateComplexPreset('conjugate', 1.5, -2);
+    assert.ok(c.re === 1.5 && c.im === 2);
+  });
+
+  it('numeric contour integrals match the residue theorem on all presets', () => {
+    // 1/(z-2) around z = 2: analytic = 2*pi*i (PDF Examples 105/106 family)
+    const simple = computeContourIntegral('pole_simple', 2, 0, 0.7);
+    assert.ok(simple.poles[0].inside);
+    assert.ok(Math.abs(simple.analytic.im - 2 * Math.PI) < 1e-12 && Math.abs(simple.analytic.re) < 1e-12);
+    assert.ok(simple.relativeError < 1e-6, `relErr=${simple.relativeError}`);
+
+    // 1/((z-1)(z-3)) on a circle enclosing no pole: Cauchy-Goursat gives 0
+    const none = computeContourIntegral('rational_two_poles', 2, 0, 0.6);
+    assert.ok(none.poles.every((p) => !p.inside));
+    assert.ok(Math.hypot(none.numeric.re, none.numeric.im) < 1e-7, `${none.numeric.re},${none.numeric.im}`);
+
+    // enclosing only z = 1: analytic = 2*pi*i*(-1/2) = -pi*i
+    const leftOnly = computeContourIntegral('rational_two_poles', 1, 0, 0.8);
+    assert.ok(leftOnly.poles[0].inside && !leftOnly.poles[1].inside);
+    assert.ok(Math.abs(leftOnly.analytic.im + Math.PI) < 1e-12);
+    assert.ok(leftOnly.relativeError < 1e-6);
+
+    // z e^{z/(z-2)} around its essential singularity: Res = 6e (PDF Example 107)
+    const ess = computeContourIntegral('essential_exp', 2, 0, 1.2);
+    assert.ok(Math.abs(ess.analytic.im - 12 * Math.PI * Math.E) < 1e-9);
+    assert.ok(ess.relativeError < 1e-5, `relErr=${ess.relativeError}`);
+
+    // e^z / tan z on |z| = 1: only the pole at 0 is inside, Res = 1 (PDF Example 108)
+    const tan1 = computeContourIntegral('exp_over_tan', 0, 0, 1);
+    const inside0 = tan1.poles.find((p) => p.re === 0)!;
+    assert.ok(inside0.inside && !tan1.poles.find((p) => p.re === Math.PI)!.inside);
+    assert.ok(Math.abs(tan1.analytic.im - 2 * Math.PI) < 1e-12);
+    assert.ok(tan1.relativeError < 1e-5, `relErr=${tan1.relativeError}`);
+  });
+});

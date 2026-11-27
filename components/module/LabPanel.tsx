@@ -10,6 +10,7 @@ import SturmLiouvilleStage from '@/components/SturmLiouvilleStage';
 import HeatEquationStage from '@/components/HeatEquationStage';
 import WaveEquationStage from '@/components/WaveEquationStage';
 import LaplaceStage from '@/components/LaplaceStage';
+import ComplexStage from '@/components/ComplexStage';
 import PrerequisiteStage from '@/components/PrerequisiteStage';
 
 interface LabPanelProps {
@@ -35,6 +36,8 @@ const LAB_HINTS: Record<string, string> = {
     'تار را زخش بزن یا ضربه بده؛ انتشار موج، بازتاب از سرها و مدهای ایستاده را ببین.',
   laplace_pde:
     'داده لبه را عوض کن و عمق را ورق بزن؛ میرایی نمایی و فراموشی جزئیات مرز را ببین.',
+  complex_analysis:
+    'توابع مختلط را دامنه‌رنگی کن و مسیر انتگرال را جابه‌جا ببر؛ قضیه مانده‌ها را زنده بسنج.',
 };
 
 /**
@@ -62,6 +65,7 @@ export default function LabPanel({ module }: LabPanelProps) {
       {module.simulatorType === 'heat_pde' && <HeatEquationStage />}
       {module.simulatorType === 'wave_pde' && <WaveEquationStage />}
       {module.simulatorType === 'laplace_pde' && <LaplaceStage />}
+      {module.simulatorType === 'complex_analysis' && <ComplexStage />}
     </div>
   );
 }

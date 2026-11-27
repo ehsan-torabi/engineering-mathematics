@@ -1637,6 +1637,231 @@ export function evaluateLaplaceRectangle(
   };
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+ * Module 9 (Complex Analysis): minimal complex arithmetic for domain
+ * coloring + numeric contour integrals validated against the residue
+ * theorem — the exact content of lessons m9_4 to m9_7.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+export interface ComplexPoint {
+  re: number;
+  im: number;
+}
+
+const C_ZERO: ComplexPoint = { re: 0, im: 0 };
+
+function cadd(a: ComplexPoint, b: ComplexPoint): ComplexPoint {
+  return { re: a.re + b.re, im: a.im + b.im };
+}
+
+function cmul(a: ComplexPoint, b: ComplexPoint): ComplexPoint {
+  return { re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re };
+}
+
+function cdiv(a: ComplexPoint, b: ComplexPoint): ComplexPoint {
+  const denom = b.re * b.re + b.im * b.im;
+  if (denom < 1e-12) return { re: NaN, im: NaN };
+  return { re: (a.re * b.re + a.im * b.im) / denom, im: (a.im * b.re - a.re * b.im) / denom };
+}
+
+function cexp(z: ComplexPoint): ComplexPoint {
+  return { re: Math.exp(z.re) * Math.cos(z.im), im: Math.exp(z.re) * Math.sin(z.im) };
+}
+
+function csin(z: ComplexPoint): ComplexPoint {
+  return {
+    re: Math.sin(z.re) * Math.cosh(z.im),
+    im: Math.cos(z.re) * Math.sinh(z.im),
+  };
+}
+
+function ccos(z: ComplexPoint): ComplexPoint {
+  return {
+    re: Math.cos(z.re) * Math.cosh(z.im),
+    im: -Math.sin(z.re) * Math.sinh(z.im),
+  };
+}
+
+export type ComplexPresetId =
+  | 'identity' // f(z) = z
+  | 'square' // f(z) = z^2
+  | 'inverse' // f(z) = 1/z — pole at 0
+  | 'conjugate' // f(z) = z̄ — nowhere analytic
+  | 'exp_z' // f(z) = e^z — periodic in 2πi
+  | 'sin_z' // f(z) = sin z — hyperbolic growth on the imaginary axis
+  | 'rational_poles' // f(z) = 1/(z^2 + 1) — poles at ±i
+  | 'log_principal'; // f(z) = Ln z — branch cut on the negative real axis
+
+/**
+ * Evaluate a preset complex function at z = x + iy. Returns NaN/Imag-NaN
+ * where the function is undefined (poles, branch cut origin) so the caller
+ * can paint a hole instead of a bogus color.
+ */
+export function evaluateComplexPreset(
+  presetId: ComplexPresetId,
+  x: number,
+  y: number
+): ComplexPoint {
+  const z: ComplexPoint = { re: x, im: y };
+  switch (presetId) {
+    case 'identity':
+      return z;
+    case 'square':
+      return cmul(z, z);
+    case 'inverse':
+      return cdiv({ re: 1, im: 0 }, z);
+    case 'conjugate':
+      return { re: x, im: -y };
+    case 'exp_z':
+      return cexp(z);
+    case 'sin_z':
+      return csin(z);
+    case 'rational_poles': {
+      // 1/(z^2 + 1): z^2 + 1 = (x^2 - y^2 + 1) + 2xy i
+      const denom: ComplexPoint = { re: x * x - y * y + 1, im: 2 * x * y };
+      return cdiv({ re: 1, im: 0 }, denom);
+    }
+    case 'log_principal': {
+      const r = Math.hypot(x, y);
+      if (r < 1e-9) return { re: NaN, im: NaN };
+      const theta = Math.atan2(y, x); // Arg(z) in (-pi, pi]
+      return { re: Math.log(r), im: theta };
+    }
+  }
+}
+
+export type ContourPresetId =
+  | 'pole_simple' // 1/(z-2) — Example 105/106 family, Res = 1 at z = 2
+  | 'rational_two_poles' // 1/((z-1)(z-3)) — Example 100 function, Res: -1/2, +1/2
+  | 'essential_exp' // z e^{z/(z-2)} — Example 107, Res = 6e at z = 2
+  | 'exp_over_tan'; // e^z / tan z — Example 108, Res = e^{kπ} at z = kπ
+
+interface ContourPole {
+  re: number;
+  im: number;
+  residueRe: number;
+  residueIm: number;
+}
+
+function contourPresetSpec(presetId: ContourPresetId): {
+  integrand: (z: ComplexPoint) => ComplexPoint;
+  poles: ContourPole[];
+} {
+  const one: ComplexPoint = { re: 1, im: 0 };
+  switch (presetId) {
+    case 'pole_simple':
+      return {
+        integrand: (z) => cdiv(one, { re: z.re - 2, im: z.im }),
+        poles: [{ re: 2, im: 0, residueRe: 1, residueIm: 0 }],
+      };
+    case 'rational_two_poles':
+      return {
+        integrand: (z) =>
+          cdiv(
+            one,
+            cmul({ re: z.re - 1, im: z.im }, { re: z.re - 3, im: z.im })
+          ),
+        poles: [
+          { re: 1, im: 0, residueRe: -0.5, residueIm: 0 },
+          { re: 3, im: 0, residueRe: 0.5, residueIm: 0 },
+        ],
+      };
+    case 'essential_exp':
+      return {
+        integrand: (z) =>
+          cmul(z, cexp(cdiv(z, { re: z.re - 2, im: z.im }))),
+        poles: [{ re: 2, im: 0, residueRe: 6 * Math.E, residueIm: 0 }],
+      };
+    case 'exp_over_tan':
+      return {
+        // e^z / tan z = e^z cos z / sin z, poles at z = kπ with Res = e^{kπ}
+        integrand: (z) => cdiv(cmul(cexp(z), ccos(z)), csin(z)),
+        poles: [-2, -1, 0, 1, 2].map((k) => ({
+          re: k * Math.PI,
+          im: 0,
+          residueRe: Math.exp(k * Math.PI),
+          residueIm: 0,
+        })),
+      };
+  }
+}
+
+export interface ContourIntegralResult {
+  numeric: ComplexPoint; // ∮ f dz by Simpson on the parametrized circle
+  analytic: ComplexPoint; // 2πi × Σ Res(poles inside)
+  relativeError: number;
+  poles: {
+    re: number;
+    im: number;
+    inside: boolean;
+    residue: ComplexPoint;
+  }[];
+}
+
+/**
+ * Numeric contour integral over the circle |z - center| = radius compared
+ * with the residue theorem prediction — the live proof of lesson m9_7
+ * (قضیه مانده‌ها, PDF Example 107).
+ */
+export function computeContourIntegral(
+  presetId: ContourPresetId,
+  centerRe: number,
+  centerIm: number,
+  radius: number,
+  samples = 1440
+): ContourIntegralResult {
+  const { integrand, poles } = contourPresetSpec(presetId);
+
+  // ∮ f(z)dz = ∫ f(z(t)) · i·r·e^{it} dt, z(t) = c + r e^{it}, t ∈ [0, 2π]
+  const w = (t: number): ComplexPoint => ({
+    re: centerRe + radius * Math.cos(t),
+    im: centerIm + radius * Math.sin(t),
+  });
+  const dz = (t: number): ComplexPoint => ({
+    re: -radius * Math.sin(t),
+    im: radius * Math.cos(t),
+  });
+  const g = (t: number): ComplexPoint => cmul(integrand(w(t)), dz(t));
+
+  let sumRe = 0;
+  let sumIm = 0;
+  const h = (2 * Math.PI) / samples;
+  for (let i = 0; i <= samples; i++) {
+    const t = i * h;
+    const factor = i === 0 || i === samples ? 1 : i % 2 ? 4 : 2;
+    const v = g(t);
+    sumRe += factor * (Number.isFinite(v.re) ? v.re : 0);
+    sumIm += factor * (Number.isFinite(v.im) ? v.im : 0);
+  }
+  const numeric: ComplexPoint = { re: (sumRe * h) / 3, im: (sumIm * h) / 3 };
+
+  const poleReport = poles.map((p) => ({
+    re: p.re,
+    im: p.im,
+    inside: Math.hypot(p.re - centerRe, p.im - centerIm) < radius,
+    residue: { re: p.residueRe, im: p.residueIm } as ComplexPoint,
+  }));
+
+  let sumResRe = 0;
+  let sumResIm = 0;
+  for (const p of poleReport) {
+    if (p.inside) {
+      sumResRe += p.residue.re;
+      sumResIm += p.residue.im;
+    }
+  }
+  // analytic = 2πi × ΣRes = 2π(-ΣIm + iΣRe)
+  const analytic: ComplexPoint = {
+    re: -2 * Math.PI * sumResIm,
+    im: 2 * Math.PI * sumResRe,
+  };
+
+  const magnitude = Math.hypot(analytic.re, analytic.im) || 1;
+  const relativeError =
+    Math.hypot(numeric.re - analytic.re, numeric.im - analytic.im) / magnitude;
+
+  return { numeric, analytic, relativeError, poles: poleReport };
+}
 
 /**
  * Lesson 0 (Prerequisites): Exact Trigonometric & Parity Boundary Evaluator for integer n
