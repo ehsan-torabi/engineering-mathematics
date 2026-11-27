@@ -10,18 +10,19 @@ export { normalizeToLatex };
 interface MathFormulaProps {
   formula: string;
   block?: boolean;
+  /** Render as a key-result card (accent border + tint). Inline key results get a slim tint. */
   highlight?: boolean;
   className?: string;
 }
 
 /**
- * Normalize legacy shorthand or unicode math strings into clean LaTeX if needed,
- * while passing pure LaTeX directly to KaTeX.
- */
-
-/**
- * Renders standard publication-quality mathematical equations using KaTeX.
- * Always isolates LTR directionality so math never scrambles inside RTL Persian layout.
+ * Renders publication-quality mathematics with KaTeX, always isolated LTR so
+ * formulas never scramble inside the RTL Persian layout.
+ *
+ * Inline math flows seamlessly inside Persian prose — no background pill —
+ * while display math (block) is centered and horizontally scrollable on
+ * narrow screens. Key results (highlight) get the only decorated containers:
+ * a slim accent tint inline, or an accent card for display equations.
  */
 export default function MathFormula({
   formula,
@@ -45,20 +46,16 @@ export default function MathFormula({
 
   if (block) {
     return (
-      <div
+      <span
         dir="ltr"
         style={{ unicodeBidi: 'isolate' }}
-        className={`my-2.5 overflow-x-auto rounded-xl border px-4 py-3.5 text-center transition-colors ${
+        className={`my-3 block overflow-x-auto overflow-y-hidden text-center text-[0.92em] leading-[1.7] ${
           highlight
-            ? 'border-accent/50 bg-accent-soft text-ink'
-            : 'border-line bg-surface text-ink'
+            ? 'rounded-xl border border-accent-line bg-accent-soft px-4 py-3 text-ink'
+            : ''
         } ${className}`}
-      >
-        <div
-          className="text-base leading-relaxed select-all"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      </div>
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     );
   }
 
@@ -66,10 +63,10 @@ export default function MathFormula({
     <span
       dir="ltr"
       style={{ unicodeBidi: 'isolate' }}
-      className={`mx-1 inline-block rounded px-1.5 py-0.5 align-middle transition-colors ${
+      className={`mx-[0.08em] inline-block whitespace-nowrap align-middle text-[0.88em] ${
         highlight
-          ? 'bg-accent-tint text-accent-deep'
-          : 'bg-muted/80 text-ink dark:bg-muted'
+          ? 'rounded bg-accent-tint px-1 text-accent-deep'
+          : ''
       } ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
@@ -77,9 +74,56 @@ export default function MathFormula({
 }
 
 /**
- * Renders Persian RTL text mixed with inline $...$ LaTeX expressions and **bold** segments cleanly.
- * Every $...$ segment is isolated in an LTR inline-block KaTeX span so bidirectional
- * text never scrambles minus signs, intervals [-l, l], or fractions.
+ * Shared inline renderer for Persian prose containing `$...$` math and
+ * `**bold**` segments (bold may itself contain math). Every math span is an
+ * isolated LTR inline-block, so bidirectional text never scrambles minus
+ * signs, intervals like [-ℓ, ℓ] or fractions.
+ */
+export function renderInline(
+  text: string,
+  keyBase = 'i'
+): React.ReactNode[] {
+  const parts = text.split(/(\$[^$]+\$|\*\*[^*]+\*\*)/g).filter(Boolean);
+  return parts.map((part, idx) => {
+    if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+      return (
+        <MathFormula
+          key={`${keyBase}-${idx}`}
+          formula={part.slice(1, -1)}
+          block={false}
+        />
+      );
+    }
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      const boldSubParts = part
+        .slice(2, -2)
+        .split(/(\$[^$]+\$)/g)
+        .filter(Boolean);
+      return (
+        <strong key={`${keyBase}-${idx}`} className="font-bold text-ink">
+          {boldSubParts.map((sub, sIdx) => {
+            if (sub.startsWith('$') && sub.endsWith('$') && sub.length > 2) {
+              return (
+                <MathFormula
+                  key={sIdx}
+                  formula={sub.slice(1, -1)}
+                  block={false}
+                />
+              );
+            }
+            return <React.Fragment key={sIdx}>{sub}</React.Fragment>;
+          })}
+        </strong>
+      );
+    }
+    return <React.Fragment key={`${keyBase}-${idx}`}>{part}</React.Fragment>;
+  });
+}
+
+/**
+ * Persian RTL text mixed with inline `$...$` math, `$$...$$` display math and
+ * `**bold**`. The root is a neutral wrapper so callers can place it inside
+ * headings, paragraphs and flex rows alike.
  */
 export function MathText({
   text,
@@ -88,53 +132,31 @@ export function MathText({
   text: string;
   className?: string;
 }) {
-  const parts = useMemo(() => {
-    if (!text) return [];
-    // Split on $...$ inline math delimiters or **...** bold delimiters
-    return text.split(/(\$[^$]+\$|\*\*[^*]+\*\*)/g).filter(Boolean);
-  }, [text]);
+  const segments = useMemo(
+    () => (text ? text.split(/(\$\$[^$]+\$\$)/g).filter(Boolean) : []),
+    [text]
+  );
 
   return (
     <span className={className} dir="rtl">
-      {parts.map((part, idx) => {
-        if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
-          const mathContent = part.slice(1, -1);
-          return <MathFormula key={idx} formula={mathContent} block={false} />;
-        }
-        if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-          const boldContent = part.slice(2, -2);
-          const boldSubParts = boldContent
-            .split(/(\$[^$]+\$)/g)
-            .filter(Boolean);
+      {segments.map((segment, idx) => {
+        if (
+          segment.startsWith('$$') &&
+          segment.endsWith('$$') &&
+          segment.length > 4
+        ) {
           return (
-            <strong
+            <MathFormula
               key={idx}
-              className="font-bold text-ink"
-            >
-              {boldSubParts.map((sub, sIdx) => {
-                if (
-                  sub.startsWith('$') &&
-                  sub.endsWith('$') &&
-                  sub.length > 2
-                ) {
-                  return (
-                    <MathFormula
-                      key={sIdx}
-                      formula={sub.slice(1, -1)}
-                      block={false}
-                    />
-                  );
-                }
-                return <React.Fragment key={sIdx}>{sub}</React.Fragment>;
-              })}
-            </strong>
+              formula={segment.slice(2, -2)}
+              block
+            />
           );
         }
-        return <React.Fragment key={idx}>{part}</React.Fragment>;
+        return (
+          <React.Fragment key={idx}>{renderInline(segment, `t${idx}`)}</React.Fragment>
+        );
       })}
     </span>
   );
 }
-
-
-

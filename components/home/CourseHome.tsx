@@ -8,7 +8,6 @@ import {
   Award,
   BookMarked,
   CheckCircle2,
-  ClipboardList,
   GraduationCap,
   Landmark,
   Play,
@@ -18,6 +17,7 @@ import { EXAM_PAPERS, TOTAL_EXAM_QUESTIONS } from '@/lib/exams';
 import { useStudyProgress } from '@/lib/study-progress-context';
 import { useCourseTools } from '@/components/shell/AppChrome';
 import { MathText } from '@/components/MathFormula';
+import { faNum } from '@/lib/persian-digits';
 
 /**
  * Course map — the home surface. Answers one question first («where do I
@@ -28,11 +28,14 @@ import { MathText } from '@/components/MathFormula';
 export default function CourseHome() {
   const router = useRouter();
   const { courseProgress } = useStudyProgress();
-  const { openExam, openFormulas, openRequirements } = useCourseTools();
+  const { openExam, openFormulas } = useCourseTools();
 
   const openModule = (moduleId: string, subtopicIndex?: number) => {
-    const query = subtopicIndex ? `?phase=lesson&lesson=${subtopicIndex}` : '';
-    router.push(`/module/${moduleId}${query}`);
+    router.push(
+      subtopicIndex
+        ? `/module/${moduleId}/lesson/${subtopicIndex + 1}`
+        : `/module/${moduleId}`
+    );
   };
 
   const next = courseProgress.recommendedNextAction;
@@ -57,7 +60,7 @@ export default function CourseHome() {
             />
           </div>
           <span className="shrink-0 text-xs font-bold tabular-nums text-ink-2">
-            تسلط کل {courseProgress.overallMasteryPercent}%
+            تسلط کل {faNum(courseProgress.overallMasteryPercent)}٪
           </span>
         </div>
       </div>
@@ -120,18 +123,18 @@ export default function CourseHome() {
                   {mod.shortTitle.replace(/^\d+\.\s*/, '')}
                 </span>
                 <span className="mt-1 block truncate text-xs text-ink-3">
-                  درس‌نامه {summary.completedSubtopicsCount}/{summary.totalSubtopics}
+                  درس‌نامه {faNum(summary.completedSubtopicsCount)}/{faNum(summary.totalSubtopics)}
                   {' · '}
-                  مثال {summary.completedExamplesCount}/{summary.totalExamples}
+                  مثال {faNum(summary.completedExamplesCount)}/{faNum(summary.totalExamples)}
                   {' · '}
-                  آزمون {summary.answeredQuestionsCount}/{summary.totalQuestions}
+                  آزمون {faNum(summary.answeredQuestionsCount)}/{faNum(summary.totalQuestions)}
                 </span>
                 <span className="mt-2 block h-1 w-full overflow-hidden rounded-full bg-muted">
                   <span
                     className={`block h-full rounded-full transition-[width] duration-500 ${
                       isComplete ? 'bg-ok' : 'bg-accent'
                     }`}
-                    style={{ width: `${summary.masteryPercent}%` }}
+                    style={{ width: `${faNum(summary.masteryPercent)}٪` }}
                   />
                 </span>
               </span>
@@ -139,7 +142,7 @@ export default function CourseHome() {
               {/* Mastery + open */}
               <span className="flex shrink-0 flex-col items-end gap-1">
                 <span className="text-sm font-bold tabular-nums text-ink-2">
-                  {summary.masteryPercent}%
+                  {faNum(summary.masteryPercent)}٪
                 </span>
                 <ArrowLeft className="h-4 w-4 text-ink-4 transition-transform group-hover:-translate-x-0.5 group-hover:text-accent" />
               </span>
@@ -205,7 +208,7 @@ export default function CourseHome() {
           <span className="min-w-0">
             <span className="block text-sm font-bold text-ink">بانک امتحانات</span>
             <span className="block text-xs text-ink-3">
-              {EXAM_PAPERS.length} برگه · {TOTAL_EXAM_QUESTIONS} سؤال با حل کامل
+              {faNum(EXAM_PAPERS.length)} برگه · {faNum(TOTAL_EXAM_QUESTIONS)} سؤال با حل کامل
             </span>
           </span>
         </Link>
@@ -219,8 +222,8 @@ export default function CourseHome() {
           <span className="min-w-0">
             <span className="block text-sm font-bold text-ink">آزمون جامع</span>
             <span className="block text-xs text-ink-3">
-              {courseProgress.totalQuestions} سوال · دقت فعلی{' '}
-              {courseProgress.quizAccuracyPercent}%
+              {faNum(courseProgress.totalQuestions)} سوال · دقت فعلی{' '}
+              {faNum(courseProgress.quizAccuracyPercent)}٪
             </span>
           </span>
         </button>
@@ -239,19 +242,6 @@ export default function CourseHome() {
           </span>
         </button>
 
-        <button
-          type="button"
-          onClick={openRequirements}
-          className="flex items-center gap-3 rounded-xl border border-line bg-surface p-4 text-start transition-colors hover:border-line-strong"
-        >
-          <ClipboardList className="h-5 w-5 shrink-0 text-accent" />
-          <span className="min-w-0">
-            <span className="block text-sm font-bold text-ink">سند طراحی دوره</span>
-            <span className="block text-xs text-ink-3">
-              نیازمندی‌ها و نگاشت سرفصل‌ها
-            </span>
-          </span>
-        </button>
       </div>
     </div>
   );

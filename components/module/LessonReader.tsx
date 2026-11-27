@@ -9,9 +9,14 @@ import {
   Zap,
   StickyNote,
   PenLine,
+  FlaskConical,
+  ListChecks,
+  ArrowLeft,
 } from 'lucide-react';
 import { CurriculumModule } from '@/lib/curriculum-data';
 import MathFormula, { MathText } from '@/components/MathFormula';
+import MathBlocks from '@/components/math/MathBlocks';
+import { faNum, stripLessonNumber } from '@/lib/persian-digits';
 import { Image as ImageIcon } from 'lucide-react';
 import { SUBTOPIC_FIGURES } from '@/components/figures/figure-registry';
 
@@ -23,8 +28,8 @@ interface LessonReaderProps {
   onToggleSubtopic: (subtopicId: string) => void;
   note: string;
   onUpdateNote: (text: string) => void;
-  /** Offered at the end of the last lesson: move on to worked problems */
-  onGoToExamples?: () => void;
+  /** Cross-phase CTAs offered at the end of the lesson */
+  onGoToPhase?: (phase: 'lab' | 'examples' | 'quiz') => void;
 }
 
 /**
@@ -40,7 +45,7 @@ export default function LessonReader({
   onToggleSubtopic,
   note,
   onUpdateNote,
-  onGoToExamples,
+  onGoToPhase,
 }: LessonReaderProps) {
   const subtopic =
     module.subtopics[subtopicIndex] || module.subtopics[0];
@@ -58,7 +63,7 @@ export default function LessonReader({
       {/* Kicker */}
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-4">
         <span className="font-bold text-accent-deep dark:text-accent">
-          درس‌نامه {subtopicIndex + 1} از {total}
+          درس‌نامه {faNum(subtopicIndex + 1)} از {faNum(total)}
         </span>
         <span aria-hidden="true">·</span>
         <span>صفحات جزوه: {subtopic.pdfPages}</span>
@@ -67,7 +72,7 @@ export default function LessonReader({
       {/* Title + mark-studied */}
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
         <h2 className="min-w-0 flex-1 text-xl font-bold leading-9 text-ink">
-          <MathText text={subtopic.title} />
+          <MathText text={stripLessonNumber(subtopic.title)} />
         </h2>
         <button
           type="button"
@@ -83,19 +88,18 @@ export default function LessonReader({
         </button>
       </div>
 
-      {/* Lead summary */}
-      <p className="mt-5 text-[15px] font-medium leading-9 text-ink">
+      {/* Lead summary — what this lesson solves and why it matters */}
+      <p className="mt-5 text-base font-medium leading-[1.95] text-ink">
         <MathText text={subtopic.summary} />
       </p>
 
-      {/* Detailed explanation */}
+      {/* Detailed explanation — structured blocks, not a monolithic bar */}
       {subtopic.detailedExplanation && (
-        <div className="mt-6 space-y-4 border-s-2 border-accent ps-4">
-          {subtopic.detailedExplanation.split('\n\n').map((paragraph, idx) => (
-            <p key={idx} className="text-[15px] leading-9 text-ink-2">
-              <MathText text={paragraph} />
-            </p>
-          ))}
+        <div className="mt-6">
+          <MathBlocks
+            content={subtopic.detailedExplanation}
+            paragraphClassName="text-base leading-[1.95] text-ink-2"
+          />
         </div>
       )}
 
@@ -173,9 +177,9 @@ export default function LessonReader({
             {subtopic.conceptualPoints.map((point, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2.5 text-[15px] leading-8 text-ink-2"
+                className="flex items-start gap-2.5 text-base leading-[1.95] text-ink-2"
               >
-                <CheckCircle2 className="mt-1.5 h-4 w-4 shrink-0 text-ok" />
+                <CheckCircle2 className="mt-2 h-4 w-4 shrink-0 text-ok" />
                 <MathText text={point} />
               </li>
             ))}
@@ -252,7 +256,7 @@ export default function LessonReader({
                 درس‌نامه قبلی
               </span>
               <span className="block truncate text-xs font-bold text-ink">
-                <MathText text={prevSub.title} />
+                <MathText text={stripLessonNumber(prevSub.title)} />
               </span>
             </span>
           </button>
@@ -271,32 +275,69 @@ export default function LessonReader({
                 درس‌نامه بعدی
               </span>
               <span className="block truncate text-xs font-bold text-ink">
-                <MathText text={nextSub.title} />
+                <MathText text={stripLessonNumber(nextSub.title)} />
               </span>
             </span>
             <ChevronLeft className="h-4 w-4 shrink-0 text-ink-4 transition-transform group-hover:-translate-x-0.5" />
-          </button>
-        ) : onGoToExamples ? (
-          <button
-            type="button"
-            onClick={onGoToExamples}
-            className="group flex min-w-0 flex-1 items-center justify-end gap-2 rounded-lg bg-accent-solid px-3.5 py-3 text-end text-white transition-colors hover:bg-accent-deep"
-          >
-            <span className="min-w-0">
-              <span className="block text-[10px] font-semibold text-white/75">
-                درس‌نامه‌ها تمام شد
-              </span>
-              <span className="flex items-center justify-end gap-1.5 text-xs font-bold">
-                <PenLine className="h-3.5 w-3.5" />
-                برو به مسائل حل‌شده
-              </span>
-            </span>
-            <ChevronLeft className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
           </button>
         ) : (
           <span className="flex-1" />
         )}
       </nav>
+
+      {/* Cross-phase learning path — the module is four tools, not one page */}
+      {onGoToPhase && (
+        <section
+          aria-label="گام بعدی یادگیری"
+          className="mt-8 rounded-xl border border-line bg-surface p-4"
+        >
+          <h3 className="text-xs font-bold text-ink-3">گام بعدی یادگیری</h3>
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {(
+              [
+                {
+                  phase: 'lab' as const,
+                  icon: <FlaskConical className="h-4 w-4" />,
+                  title: 'آزمایشگاه',
+                  desc: 'همین مفهوم را با شبیه‌ساز ببین و تست کن',
+                },
+                {
+                  phase: 'examples' as const,
+                  icon: <PenLine className="h-4 w-4" />,
+                  title: 'مسائل حل‌شده',
+                  desc: 'تمرین با حل گام‌به‌گام امتحانی',
+                },
+                {
+                  phase: 'quiz' as const,
+                  icon: <ListChecks className="h-4 w-4" />,
+                  title: 'خودآزمایی',
+                  desc: 'تسلطت را با پرسش‌های کوتاه بسنج',
+                },
+              ]
+            ).map((cta) => (
+              <button
+                key={cta.phase}
+                type="button"
+                onClick={() => onGoToPhase(cta.phase)}
+                className="group flex items-start gap-2.5 rounded-lg border border-line bg-panel p-3 text-start transition-colors hover:border-accent-line hover:bg-accent-soft"
+              >
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-deep transition-colors group-hover:bg-accent-tint dark:text-accent">
+                  {cta.icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1 text-xs font-bold text-ink group-hover:text-accent-deep dark:group-hover:text-accent">
+                    {cta.title}
+                    <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" />
+                  </span>
+                  <span className="mt-0.5 block text-[11px] leading-5 text-ink-3">
+                    {cta.desc}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
     </article>
   );
 }

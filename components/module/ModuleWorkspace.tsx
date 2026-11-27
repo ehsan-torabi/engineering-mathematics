@@ -23,6 +23,7 @@ import LabPanel from '@/components/module/LabPanel';
 import ExamplesDeck from '@/components/module/ExamplesDeck';
 import QuizPanel from '@/components/module/QuizPanel';
 import EnrichmentCards from '@/components/module/EnrichmentCards';
+import { faNum, stripLessonNumber } from '@/lib/persian-digits';
 
 export type ModulePhase = 'lesson' | 'lab' | 'examples' | 'quiz';
 
@@ -130,12 +131,12 @@ export default function ModuleWorkspace({
           </span>
           <span className="text-xs text-ink-4">{workspaceModule.pdfPageRange}</span>
           <span className="text-xs font-semibold tabular-nums text-ink-3">
-            تسلط فصل {moduleSummary.masteryPercent}%
+            تسلط فصل {faNum(moduleSummary.masteryPercent)}٪
           </span>
         </div>
-        <h1 className="mt-1 text-xl font-bold leading-8 text-ink">
+        <p className="mt-1 text-xl font-bold leading-8 text-ink">
           <MathText text={workspaceModule.title} />
-        </h1>
+        </p>
       </div>
 
       <div
@@ -152,7 +153,7 @@ export default function ModuleWorkspace({
                   درس‌نامه‌ها
                 </span>
                 <span className="text-[11px] font-semibold tabular-nums text-ink-4">
-                  {moduleSummary.completedSubtopicsCount}/{moduleSummary.totalSubtopics}
+                  {faNum(moduleSummary.completedSubtopicsCount)}/{faNum(moduleSummary.totalSubtopics)}
                 </span>
               </div>
               <ul className="space-y-0.5">
@@ -180,10 +181,10 @@ export default function ModuleWorkspace({
                                 : 'bg-muted text-ink-4'
                           }`}
                         >
-                          {isDone ? <CheckCircle2 className="h-3 w-3" /> : idx + 1}
+                          {isDone ? <CheckCircle2 className="h-3 w-3" /> : faNum(idx + 1)}
                         </span>
                         <span className="line-clamp-2">
-                          <MathText text={sub.title} />
+                          <MathText text={stripLessonNumber(sub.title)} />
                         </span>
                       </button>
                     </li>
@@ -200,7 +201,7 @@ export default function ModuleWorkspace({
                     مسائل حل‌شده
                   </span>
                   <span className="text-[11px] font-semibold tabular-nums text-ink-4">
-                    {moduleSummary.completedExamplesCount}/{moduleSummary.totalExamples}
+                    {faNum(moduleSummary.completedExamplesCount)}/{faNum(moduleSummary.totalExamples)}
                   </span>
                 </div>
                 <ul className="space-y-0.5">
@@ -266,7 +267,7 @@ export default function ModuleWorkspace({
                     <span>{tab.label}</span>
                     {tab.id === 'quiz' && (
                       <span className="tabular-nums text-[10px] font-semibold text-ink-4">
-                        {moduleSummary.answeredQuestionsCount}/{moduleSummary.totalQuestions}
+                        {faNum(moduleSummary.answeredQuestionsCount)}/{faNum(moduleSummary.totalQuestions)}
                       </span>
                     )}
                   </button>
@@ -292,9 +293,9 @@ export default function ModuleWorkspace({
                   }`}
                 >
                   {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-ok" />}
-                  <span className="tabular-nums">{idx + 1}</span>
+                  <span className="tabular-nums">{faNum(idx + 1)}</span>
                   <span className="max-w-36 truncate">
-                    <MathText text={sub.title} />
+                    <MathText text={stripLessonNumber(sub.title)} />
                   </span>
                 </button>
               );
@@ -316,7 +317,7 @@ export default function ModuleWorkspace({
                   onToggleSubtopic={onToggleSubtopic}
                   note={progressState.moduleNotes[workspaceModule.id] || ''}
                   onUpdateNote={(text) => onUpdateModuleNote(workspaceModule.id, text)}
-                  onGoToExamples={() => handlePhaseChange('examples')}
+                  onGoToPhase={handlePhaseChange}
                 />
                 <EnrichmentCards enrichment={MODULE_ENRICHMENT[workspaceModule.id]} />
               </>

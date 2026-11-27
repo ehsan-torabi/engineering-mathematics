@@ -19,6 +19,7 @@ import {
   generateCustomExample,
 } from '@/lib/example-generator';
 import MathFormula, { MathText } from '@/components/MathFormula';
+import { faNum } from '@/lib/persian-digits';
 
 interface ExamplesDeckProps {
   module: CurriculumModule;
@@ -131,7 +132,7 @@ export default function ExamplesDeck({
           }`}
         >
           <BookOpen className="h-4 w-4" />
-          مثال‌های جزوه ({module.workedExamples.length})
+          مثال‌های جزوه ({faNum(module.workedExamples.length)})
         </button>
         <button
           type="button"
@@ -253,7 +254,7 @@ export default function ExamplesDeck({
       {/* ── Step controls ── */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3.5 py-2.5">
         <span className="text-xs font-semibold tabular-nums text-ink-3">
-          نمایش گام {Math.min(revealedSteps, totalSteps)} از {totalSteps}
+          نمایش گام {faNum(Math.min(revealedSteps, totalSteps))} از {faNum(totalSteps)}
         </span>
         <div className="flex items-center gap-1.5">
           {allRevealed ? (
@@ -302,7 +303,7 @@ export default function ExamplesDeck({
             >
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-solid text-xs font-bold text-white">
-                  {step.stepNumber}
+                  {faNum(step.stepNumber)}
                 </span>
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-bold leading-6 text-ink">

@@ -101,7 +101,7 @@ export default function Modal({
             type="button"
             onClick={onClose}
             aria-label="بستن"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-3 transition-colors hover:bg-muted hover:text-ink"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-3 transition-colors hover:bg-muted hover:text-ink"
           >
             <X className="h-4 w-4" />
           </button>

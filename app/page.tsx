@@ -7,6 +7,7 @@ import {
   SITE_DESCRIPTION,
   SITE_NAME,
   absoluteUrl,
+  plainText,
 } from '@/lib/seo';
 
 const homeJsonLd = {
@@ -41,7 +42,7 @@ const homeJsonLd = {
       syllabusSections: CURRICULUM_MODULES.map((mod) => ({
         '@type': 'Syllabus',
         name: mod.title,
-        description: mod.subtitle,
+        description: plainText(mod.subtitle),
         url: absoluteUrl(`/module/${mod.id}`),
       })),
     },

@@ -9,10 +9,19 @@ export const dynamic = 'force-static';
  * contains and where the canonical pages are. Plain Markdown, no JavaScript.
  */
 export function GET() {
-  const chapters = CURRICULUM_MODULES.map(
-    (mod) =>
-      `- [${plainText(mod.title)}](${absoluteUrl(`/module/${mod.id}`)}): ${plainText(mod.subtitle)} (${mod.subtopics.length} درس، ${mod.workedExamples.length} مثال حل‌شده)`
-  ).join('\n');
+  const chapters = CURRICULUM_MODULES.map((mod) => {
+    const head = `- [${plainText(mod.title)}](${absoluteUrl(`/module/${mod.id}`)}): ${plainText(mod.subtitle)} (${mod.subtopics.length} درس، ${mod.workedExamples.length} مثال حل‌شده)`;
+    const lessons = mod.subtopics
+      .map((sub, index) => {
+        const path =
+          index === 0
+            ? `/module/${mod.id}`
+            : `/module/${mod.id}/lesson/${index + 1}`;
+        return `  - [درس‌نامه ${index + 1}: ${plainText(sub.title)}](${absoluteUrl(path)})`;
+      })
+      .join('\n');
+    return `${head}\n${lessons}`;
+  }).join('\n');
 
   const body = `# ${SITE_NAME}
 
@@ -25,6 +34,9 @@ ${chapters}
 
 ## بانک امتحانات
 - [بانک امتحانات ریاضیات مهندسی](${absoluteUrl('/exams')}): ${EXAM_PAPERS.length} برگهٔ میان‌ترم و پایان‌ترم دانشگاه شهرکرد با ${TOTAL_EXAM_QUESTIONS} پرسش و حل کامل گام‌به‌گام.
+
+## دستیار هوشمند
+- [دستیار هوشمند ریاضیات مهندسی](${absoluteUrl('/assistant')}): گفت‌وگوی آموزشی با دستیار هوش مصنوعی درس؛ جلسات ذخیره‌شده و هماهنگی پاسخ‌ها با فصل و زیرمباحث همین دوره (رندر سمت کاربر؛ برای خزنده‌ها فقط متادیتا).
 
 ## صفحات اصلی
 - [صفحهٔ دوره](${SITE_URL}/)

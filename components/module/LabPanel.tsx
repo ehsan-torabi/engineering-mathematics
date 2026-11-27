@@ -16,7 +16,7 @@ interface LabPanelProps {
 
 const LAB_HINTS: Record<string, string> = {
   prerequisites_foundation:
-    'ابزارهای پایه را دستی ورودی بده و نتیجه را ببین — پیش از ورود به فوریه.',
+    'ابزارهای پایه را دستی ورودی بده و نتیجه را ببین؛ پیش از ورود به فوریه.',
   symmetry_orthogonality:
     'توابع را ترکیب کن تا تقارن و تعامد را به‌جای حفظ کردن، ببینی.',
   fourier_series:

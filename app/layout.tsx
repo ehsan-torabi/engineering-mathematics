@@ -30,7 +30,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: HOME_TITLE,
-    template: `%s — ${SITE_NAME}`,
+    // Short brand keeps composed page titles inside the search-result width
+    template: `%s | ریاضیات مهندسی`,
   },
   description: SITE_DESCRIPTION,
   keywords: BASE_KEYWORDS,

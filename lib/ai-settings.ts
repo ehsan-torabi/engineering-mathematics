@@ -161,6 +161,47 @@ export const DEFAULT_AI_SETTINGS: AISettings = {
   customSystemPrompt: '',
 };
 
+export const STORAGE_KEY_SETTINGS = 'eng_math_ai_settings_v1';
+
+/**
+ * Reads the persisted settings (browser-only; returns defaults during SSR),
+ * migrating the old standalone Gemini provider into the Gemini preset.
+ */
+export function loadAISettings(): AISettings {
+  if (typeof window === 'undefined') return DEFAULT_AI_SETTINGS;
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY_SETTINGS);
+    if (saved) {
+      const parsed = { ...DEFAULT_AI_SETTINGS, ...JSON.parse(saved) };
+      // Migration: Gemini used to be a standalone provider card; it now
+      // lives as a preset inside the OpenAI-compatible configuration.
+      if (parsed.provider === 'gemini') {
+        const geminiPreset =
+          OPENAI_COMPATIBLE_PRESETS.find((p) => p.id === 'gemini')!;
+        return {
+          ...parsed,
+          provider: 'openai_compatible',
+          presetId: 'gemini',
+          customBaseUrl: geminiPreset.baseUrl,
+        };
+      }
+      return parsed;
+    }
+  } catch {
+    // Ignore storage read errors
+  }
+  return DEFAULT_AI_SETTINGS;
+}
+
+export function saveAISettings(settings: AISettings): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+  } catch {
+    // Ignore storage write errors
+  }
+}
+
 /**
  * Normalizes any OpenAI-compatible base URL into a clean root URL without trailing slashes.
  */

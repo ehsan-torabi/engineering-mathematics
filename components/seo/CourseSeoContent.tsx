@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import {CURRICULUM_MODULES} from '@/lib/curriculum-data';
 import {EXAM_PAPERS, TOTAL_EXAM_QUESTIONS} from '@/lib/exams';
-import {HOME_FAQ} from '@/lib/seo';
+import {HOME_FAQ, plainText} from '@/lib/seo';
 
 /**
  * Server-rendered course description. Everything a crawler or an AI answer
@@ -54,7 +54,7 @@ export default function CourseSeoContent() {
               >
                 {mod.shortTitle.replace(/^\d+\.\s*/, '')} · {mod.title}
               </Link>
-              <p className="mt-1 text-xs leading-6 text-ink-3">{mod.subtitle}</p>
+              <p className="mt-1 text-xs leading-6 text-ink-3">{plainText(mod.subtitle)}</p>
               <p className="mt-1 text-[11px] tabular-nums text-ink-4">
                 {mod.subtopics.length} درس · {mod.workedExamples.length} مثال
                 حل‌شده · {mod.practiceQuestions.length} پرسش آزمون

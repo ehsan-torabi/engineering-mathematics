@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type {CurriculumModule} from '@/lib/curriculum-data';
 import {plainText} from '@/lib/seo';
+import {stripLessonNumber} from '@/lib/persian-digits';
 
 /**
  * Plain-text chapter overview. Math in the source is LaTeX inside $...$;
@@ -17,17 +18,17 @@ export default function ModuleSeoContent({module}: {module: CurriculumModule}) {
         <h2 id="chapter-overview" className="text-xl font-bold text-ink">
           این فصل در یک نگاه
         </h2>
-        <p className="mt-2 text-sm leading-8 text-ink-2">{module.subtitle}</p>
+        <p className="mt-2 text-sm leading-8 text-ink-2">{plainText(module.subtitle)}</p>
 
         <ol className="mt-5 space-y-5">
           {module.subtopics.map((subtopic, index) => (
             <li key={subtopic.id}>
               <h3 className="text-sm font-bold text-ink">
                 <Link
-                  href={`/module/${module.id}?lesson=${index}`}
+                  href={`/module/${module.id}/lesson/${index + 1}`}
                   className="hover:text-accent-deep dark:hover:text-accent"
                 >
-                  {subtopic.title}
+                  {plainText(stripLessonNumber(subtopic.title))}
                 </Link>
               </h3>
               <p className="mt-1 text-sm leading-8 text-ink-2">

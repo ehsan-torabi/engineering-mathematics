@@ -291,19 +291,27 @@ html {
 }
 
 /*
- * KaTeX inherits the theme instead of fighting it, and long display
- * formulas scroll horizontally on narrow screens instead of blowing up
- * the reading column.
+ * KaTeX inherits the theme instead of fighting it. The wrapper spans in
+ * MathFormula control the math scale (0.88em inline / 0.92em display against
+ * KaTeX's 1.21em root), so here we only fix posture: inline formulas sit on
+ * the text line without pill styling, and display formulas scroll
+ * horizontally on narrow screens instead of blowing up the reading column.
  */
 .katex {
   color: inherit;
 }
 
 .katex-display {
+  margin: 0;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 2px 0;
   scrollbar-width: thin;
+}
+
+/* Seamless inline posture: no pill, no border, baseline-friendly height */
+:not(.katex-display) > .katex {
+  vertical-align: middle;
 }
 
 /* Native dropdowns follow the theme in their popup list */

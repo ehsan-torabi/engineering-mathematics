@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { usePathname } from 'next/navigation';
 import { CURRICULUM_MODULES, ModuleId } from '@/lib/curriculum-data';
 import {
   StudyProgressProvider,
@@ -17,7 +18,6 @@ import InteractiveScratchpad from '@/components/InteractiveScratchpad';
 import AIAssistantDrawer from '@/components/AIAssistantDrawer';
 import FormulaSheetModal from '@/components/overlays/FormulaSheetModal';
 import ExamModal from '@/components/overlays/ExamModal';
-import RequirementsModal from '@/components/overlays/RequirementsModal';
 
 interface LessonContextHint {
   subtopicId?: string;
@@ -31,7 +31,6 @@ interface AssistantContextValue {
 interface CourseToolsContextValue {
   openFormulas: () => void;
   openExam: () => void;
-  openRequirements: () => void;
   openPdf: () => void;
   toggleScratchpad: () => void;
 }
@@ -93,6 +92,10 @@ const ActiveModuleContext = createContext<
 >(undefined);
 
 function ChromeOverlayProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  // /assistant IS the assistant page: the drawer would duplicate the
+  // session UI and write to the same session store concurrently.
+  const isFullAssistantView = pathname === '/assistant';
   const [aiInitialTab, setAiInitialTab] = useState<'chat' | 'settings'>('chat');
   const [aiDraftPrompt, setAiDraftPrompt] = useState('');
   const [aiLessonHint, setAiLessonHint] = useState<
@@ -101,7 +104,6 @@ function ChromeOverlayProvider({ children }: { children: React.ReactNode }) {
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [isFormulaModalOpen, setIsFormulaModalOpen] = useState(false);
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
-  const [isRequirementsModalOpen, setIsRequirementsModalOpen] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
 
@@ -121,7 +123,6 @@ function ChromeOverlayProvider({ children }: { children: React.ReactNode }) {
     () => ({
       openFormulas: () => setIsFormulaModalOpen(true),
       openExam: () => setIsExamModalOpen(true),
-      openRequirements: () => setIsRequirementsModalOpen(true),
       openPdf: () => setIsPdfOpen(true),
       toggleScratchpad: () => setIsScratchpadOpen((prev) => !prev),
     }),
@@ -137,15 +138,17 @@ function ChromeOverlayProvider({ children }: { children: React.ReactNode }) {
 
         {/* ── Global overlays ── */}
 
-        <AIAssistantDrawer
-          isOpen={isAIAssistantOpen}
-          activeTab={aiInitialTab}
-          onTabChange={setAiInitialTab}
-          onClose={() => setIsAIAssistantOpen(false)}
-          draftPrompt={aiDraftPrompt}
-          onDraftPromptChange={setAiDraftPrompt}
-          moduleContext={aiModuleContext}
-        />
+        {!isFullAssistantView && (
+          <AIAssistantDrawer
+            isOpen={isAIAssistantOpen}
+            activeTab={aiInitialTab}
+            onTabChange={setAiInitialTab}
+            onClose={() => setIsAIAssistantOpen(false)}
+            draftPrompt={aiDraftPrompt}
+            onDraftPromptChange={setAiDraftPrompt}
+            moduleContext={aiModuleContext}
+          />
+        )}
 
         <FormulaSheetModal
           isOpen={isFormulaModalOpen}
@@ -154,17 +157,16 @@ function ChromeOverlayProvider({ children }: { children: React.ReactNode }) {
 
         <ExamBridge isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} />
 
-        <RequirementsModal
-          isOpen={isRequirementsModalOpen}
-          onClose={() => setIsRequirementsModalOpen(false)}
-        />
-
         <PdfBridge isOpen={isPdfOpen} onClose={() => setIsPdfOpen(false)} />
 
-        <InteractiveScratchpad
-          externalOpen={isScratchpadOpen}
-          onExternalToggle={setIsScratchpadOpen}
-        />
+        {/* The scratchpad FAB sits exactly on the assistant composer's send
+            button, so it yields on the full-page assistant */}
+        {!isFullAssistantView && (
+          <InteractiveScratchpad
+            externalOpen={isScratchpadOpen}
+            onExternalToggle={setIsScratchpadOpen}
+          />
+        )}
       </CourseToolsContext.Provider>
     </AssistantContext.Provider>
   );

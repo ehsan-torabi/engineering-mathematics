@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { CurriculumModule } from '@/lib/curriculum-data';
 import MathFormula, { MathText } from '@/components/MathFormula';
+import { faNum } from '@/lib/persian-digits';
 
 interface QuizPanelProps {
   module: CurriculumModule;
@@ -84,10 +85,10 @@ export default function QuizPanel({
         </h2>
         <p className="mt-2 text-sm leading-7 text-ink-3">
           <span className="font-bold tabular-nums text-ink">
-            {correctCount} از {questions.length}
+            {faNum(correctCount)} از {faNum(questions.length)}
           </span>{' '}
           پاسخ صحیح · نمره{' '}
-          <span className="font-bold tabular-nums text-ink">{scorePercent}%</span>
+          <span className="font-bold tabular-nums text-ink">{faNum(scorePercent)}٪</span>
         </p>
         <p className="mt-1 text-xs leading-6 text-ink-3">
           {scorePercent >= 70
@@ -139,7 +140,7 @@ export default function QuizPanel({
               type="button"
               role="tab"
               aria-selected={idx === currentIdx}
-              aria-label={`سوال ${idx + 1}`}
+              aria-label={`سوال ${faNum(idx + 1)}`}
               onClick={() => setCurrentIdx(idx)}
               className={`flex h-7 w-7 items-center justify-center rounded-md text-[11px] font-bold tabular-nums transition-colors ${
                 idx === currentIdx
@@ -151,19 +152,19 @@ export default function QuizPanel({
                       : 'bg-muted text-ink-4 hover:bg-line'
               }`}
             >
-              {idx + 1}
+              {faNum(idx + 1)}
             </button>
           );
         })}
         <span className="ms-2 text-[11px] font-semibold tabular-nums text-ink-4">
-          {answeredCount}/{questions.length} پاسخ داده شد
+          {faNum(answeredCount)}/{faNum(questions.length)} پاسخ داده شد
         </span>
       </div>
 
       {/* Question card */}
       <div className="rounded-xl border border-line bg-surface p-5 sm:p-6">
         <div className="text-xs font-bold text-accent-deep dark:text-accent">
-          سوال {currentIdx + 1} از {questions.length}
+          سوال {faNum(currentIdx + 1)} از {faNum(questions.length)}
         </div>
 
         <p className="mt-2.5 text-[15px] font-semibold leading-8 text-ink">

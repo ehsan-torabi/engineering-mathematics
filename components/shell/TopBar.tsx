@@ -13,10 +13,12 @@ import {
   FileText,
   PenTool,
   Bot,
+  GraduationCap,
   Check,
 } from 'lucide-react';
 import { CURRICULUM_MODULES } from '@/lib/curriculum-data';
 import { useStudyProgress } from '@/lib/study-progress-context';
+import { faNum } from '@/lib/persian-digits';
 
 const STORAGE_KEY_THEME = 'eng_math_theme_v1';
 
@@ -90,7 +92,7 @@ export default function TopBar({
   }, [isSwitcherOpen]);
 
   const toolButtonClass =
-    'flex h-10 w-10 items-center justify-center rounded-lg text-ink-3 transition-colors hover:bg-muted hover:text-ink';
+    'flex h-11 w-11 items-center justify-center rounded-lg text-ink-3 transition-colors hover:bg-muted hover:text-ink';
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur-sm">
@@ -187,7 +189,7 @@ export default function TopBar({
                               {mod.shortTitle.replace(/^\d+\.\s*/, '')}
                             </span>
                             <span className="shrink-0 text-[11px] font-semibold tabular-nums text-ink-4">
-                              {mastery}%
+                              {faNum(mastery)}٪
                             </span>
                           </button>
                         );
@@ -213,6 +215,15 @@ export default function TopBar({
             <Sun className="hidden h-4.5 w-4.5 text-warn dark:block" />
             <Moon className="block h-4.5 w-4.5 text-accent dark:hidden" />
           </button>
+
+          <Link
+            href="/exams"
+            aria-label="بانک امتحانات"
+            title="بانک امتحانات با حل کامل"
+            className={toolButtonClass}
+          >
+            <GraduationCap className="h-4.5 w-4.5" />
+          </Link>
 
           <button
             type="button"
@@ -244,15 +255,17 @@ export default function TopBar({
             <PenTool className="h-4.5 w-4.5" />
           </button>
 
-          <button
-            type="button"
-            onClick={onOpenAI}
-            aria-label="دستیار هوشمند"
-            title="دستیار هوشمند پرسش و پاسخ"
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-solid text-white transition-colors hover:bg-accent-deep"
-          >
-            <Bot className="h-4.5 w-4.5" />
-          </button>
+          {pathname !== '/assistant' && (
+            <button
+              type="button"
+              onClick={onOpenAI}
+              aria-label="دستیار هوشمند"
+              title="دستیار هوشمند پرسش و پاسخ"
+              className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent-solid text-white transition-colors hover:bg-accent-deep"
+            >
+              <Bot className="h-4.5 w-4.5" />
+            </button>
+          )}
         </div>
       </div>
     </header>
