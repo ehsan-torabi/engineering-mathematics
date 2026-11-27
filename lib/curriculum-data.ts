@@ -480,6 +480,45 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
           'دام‌های رایج: فراموش کردن مخرج $2a$، اشتباه در علامت $b$ (در $r^2 - 4r + 10$ مقدار $-b = +4$ است) و نوشتن $\\sqrt{\\Delta}$ برای $\\Delta < 0$ به‌جای $\\sqrt{|\\Delta|}$ یا معادل آن $\\sqrt{4ac - b^2}$.',
         ],
       },
+      {
+        id: 'p0_partial_fractions',
+        title: 'تجزیه به کسرهای جزئی (Partial Fractions): چهار حالت، روش پوشان و انتگرال‌های استاندارد',
+        pdfPages: 'پیش‌نیاز یازدهم',
+        summary:
+          'هرگاه انتگرال‌گیری جزء‌به‌جزء به کسری با مخرج چندجمله‌ای برخورد کند (ضرایب فوریه توابع گویا، جواب معادلات انتگرالی در بخش ۴ مانند مثال ۳۶، و حل معادلات دیفرانسیل خطی)، تنها راه سیستماتیک، تجزیه کسر به جمع کسرهای ساده‌ی قابل انتگرال‌گیری است. تسلط بر چهار حالت مخرج، روش پوشان (Cover-Up) و انتگرال‌های استاندارد پس از تجزیه، این انتگرال‌ها را بدون هیچ حدس زدنی حل می‌کند.',
+        keyFormulas: [
+          {
+            label: '۱. قالب کلی تجزیه بر اساس چهار حالت مخرج',
+            formula:
+              '\\begin{aligned} &\\text{حالت ۱ (عوامل خطی متمایز): } \\frac{P(x)}{(x-a_1)(x-a_2)} = \\frac{A_1}{x-a_1} + \\frac{A_2}{x-a_2} \\\\ &\\text{حالت ۲ (عامل خطی تکراری): } \\frac{P(x)}{(x-a)^n} = \\frac{A_1}{x-a} + \\frac{A_2}{(x-a)^2} + \\cdots + \\frac{A_n}{(x-a)^n} \\\\ &\\text{حالت ۳ (درجه دو متمایز): } \\frac{P(x)}{q_1\\,q_2} = \\frac{B_1x+C_1}{q_1} + \\frac{B_2x+C_2}{q_2} \\\\ &\\text{حالت ۴ (درجه دو تکراری): } \\frac{P(x)}{q^n} = \\frac{B_1x+C_1}{q} + \\cdots + \\frac{B_nx+C_n}{q^n} \\end{aligned}',
+            note: 'در حالت‌های ۳ و ۴، $q = ax^2 + bx + c$ یک مقدار درجه دو تجزیه‌ناپذیر است یعنی دلتای آن منفی است ($\\Delta = b^2 - 4ac < 0$، مطابق پیش‌نیاز دهم) و صورت هر جمله باید کامل خطی ($Bx + C$) باشد. پیش‌شرط همه حالت‌ها: درجه صورت کمتر از درجه مخرج باشد؛ در غیر این صورت ابتدا تقسیم چندجمله‌ای انجام می‌شود.',
+          },
+          {
+            label: '۲. روش پوشان (Heaviside Cover-Up) برای عوامل خطی متمایز',
+            formula:
+              '\\frac{1}{(x-1)(x+2)} = \\frac{A}{x-1} + \\frac{B}{x+2} \\implies A = \\left. \\frac{1}{x+2} \\right|_{x=1} = \\frac{1}{3} \\quad , \\quad B = \\left. \\frac{1}{x-1} \\right|_{x=-2} = -\\frac{1}{3}',
+            note: 'برای یافتن $A$، عامل $(x-1)$ را «می‌پوشانیم» و در ریشه آن یعنی $x=1$ مقدار می‌گیریم. این روش فقط برای عوامل خطی متمایز (و بالاترین توان یک عامل تکراری) کار می‌کند؛ برای مقدارهای درجه دو تجزیه‌ناپذیر قابل استفاده نیست چون صورت آن‌ها شامل $x$ است.',
+          },
+          {
+            label: '۳. حالت ترکیبی: عامل خطی + درجه دو تجزیه‌ناپذیر (مبنای معادلات انتگرالی)',
+            formula:
+              '\\frac{1}{(x-1)(x^2+1)} = \\frac{A}{x-1} + \\frac{Bx+C}{x^2+1} \\implies 1 = A(x^2+1) + (Bx+C)(x-1) \\implies A = \\frac{1}{2} \\; , \\; B = C = -\\frac{1}{2}',
+            note: 'مقایسه ضرایب: $A + B = 0$، $C - B = 0$ و $A - C = 1$. راه سریع‌تر: پوشان برای $A = \\left.\\frac{1}{x^2+1}\\right|_{x=1} = \\frac{1}{2}$، سپس جایگذاری عدد راحت $x = 0$: $-1 = -A + C \\implies C = -\\frac{1}{2}$ و $x = 2$: $\\frac{1}{5} = \\frac{A}{1} + \\frac{2B+C}{5} \\implies B = -\\frac{1}{2}$.',
+          },
+          {
+            label: '۴. جعبه‌ابزار انتگرال‌های استاندارد پس از تجزیه',
+            formula:
+              '\\int \\frac{dx}{x-a} = \\ln|x-a| + C \\quad , \\quad \\int \\frac{dx}{(x-a)^2} = -\\frac{1}{x-a} + C \\quad , \\quad \\int \\frac{2x\\,dx}{x^2+a^2} = \\ln(x^2+a^2) + C \\quad , \\quad \\int \\frac{dx}{x^2+a^2} = \\frac{1}{a}\\arctan\\frac{x}{a} + C',
+            note: 'دو حالت پرتکرار دیگر: $\\int \\frac{dx}{x^2 - a^2} = \\frac{1}{2a}\\ln\\left| \\frac{x-a}{x+a} \\right| + C$ و با مربع کامل $\\int \\frac{dx}{x^2+2x+5} = \\int \\frac{dx}{(x+1)^2+4} = \\frac{1}{2}\\arctan\\frac{x+1}{2} + C$.',
+          },
+        ],
+        conceptualPoints: [
+          'کسر نامناسب (درجه صورت بزرگ‌تر یا مساوی مخرج) را هرگز مستقیماً تجزیه نکنید؛ ابتدا تقسیم چندجمله‌ای: $\\frac{x^2+1}{x^2-1} = 1 + \\frac{2}{x^2-1} = 1 + \\frac{1}{x-1} - \\frac{1}{x+1}$.',
+          'در این درس، تجزیه به کسرهای جزئی دقیقاً همان ابزاری است که در مثال ۳۶ بخش ۴ (معادله انتگرالی کانولوشن) عبارت $\\frac{2(1+\\alpha^2)}{4+\\alpha^2}$ را به $2 - \\frac{6}{4+\\alpha^2}$ تبدیل می‌کند؛ ترفند «نوشتن صورت بر حسب مخرج» ($1 + \\alpha^2 = (4+\\alpha^2) - 3$) یک تجزیه ذهنی بدون نوشتن دستگاه است.',
+          'قبل از شروع انتگرال‌گیری، تجزیه را کنترل کنید: کسرها را دوباره جمع کنید یا یک عدد راحت (مثل $x = 0$ یا $x = 2$) در دو طرف جایگذاری کنید؛ چند ثانیه کنترل، از یک انتگرال کامل غلط نجات می‌دهد.',
+          'دام‌های رایج: حذف توان‌های میانی عامل تکراری (باید همه توان‌ها از $1$ تا $n$ بیایند)، استفاده از پوشان برای مقدار درجه دو تجزیه‌ناپذیر، فراموش کردن قدر مطلق در $\\ln|x-a|$ و گم کردن ضریب $\\frac{1}{2a}$ در تجزیه $\\frac{1}{x^2-a^2}$.',
+        ],
+      },
     ],
     workedExamples: [
       {
@@ -712,6 +751,102 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
           },
         ],
       },
+      {
+        id: 'ex_prereq_5',
+        pdfReference: 'مثال پایه ۵ (پیش‌نیاز انتگرال کسرهای گویا)',
+        title: 'محاسبه کامل $\\int \\frac{dx}{(x-1)(x^2+1)}$ با تجزیه به کسرهای جزئی (عامل خطی + درجه دو تجزیه‌ناپذیر)',
+        difficulty: 'متوسط (امتحانی)',
+        problemStatement:
+          'انتگرال نامعین $\\int \\frac{dx}{(x-1)(x^2+1)}\\,dx$ را با تجزیه به کسرهای جزئی به طور کامل حل کنید؛ ضرایب را هم با دستگاه مقایسه ضرایب و هم با روش پوشان و مقدارهای راحت بیابید و در انتها درستی جواب را با مشتق‌گیری مجدد بررسی کنید.',
+        problemFormula: 'I = \\int \\frac{dx}{(x-1)(x^2+1)}',
+        finalAnswerFormula: 'I = \\frac{1}{2}\\ln|x-1| - \\frac{1}{4}\\ln(x^2+1) - \\frac{1}{2}\\arctan x + C',
+        steps: [
+          {
+            stepNumber: 1,
+            title: 'گام ۱: تشخیص قالب تجزیه بر اساس نوع عوامل مخرج',
+            explanation:
+              'مخرج دو عامل دارد: عامل خطی متمایز $(x-1)$ و مقدار درجه دو تجزیه‌ناپذیر $(x^2+1)$ چون دلتای آن $\\Delta = -4 < 0$ است. طبق قالب حالت ترکیبی، جمله عامل خطی صورت ثابت و جمله درجه دو صورت کامل خطی می‌گیرد:',
+            formula:
+              '\\frac{1}{(x-1)(x^2+1)} = \\frac{A}{x-1} + \\frac{Bx+C}{x^2+1}',
+            whyHint: 'از آنجا که $x^2+1$ هیچ ریشه حقیقی ندارد، روش پوشان روی آن کار نمی‌کند؛ برای این جمله باید ضرایب $B$ و $C$ را با دستگاه یا مقدارهای راحت پیدا کنیم.',
+          },
+          {
+            stepNumber: 2,
+            title: 'گام ۲: تعیین ضرایب با پوشان، مقایسه ضرایب و مقدارهای راحت',
+            explanation:
+              'در دو طرف معادله در مخرج مشترک $(x-1)(x^2+1)$ ضرب می‌کنیم تا هویت $1 = A(x^2+1) + (Bx+C)(x-1)$ به دست آید. مقایسه ضرایب $x^2$، $x$ و ثابت دستگاه $A+B = 0$، $C-B = 0$ و $A-C = 1$ می‌سازد. راه سریع‌تر: پوشان برای $A$ و سپس جایگذاری عدد راحت $x=0$ و $x=2$:',
+            formula:
+              'A = \\left. \\frac{1}{x^2+1} \\right|_{x=1} = \\frac{1}{2} \\quad ; \\quad x = 0 \\implies -1 = -A + C \\implies C = -\\frac{1}{2} \\quad ; \\quad x = 2 \\implies \\frac{1}{5} = \\frac{A}{1} + \\frac{2B+C}{5} \\implies B = -\\frac{1}{2}',
+            whyHint: 'کنترل با مقایسه ضرایب: $A + B = \\frac{1}{2} - \\frac{1}{2} = 0$ و $A - C = \\frac{1}{2} + \\frac{1}{2} = 1$ است؛ تجزیه تأیید می‌شود.',
+          },
+          {
+            stepNumber: 3,
+            title: 'گام ۳: انتگرال‌گیری قطعه به قطعه با جعبه‌ابزار استاندارد',
+            explanation:
+              'با جایگذاری تجزیه $\\frac{1}{2}\\frac{1}{x-1} - \\frac{1}{2}\\frac{x+1}{x^2+1}$، انتگرال به سه قطعه استاندارد شکسته می‌شود: جمله لگاریتمی، جمله $\\frac{x}{x^2+1}$ (با تغییر متغیر $u = x^2+1$) و جمله آرکتانژانت:',
+            formula:
+              'I = \\frac{1}{2}\\int \\frac{dx}{x-1} - \\frac{1}{2}\\int \\frac{x\\,dx}{x^2+1} - \\frac{1}{2}\\int \\frac{dx}{x^2+1} = \\frac{1}{2}\\ln|x-1| - \\frac{1}{4}\\ln(x^2+1) - \\frac{1}{2}\\arctan x + C',
+            whyHint: 'دقت کنید که $\\int \\frac{x\\,dx}{x^2+1} = \\frac{1}{2}\\ln(x^2+1)$ است (نصف، نه یک!) و چون $x^2+1$ همیشه مثبت است، قدر مطلق نمی‌گیرد.',
+          },
+          {
+            stepNumber: 4,
+            title: 'گام ۴: بررسی درستی جواب با مشتق‌گیری مجدد',
+            explanation:
+              'از جواب نهایی مشتق می‌گیریم؛ باید دقیقاً انتگرال‌ده اولیه به دست آید. با ساده‌سازی روی مخرج مشترک $(x-1)(x^2+1)$:',
+            formula:
+              '\\frac{dI}{dx} = \\frac{1}{2(x-1)} - \\frac{x}{2(x^2+1)} - \\frac{1}{2(x^2+1)} = \\frac{x^2+1 - x(x-1) - (x-1)}{2(x-1)(x^2+1)} = \\frac{2}{2(x-1)(x^2+1)} = \\frac{1}{(x-1)(x^2+1)}',
+            highlightNote: 'بررسی با مشتق‌گیری (یا جمع دوباره کسرها) کوتاه‌ترین راه اطمینان از صحت ضرایب است؛ در امتحان این کنترل چند ثانیه بیشتر وقت نمی‌گیرد.',
+          },
+        ],
+      },
+      {
+        id: 'ex_prereq_6',
+        pdfReference: 'مثال پایه ۶ (پیش‌نیاز عامل خطی تکراری)',
+        title: 'محاسبه $\\int \\frac{dx}{x(x+1)^2}$ با تجزیه به کسرهای جزئی در حالت عامل خطی تکراری',
+        difficulty: 'متوسط (امتحانی)',
+        problemStatement:
+          'انتگرال نامعین $\\int \\frac{dx}{x(x+1)^2}\\,dx$ را با تجزیه به کسرهای جزئی حل کنید، نقش «همه توان‌های عامل تکراری» را نشان دهید و درستی جواب را بررسی کنید.',
+        problemFormula: 'I = \\int \\frac{dx}{x(x+1)^2}',
+        finalAnswerFormula: 'I = \\ln|x| - \\ln|x+1| + \\frac{1}{x+1} + C',
+        steps: [
+          {
+            stepNumber: 1,
+            title: 'گام ۱: نوشتن قالب کامل برای عامل خطی تکراری',
+            explanation:
+              'عامل $(x+1)$ با توان $2$ تکرار شده است؛ طبق حالت ۲، هر دو توان $1$ و $2$ باید در تجزیه بیایند. عامل $x$ متمایز است و یک جمله می‌گیرد:',
+            formula:
+              '\\frac{1}{x(x+1)^2} = \\frac{A}{x} + \\frac{B}{x+1} + \\frac{C}{(x+1)^2}',
+            whyHint: 'رایج‌ترین خطای این حالت، حذف جمله $\\frac{B}{x+1}$ و نوشتن فقط $\\frac{C}{(x+1)^2}$ است؛ بدون همه توان‌ها دستگاه جواب ندارد.',
+          },
+          {
+            stepNumber: 2,
+            title: 'گام ۲: تعیین ضرایب با پوشان و یک مقدار راحت',
+            explanation:
+              'پوشان روی $x$: $A = \\left.\\frac{1}{(x+1)^2}\\right|_{x=0} = 1$ و پوشان روی $(x+1)^2$ (بالاترین توان): $C = \\left.\\frac{1}{x}\\right|_{x=-1} = -1$. برای $B$ عدد راحت $x = 1$ را در هویت $1 = A(x+1)^2 + Bx(x+1) + Cx$ جایگذاری می‌کنیم:',
+            formula:
+              'x = 1 \\implies 1 = 4A + 2B + C = 4 + 2B - 1 \\implies 2B = -2 \\implies B = -1',
+            whyHint: 'پوشان در عامل تکراری فقط بالاترین توان ($C$) را می‌دهد؛ توان‌های پایین‌تر مثل $B$ باید با جایگذاری عدد راحت یا مقایسه ضرایب پیدا شوند.',
+          },
+          {
+            stepNumber: 3,
+            title: 'گام ۳: انتگرال‌گیری سه قطعه استاندارد',
+            explanation:
+              'با تجزیه تأییدشده $\\frac{1}{x} - \\frac{1}{x+1} - \\frac{1}{(x+1)^2}$، دو قطعه اول لگاریتمی و قطعه سوم از نوع توان دوم با پادمشتق منفی عبارت کسری است:',
+            formula:
+              'I = \\int \\frac{dx}{x} - \\int \\frac{dx}{x+1} - \\int \\frac{dx}{(x+1)^2} = \\ln|x| - \\ln|x+1| + \\frac{1}{x+1} + C',
+            whyHint: 'دقت در علامت قطعه سوم: چون پادمشتق $\\frac{1}{(x-a)^2}$ برابر $-\\frac{1}{x-a}$ است، جمله منفی تجزیه به $+\\frac{1}{x+1}$ می‌رسد.',
+          },
+          {
+            stepNumber: 4,
+            title: 'گام ۴: بررسی درستی با مشتق‌گیری مجدد',
+            explanation:
+              'مشتق جواب برابر انتگرال‌ده اولیه است؛ با مخرج مشترک $x(x+1)^2$:',
+            formula:
+              '\\frac{dI}{dx} = \\frac{1}{x} - \\frac{1}{x+1} - \\frac{1}{(x+1)^2} = \\frac{(x+1)^2 - x(x+1) - x}{x(x+1)^2} = \\frac{x^2+2x+1 - x^2 - x - x}{x(x+1)^2} = \\frac{1}{x(x+1)^2}',
+            highlightNote: 'جمع دو لگاریتم می‌تواند به فرم فشرده $\\ln\\left| \\frac{x}{x+1} \\right| + \\frac{1}{x+1} + C$ هم نوشته شود؛ هر دو فرم صحیح‌اند و فقط ثابت جابه‌جا شده است.',
+          },
+        ],
+      },
     ],
     practiceQuestions: [
       {
@@ -812,6 +947,53 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         correctIndex: 1,
         explanation:
           'با $a = 1$، $b = 0$ و $c = 9$ داریم $\\Delta = b^2 - 4ac = -36 < 0$ و ریشه‌ها $r = \\frac{0 \\pm \\sqrt{36}\\,i}{2} = \\pm 3i$ هستند؛ جواب نوسانی $A\\cos(3x) + B\\sin(3x)$ می‌دهد که همان حالت $\\lambda = 9 > 0$ در معادله مشخصه $r^2 + \\lambda = 0$ است.',
+      },
+      {
+        id: 'q9_m0',
+        question: 'قالب درست تجزیه به کسرهای جزئی برای $\\frac{1}{x(x+1)^2}$ کدام است؟',
+        options: [
+          '\\frac{A}{x} + \\frac{B}{x+1} + \\frac{C}{(x+1)^2}',
+          '\\frac{A}{x} + \\frac{C}{(x+1)^2}',
+          '\\frac{A}{x} + \\frac{Bx+C}{x+1}',
+          '\\frac{A}{x} + \\frac{B}{x+1}',
+        ],
+        correctIndex: 0,
+        explanation:
+          'عامل خطی تکراری $(x+1)^2$ باید همه توان‌های خود از $1$ تا $2$ را در تجزیه بیاورد؛ حذف جمله $\\frac{B}{x+1}$ رایج‌ترین خطای امتحانی است و دستگاه را ناسازگار می‌کند.',
+      },
+      {
+        id: 'q10_m0',
+        question: 'در تجزیه $\\frac{1}{(x-1)(x+2)} = \\frac{A}{x-1} + \\frac{B}{x+2}$، مقدار $A$ با روش پوشان چقدر است؟',
+        options: ['\\frac{1}{3}', '-\\frac{1}{3}', '1', '3'],
+        correctIndex: 0,
+        explanation:
+          'با پوشاندن عامل $(x-1)$ و مقدارگیری در ریشه آن $x = 1$: $A = \\left.\\frac{1}{x+2}\\right|_{x=1} = \\frac{1}{3}$؛ به طریق مشابه $B = \\left.\\frac{1}{x-1}\\right|_{x=-2} = -\\frac{1}{3}$ است.',
+      },
+      {
+        id: 'q11_m0',
+        question: 'حاصل تجزیه $\\frac{1}{x(x^2+1)}$ به کسرهای جزئی کدام است؟',
+        options: [
+          '\\frac{1}{x} - \\frac{x}{x^2+1}',
+          '\\frac{1}{x} + \\frac{1}{x^2+1}',
+          '\\frac{1}{x} + \\frac{x}{x^2+1}',
+          '\\frac{A}{x} + \\frac{Bx+C}{x^2+1} \\; \\text{با } C = 1',
+        ],
+        correctIndex: 0,
+        explanation:
+          'با هویت $1 = A(x^2+1) + (Bx+C)x$: مقایسه ضرایب می‌دهد $A+B = 0$، $C = 0$ و $A = 1$؛ پس $B = -1$ و تجزیه $\\frac{1}{x} - \\frac{x}{x^2+1}$ است. کنترل: $\\frac{x^2+1 - x^2}{x(x^2+1)} = \\frac{1}{x(x^2+1)}$ است.',
+      },
+      {
+        id: 'q12_m0',
+        question: 'نتیجه تقسیم و تجزیه کسر نامناسب $\\frac{x^2+1}{x^2-1}$ کدام است؟',
+        options: [
+          '1 + \\frac{1}{x-1} - \\frac{1}{x+1}',
+          '\\frac{1}{x-1} + \\frac{1}{x+1}',
+          '1 + \\frac{2}{x^2-1} بدون تجزیه بیشتر (فرم نهایی)',
+          'x + \\frac{1}{x-1} - \\frac{1}{x+1}',
+        ],
+        correctIndex: 0,
+        explanation:
+          'تقسیم چندجمله‌ای می‌دهد $\\frac{x^2+1}{x^2-1} = 1 + \\frac{2}{x^2-1}$ و چون $\\frac{1}{x^2-1} = \\frac{1}{2}\\left( \\frac{1}{x-1} - \\frac{1}{x+1} \\right)$ است، نتیجه نهایی $1 + \\frac{1}{x-1} - \\frac{1}{x+1}$ می‌شود.',
       },
     ],
   },
@@ -1160,7 +1342,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
           {
             label: 'قضیه همگرایی نقطه‌ای دیریکله (در نقاط درونی و نقاط مرزی $\\pm\\ell$)',
             formula:
-              'S(x_0) = \\begin{cases} f(x_0), & \\text{اگر } f \\text{ در } x_0 \\text{ پیوسته باشد} \\\\[6pt] \\dfrac{f(x_0^+) + f(x_0^-)}{2}, & \\text{اگر } x_0 \\in (-\\ell, \\ell) \\text{ نقطه پرش باشد} \\\\[8pt] \\dfrac{f(-\\ell^+) + f(\\ell^-)}{2}, & \\text{در نقاط مرزی } x_0 = \\pm\\ell \\end{cases}',
+              'S(x_0) = \\begin{cases} f(x_0), & \\text{اگر } f \\text{ در } x_0 \\text{ پیوسته باشد} \\\\ \\; \\dfrac{f(x_0^+) + f(x_0^-)}{2}, & \\text{اگر } x_0 \\in (-\\ell, \\ell) \\text{ نقطه پرش باشد} \\\\ \\; \\dfrac{f(-\\ell^+) + f(\\ell^-)}{2}, & \\text{در نقاط مرزی } x_0 = \\pm\\ell \\end{cases}',
             note: 'دقت کنید که در مرزهای بازه ($x = \\ell$ یا $x = -\\ell$)، به دلیل تناوب تابع، حد راست در $+\\ell$ همان حد راست در ابتداى بازه یعنی $f(-\\ell^+)$ است!',
           },
         ],
@@ -1216,7 +1398,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
           {
             label: 'اتحاد پارسوال برای سری فوریه کسینوسی و سینوسی در نیم‌بازه $[0, \\ell]$',
             formula:
-              '\\begin{aligned} \\text{سری کسینوسی (زوج):} \\quad &\\frac{2}{\\ell}\\int_{0}^{\\ell} \\big(f(x)\\big)^2\\,dx = \\frac{a_0^2}{2} + \\sum_{n=1}^{\\infty} a_n^2 \\\\[6pt] \\text{سری سینوسی (فرد):} \\quad &\\frac{2}{\\ell}\\int_{0}^{\\ell} \\big(f(x)\\big)^2\\,dx = \\sum_{n=1}^{\\infty} b_n^2 \\end{aligned}',
+              '\\begin{aligned} \\text{سری کسینوسی (زوج):} \\quad &\\frac{2}{\\ell}\\int_{0}^{\\ell} \\big(f(x)\\big)^2\\,dx = \\frac{a_0^2}{2} + \\sum_{n=1}^{\\infty} a_n^2 \\\\ \\; \\text{سری سینوسی (فرد):} \\quad &\\frac{2}{\\ell}\\int_{0}^{\\ell} \\big(f(x)\\big)^2\\,dx = \\sum_{n=1}^{\\infty} b_n^2 \\end{aligned}',
             note: 'مراقب ضریب $\\frac{2}{\\ell}$ در سمت چپ فرمول نیم‌بازه $[0, \\ell]$ باشید (زیرا $\\int_{-\\ell}^{\\ell} f^2 dx = 2\\int_{0}^{\\ell} f^2 dx$).',
           },
         ],
@@ -1429,7 +1611,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         difficulty: 'متوسط (امتحانی)',
         problemStatement:
           'سری فوریه تابع $f(x) = |x|$ را در بازه $[-\\pi, \\pi]$ با جزئیات کامل محاسبه کنید، ۴ جمله اول را بسط دهید و سپس با استفاده از اتحاد پارسوال، مجموع سری عددی $\\sum_{k=1}^{\\infty} \\frac{1}{(2k-1)^4}$ را بیابید.',
-        problemFormula: 'f(x) = |x| \\quad (-\\pi \\le x \\le \\pi) \\quad \\implies \\quad \\text{Find Fourier Series & } \\sum_{k=1}^{\\infty} \\frac{1}{(2k-1)^4}',
+        problemFormula: 'f(x) = |x| \\quad (-\\pi \\le x \\le \\pi) \\quad \\implies \\quad \\text{Find Fourier Series \\& } \\sum_{k=1}^{\\infty} \\frac{1}{(2k-1)^4}',
         finalAnswerFormula: '|x| = \\frac{\\pi}{2} - \\frac{4}{\\pi} \\sum_{k=1}^{\\infty} \\frac{\\cos((2k-1)x)}{(2k-1)^2} \\quad , \\quad \\sum_{k=1}^{\\infty} \\frac{1}{(2k-1)^4} = \\frac{\\pi^4}{96}',
         steps: [
           {
@@ -1454,7 +1636,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
             explanation:
               'با جایگذاری $\\cos(n\\pi) = (-1)^n$ و $\\cos(0) = 1$، ضرایب زوج صفر شده و فقط ضرایب فرد $n=2k-1$ باقی می‌مانند:',
             formula:
-              '\\begin{aligned} a_n &= \\frac{2\\big((-1)^n - 1\\big)}{n^2 \\pi} = \\begin{cases} 0 & n = 2k \\\\ -\\frac{4}{(2k-1)^2 \\pi} & n = 2k-1 \\end{cases} \\\\[6pt] |x| &= \\frac{\\pi}{2} - \\frac{4}{\\pi}\\left( \\cos x + \\frac{\\cos 3x}{9} + \\frac{\\cos 5x}{25} + \\frac{\\cos 7x}{49} + \\cdots \\right) \\quad (-\\pi \\le x \\le \\pi) \\end{aligned}',
+              '\\begin{aligned} a_n &= \\frac{2\\big((-1)^n - 1\\big)}{n^2 \\pi} = \\begin{cases} 0 & n = 2k \\\\ -\\frac{4}{(2k-1)^2 \\pi} & n = 2k-1 \\end{cases} \\\\ \\; |x| &= \\frac{\\pi}{2} - \\frac{4}{\\pi}\\left( \\cos x + \\frac{\\cos 3x}{9} + \\frac{\\cos 5x}{25} + \\frac{\\cos 7x}{49} + \\cdots \\right) \\quad (-\\pi \\le x \\le \\pi) \\end{aligned}',
           },
           {
             stepNumber: 4,
@@ -1507,7 +1689,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
             explanation:
               'چون $\\sin(n\\pi) = \\sin(0) = 0$ است، قطر اول و سوم در هر دو حد صفر می‌شوند و فقط قطر دوم در حد بالا $x = \\pi$ باقی می‌ماند:',
             formula:
-              '\\begin{aligned} a_n &= \\frac{2}{\\pi}\\left( \\frac{2\\pi\\cos(n\\pi) - 0}{n^2} \\right) = \\frac{4(-1)^n}{n^2} \\\\[6pt] x^2 &= \\frac{\\pi^2}{3} + 4\\sum_{n=1}^{\\infty} \\frac{(-1)^n}{n^2}\\cos(nx) = \\frac{\\pi^2}{3} - 4\\left( \\cos x - \\frac{\\cos 2x}{4} + \\frac{\\cos 3x}{9} - \\frac{\\cos 4x}{16} + \\cdots \\right) \\end{aligned}',
+              '\\begin{aligned} a_n &= \\frac{2}{\\pi}\\left( \\frac{2\\pi\\cos(n\\pi) - 0}{n^2} \\right) = \\frac{4(-1)^n}{n^2} \\\\ \\; x^2 &= \\frac{\\pi^2}{3} + 4\\sum_{n=1}^{\\infty} \\frac{(-1)^n}{n^2}\\cos(nx) = \\frac{\\pi^2}{3} - 4\\left( \\cos x - \\frac{\\cos 2x}{4} + \\frac{\\cos 3x}{9} - \\frac{\\cos 4x}{16} + \\cdots \\right) \\end{aligned}',
           },
           {
             stepNumber: 4,
@@ -1515,7 +1697,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
             explanation:
               'چون $f(-\\pi) = f(\\pi) = \\pi^2$، توسیع متناوب در تمام نقاط از جمله مرز $x = \\pi$ پیوسته است! اول $x = \\pi$ (که $\\cos(n\\pi) = (-1)^n$ و $(-1)^n(-1)^n = (+1)^n = 1$ می‌دهد) و سپس $x = 0$ (که $\\cos(0)=1$ می‌دهد) را جایگذاری می‌کنیم:',
             formula:
-              '\\begin{aligned} x = \\pi &\\implies \\pi^2 = \\frac{\\pi^2}{3} + 4\\sum_{n=1}^{\\infty}\\frac{(-1)^n(-1)^n}{n^2} \\implies \\frac{2\\pi^2}{3} = 4\\sum_{n=1}^{\\infty}\\frac{1}{n^2} \\implies \\sum_{n=1}^{\\infty}\\frac{1}{n^2} = \\frac{\\pi^2}{6} \\\\[6pt] x = 0 &\\implies 0 = \\frac{\\pi^2}{3} + 4\\sum_{n=1}^{\\infty}\\frac{(-1)^n}{n^2} \\implies \\sum_{n=1}^{\\infty}\\frac{(-1)^{n+1}}{n^2} = 1 - \\frac{1}{4} + \\frac{1}{9} - \\frac{1}{16} + \\cdots = \\frac{\\pi^2}{12} \\end{aligned}',
+              '\\begin{aligned} x = \\pi &\\implies \\pi^2 = \\frac{\\pi^2}{3} + 4\\sum_{n=1}^{\\infty}\\frac{(-1)^n(-1)^n}{n^2} \\implies \\frac{2\\pi^2}{3} = 4\\sum_{n=1}^{\\infty}\\frac{1}{n^2} \\implies \\sum_{n=1}^{\\infty}\\frac{1}{n^2} = \\frac{\\pi^2}{6} \\\\ \\; x = 0 &\\implies 0 = \\frac{\\pi^2}{3} + 4\\sum_{n=1}^{\\infty}\\frac{(-1)^n}{n^2} \\implies \\sum_{n=1}^{\\infty}\\frac{(-1)^{n+1}}{n^2} = 1 - \\frac{1}{4} + \\frac{1}{9} - \\frac{1}{16} + \\cdots = \\frac{\\pi^2}{12} \\end{aligned}',
           },
           {
             stepNumber: 5,
@@ -1616,7 +1798,7 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
             explanation:
               'بنابراین سری فوریه فقط دارای جملات کسینوسی فرد است. اکنون طبق قضیه همگرایی دیریکله در نقطه درونی $x=1$ و نقاط مرزی $x=-1$ و $x=3$ داریم:',
             formula:
-              '\\begin{aligned} f(x) &\\simeq 1 - \\frac{4}{\\pi}\\sum_{k=1}^{\\infty} \\frac{(-1)^{k-1}}{2k-1}\\cos\\left(\\frac{(2k-1)\\pi x}{2}\\right) = 1 - \\frac{4}{\\pi}\\left( \\cos\\frac{\\pi x}{2} - \\frac{1}{3}\\cos\\frac{3\\pi x}{2} + \\frac{1}{5}\\cos\\frac{5\\pi x}{2} - \\cdots \\right) \\\\[6pt] S(1) &= \\frac{f(1^-) + f(1^+)}{2} = \\frac{0 + 2}{2} = 1, \\qquad S(-1) = S(3) = \\frac{f(-1^+) + f(3^-)}{2} = \\frac{0 + 2}{2} = 1 \\end{aligned}',
+              '\\begin{aligned} f(x) &\\simeq 1 - \\frac{4}{\\pi}\\sum_{k=1}^{\\infty} \\frac{(-1)^{k-1}}{2k-1}\\cos\\left(\\frac{(2k-1)\\pi x}{2}\\right) = 1 - \\frac{4}{\\pi}\\left( \\cos\\frac{\\pi x}{2} - \\frac{1}{3}\\cos\\frac{3\\pi x}{2} + \\frac{1}{5}\\cos\\frac{5\\pi x}{2} - \\cdots \\right) \\\\ \\; S(1) &= \\frac{f(1^-) + f(1^+)}{2} = \\frac{0 + 2}{2} = 1, \\qquad S(-1) = S(3) = \\frac{f(-1^+) + f(3^-)}{2} = \\frac{0 + 2}{2} = 1 \\end{aligned}',
             highlightNote: 'همواره می‌توان صحت ضرایب را با جایگذاری نقاط پرش بررسی کرد: به ازای $x=1$ و $x=-1$ داریم $\\cos((2k-1)\\pi/2) = 0$ و سری دقیقاً عدد ثابت $1$ را می‌دهد که با میانگین حد چپ و راست برابر است!',
           },
         ],
@@ -1830,9 +2012,22 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
             label: 'محاسبه انتگرال ناسره کسر توان چهار با پارسوال تابع نمایی',
             formula: '\\int_{0}^{\\infty} \\frac{1}{(a^2 + \\alpha^2)^2}\\,d\\alpha = \\frac{\\pi}{4a^3} \\quad , \\quad \\int_{0}^{\\infty} \\frac{\\alpha^2}{(a^2 + \\alpha^2)^2}\\,d\\alpha = \\frac{\\pi}{4a}',
           },
+          {
+            label: 'فرم تبدیل فوریه (پلانشرل) و پل آن با چگالی‌های طیفی $A$ و $B$',
+            formula: '\\int_{-\\infty}^{\\infty} |f(x)|^2\\,dx = \\frac{1}{2\\pi} \\int_{-\\infty}^{\\infty} |F(\\alpha)|^2\\,d\\alpha \\quad , \\quad F(\\alpha) = \\pi\\big(A(\\alpha) - iB(\\alpha)\\big) \\implies |F|^2 = \\pi^2\\big(A^2 + B^2\\big)',
+            note: 'برای $f$ حقیقی، تبدیل فوریه دقیقاً از روی دو چگالی طیفی ساخته می‌شود؛ با جایگذاری این رابطه در فرم پلانشرل، دقیقاً فرم حقیقی $\\frac{1}{\\pi}\\int f^2 = \\int_0^{\\infty}(A^2 + B^2)\\,d\\alpha$ بازیابی می‌شود؛ یعنی دو فرم، یک اتحاد واحدند.',
+          },
+          {
+            label: 'انتگرال لورنتس پایه (پیش‌زمینه محاسبات پارسوال)',
+            formula: '\\int_{0}^{\\infty} \\frac{d\\alpha}{a^2 + \\alpha^2} = \\frac{\\pi}{2a} \\quad (a > 0) \\implies a^2 I_1 + I_2 = \\int_{0}^{\\infty} \\frac{d\\alpha}{a^2+\\alpha^2} = \\frac{\\pi}{2a}',
+            note: 'با نوشتن $a^2 + \\alpha^2$ در صورت، دو انتگرال توان چهار با یکدیگر قفل می‌شوند: $a^2 I_1 + I_2 = \\frac{\\pi}{2a}$؛ با دانستن $I_1 = \\frac{\\pi}{4a^3}$ نتیجه $I_2 = \\frac{\\pi}{4a}$ بلافاصله به دست می‌آید (همان ترفند تجزیه جبری مثال ۳۵ بخش ۴).',
+          },
         ],
         conceptualPoints: [
           'قاعده تشخیص: اگر عبارت زیر انتگرال توان یک باشد (مانند $\\frac{\\sin\\alpha}{\\alpha}$ یا $\\frac{\\cos\\alpha x}{1+\\alpha^2}$)، از قضیه دیریکله استفاده کنید. اگر توان دو یا چهار باشد (مانند $\\frac{\\sin^2\\alpha}{\\alpha^2}$ یا $\\frac{1}{(1+\\alpha^2)^2}$)، حتماً از اتحاد پارسوال استفاده نمایید!',
+          'منشأ اتحاد، حد اتحاد پارسوال سری فوریه است: با میل دادن $\\ell \\to \\infty$، فاصله فرکانس‌های گسسته $\\Delta\\alpha = \\frac{\\pi}{\\ell} \\to 0$ میل می‌کند، مجموع $\\sum (a_n^2 + b_n^2)$ به انتگرال $\\int (A^2 + B^2)\\,d\\alpha$ تبدیل می‌شود و ضرایب گسسته به چگالی می‌رسند ($a_n \\approx \\frac{\\pi}{\\ell} A(\\alpha_n)$ مطابق بخش ۳-۱).',
+          'کنترل ضرایب با یک نمونه شناخته‌شده: برای $f(x) = e^{-x}$ ($x > 0$) داریم $A(\\alpha) = \\frac{2}{\\pi(1+\\alpha^2)}$؛ پس فرم نیم‌خط می‌دهد $\\frac{2}{\\pi} \\cdot \\frac{1}{2} = \\frac{1}{\\pi} = \\frac{4}{\\pi^2}\\int_0^{\\infty} \\frac{d\\alpha}{(1+\\alpha^2)^2} \\implies \\int_0^{\\infty} \\frac{d\\alpha}{(1+\\alpha^2)^2} = \\frac{\\pi}{4}$ — اگر ضرایب $\\pi$ را جابه‌جا بنویسید همین کنترل ساده جواب غلط را لو می‌دهد.',
+          'پارسوال برای تابعی که نه زوج است و نه فرد: فرم کلی $\\frac{1}{\\pi}\\int_{-\\infty}^{\\infty} f^2 = \\int_0^{\\infty}(A^2+B^2)\\,d\\alpha$ برقرار است و برای $f(x) = e^{-ax}$ روی نیم‌خط مثبت (با صفر در نیم‌خط منفی) هر دو چگالی ناصفرند: $A = \\frac{a}{\\pi(a^2+\\alpha^2)}$ و $B = \\frac{\\alpha}{\\pi(a^2+\\alpha^2)}$.',
         ],
       },
       {
@@ -2007,6 +2202,62 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
             formula:
               '\\frac{2}{3\\pi} = \\frac{16}{\\pi^2}\\int_0^\\infty \\frac{\\sin^4 u}{16u^4}(2du) = \\frac{2}{\\pi^2}\\int_0^\\infty \\frac{\\sin^4 u}{u^4}du \\implies \\int_{0}^{\\infty} \\frac{\\sin^4 u}{u^4}\\,du = \\frac{\\pi}{3}',
             highlightNote: 'این انتگرال با روش‌های حساب دیفرانسیل معمولی به سادگی قابل محاسبه نیست، اما با پارسوال در ۳ سطر حل می‌شود.',
+          },
+        ],
+      },
+      {
+        id: 'ex_pdf_parseval_general',
+        pdfReference: 'مسائل تکمیلی انتگرال فوریه (صفحه ۶۹ جزوه)',
+        title: 'اثبات اتحاد پارسوال حالت کلی برای تابع بدون تقارن $f(x) = e^{-ax}$ نیم‌خطی و استخراج انتگرال‌های لورنتس',
+        difficulty: 'پیشرفته (تکمیلی)',
+        problemStatement:
+          'برای تابع $f(x) = \\begin{cases} e^{-ax} & x > 0 \\\\ 0 & x < 0 \\end{cases}$ ($a > 0$) که نه زوج است و نه فرد، هر دو چگالی طیفی $A(\\alpha)$ و $B(\\alpha)$ را محاسبه کنید و نشان دهید اتحاد پارسوال حالت کلی $\\frac{1}{\\pi}\\int_{-\\infty}^{\\infty} f^2\\,dx = \\int_0^{\\infty} (A^2 + B^2)\\,d\\alpha$ برقرار است؛ سپس از فرم نیم‌خطِ زوج، انتگرال $\\int_0^{\\infty} \\frac{d\\alpha}{(a^2+\\alpha^2)^2}$ را استخراج کنید.',
+        problemFormula: 'f(x) = \\begin{cases} e^{-ax} & x > 0 \\\\ 0 & x < 0 \\end{cases} \\quad (a > 0)',
+        finalAnswerFormula: '\\frac{1}{\\pi}\\int_{-\\infty}^{\\infty} f^2\\,dx = \\frac{1}{2a\\pi} = \\int_{0}^{\\infty} (A^2 + B^2)\\,d\\alpha \\quad , \\quad \\int_{0}^{\\infty} \\frac{d\\alpha}{(a^2+\\alpha^2)^2} = \\frac{\\pi}{4a^3}',
+        steps: [
+          {
+            stepNumber: 1,
+            title: 'گام ۱: محاسبه هر دو چگالی طیفی با انتگرال‌های استاندارد نمایی-مثلثاتی',
+            explanation:
+              'چون تابع روی کل محور نه زوج است و نه فرد، هر دو ضریب ناصفرند. با انتگرال‌های استاندارد پیش‌نیاز $\\int_0^{\\infty} e^{-at}\\cos(\\alpha t)dt = \\frac{a}{a^2+\\alpha^2}$ و $\\int_0^{\\infty} e^{-at}\\sin(\\alpha t)dt = \\frac{\\alpha}{a^2+\\alpha^2}$ و ضریب $\\frac{1}{\\pi}$ تعریف کلی:',
+            formula:
+              'A(\\alpha) = \\frac{1}{\\pi}\\int_{0}^{\\infty} e^{-at}\\cos(\\alpha t)\\,dt = \\frac{a}{\\pi(a^2+\\alpha^2)} \\quad , \\quad B(\\alpha) = \\frac{1}{\\pi}\\int_{0}^{\\infty} e^{-at}\\sin(\\alpha t)\\,dt = \\frac{\\alpha}{\\pi(a^2+\\alpha^2)}',
+            whyHint: 'انتگرال روی $(-\\infty, \\infty)$ چون تابع در نیم‌خط منفی صفر است، دقیقاً به انتگرال روی $[0, \\infty)$ می‌رسد؛ ولی ضریب همچنان $\\frac{1}{\\pi}$ است نه $\\frac{2}{\\pi}$، چون تابع زوج نیست.',
+          },
+          {
+            stepNumber: 2,
+            title: 'گام ۲: محاسبه سمت چپ اتحاد (انرژی کل سیگنال)',
+            explanation:
+              'تابع در نیم‌خط منفی صفر است پس انتگرال مربع آن روی کل محور به نیم‌خط مثبت محدود می‌شود:',
+            formula:
+              '\\frac{1}{\\pi}\\int_{-\\infty}^{\\infty} [f(x)]^2\\,dx = \\frac{1}{\\pi}\\int_{0}^{\\infty} e^{-2ax}\\,dx = \\frac{1}{\\pi}\\left[ \\frac{e^{-2ax}}{-2a} \\right]_{0}^{\\infty} = \\frac{1}{2a\\pi}',
+          },
+          {
+            stepNumber: 3,
+            title: 'گام ۳: محاسبه سمت راست اتحاد و برابری دو طرف',
+            explanation:
+              'مجموع مربع دو چگالی را انتگرال می‌گیریم؛ صورت هر دو کسر مشترک است و با تجزیه جبری ساده می‌شود:',
+            formula:
+              '\\int_{0}^{\\infty} \\big(A^2 + B^2\\big)\\,d\\alpha = \\int_{0}^{\\infty} \\frac{a^2 + \\alpha^2}{\\pi^2(a^2+\\alpha^2)^2}\\,d\\alpha = \\frac{1}{\\pi^2}\\int_{0}^{\\infty} \\frac{d\\alpha}{a^2+\\alpha^2} = \\frac{1}{\\pi^2} \\cdot \\frac{\\pi}{2a} = \\frac{1}{2a\\pi}',
+            highlightNote: 'دو طرف دقیقاً برابر شدند: اتحاد پارسوال برای تابع بدون تقارن نیز با ضریب $\\frac{1}{\\pi}$ برقرار است و هر دو مؤلفه طیف سهم برابر در بقای انرژی دارند.',
+          },
+          {
+            stepNumber: 4,
+            title: 'گام ۴: استخراج انتگرال لورنتس توان چهار از فرم نیم‌خط زوج',
+            explanation:
+              'اکنون تابع زوج $g(x) = e^{-a|x|}$ را در نظر می‌گیریم که چگالی کسینوسی آن $A_g(\\alpha) = \\frac{2a}{\\pi(a^2+\\alpha^2)}$ است. فرم نیم‌خط پارسوال زوج می‌دهد:',
+            formula:
+              '\\frac{2}{\\pi}\\int_{0}^{\\infty} e^{-2ax}\\,dx = \\frac{1}{a\\pi} = \\int_{0}^{\\infty} \\left( \\frac{2a}{\\pi(a^2+\\alpha^2)} \\right)^2 d\\alpha = \\frac{4a^2}{\\pi^2} \\int_{0}^{\\infty} \\frac{d\\alpha}{(a^2+\\alpha^2)^2}',
+            whyHint: 'کنترل در حد $a = 1$: همان نتیجه شناخته‌شده $\\int_0^{\\infty} \\frac{d\\alpha}{(1+\\alpha^2)^2} = \\frac{\\pi}{4}$ به دست می‌آید.',
+          },
+          {
+            stepNumber: 5,
+            title: 'گام ۵: نتیجه نهایی و ارتباط با انتگرال جفت',
+            explanation:
+              'با حل معادله گام ۴ برای انتگرال توان چهار و استفاده از قفل جبری $a^2 I_1 + I_2 = \\frac{\\pi}{2a}$ (نوشتن $a^2+\\alpha^2$ در صورت)، جفت انتگرال کامل می‌شود:',
+            formula:
+              'I_1 = \\int_{0}^{\\infty} \\frac{d\\alpha}{(a^2+\\alpha^2)^2} = \\frac{\\pi}{4a^3} \\quad , \\quad I_2 = \\frac{\\pi}{2a} - a^2 I_1 = \\frac{\\pi}{2a} - \\frac{\\pi}{4a} = \\frac{\\pi}{4a}',
+            highlightNote: 'پارسوال در یک حرکت، انتگرالی را که با جزء‌به‌جزء نیاز به دو مرحله بازگشتی دارد، به یک معادله جبری یک‌خطی تبدیل می‌کند.',
           },
         ],
       },
@@ -2205,6 +2456,32 @@ const BASE_CURRICULUM_MODULES: CurriculumModule[] = [
         correctIndex: 0,
         explanation:
           'پدیده گیبس در انتگرال فوریه دقیقا مشابه سری فوریه رخ می‌دهد و بیشینه نوسان در نزدیکی نقطه پرش برابر $\\frac{1}{2} + \\frac{1}{\\pi}\\operatorname{Si}(\\pi) \\approx 1.0895$ است که نشان‌دهنده ۸.۹۵٪ فراجهش است.',
+      },
+      {
+        id: 'q7_m3',
+        question: 'اتحاد پارسوال برای انتگرال فوریه تابعی که نه زوج است و نه فرد، به کدام شکل درست است؟',
+        options: [
+          '\\frac{1}{\\pi}\\int_{-\\infty}^{\\infty} f^2\\,dx = \\int_0^{\\infty} \\big(A^2(\\alpha) + B^2(\\alpha)\\big)\\,d\\alpha',
+          '\\frac{2}{\\pi}\\int_{-\\infty}^{\\infty} f^2\\,dx = \\int_0^{\\infty} \\big(A^2 + B^2\\big)\\,d\\alpha',
+          '\\frac{1}{\\pi}\\int_{-\\infty}^{\\infty} f^2\\,dx = \\int_0^{\\infty} A^2(\\alpha)\\,d\\alpha',
+          '\\int_{-\\infty}^{\\infty} f^2\\,dx = \\frac{1}{\\pi}\\int_0^{\\infty} \\big(A^2 + B^2\\big)\\,d\\alpha',
+        ],
+        correctIndex: 0,
+        explanation:
+          'در حالت کلی هر دو چگالی طیفی سهم دارند و ضریب $\\frac{1}{\\pi}$ سمت چپ است؛ یعنی $\\int f^2\\,dx = \\pi\\int(A^2+B^2)\\,d\\alpha$. گزینه چهارم ضرایب را وارونه نوشته است (خطای رایج $\\pi^2$-ای) و فرم $\\frac{2}{\\pi}\\int_0^{\\infty}$ فقط برای توابع زوج یا فرد روی نیم‌خط معتبر است.',
+      },
+      {
+        id: 'q8_m3',
+        question: 'برای $f(x) = e^{-2x}$ روی نیم‌خط مثبت (و صفر در نیم‌خط منفی)، حاصل $\\int_0^{\\infty} \\big(A^2(\\alpha) + B^2(\\alpha)\\big)\\,d\\alpha$ چقدر است؟',
+        options: [
+          '\\frac{1}{4\\pi}',
+          '\\frac{1}{2\\pi}',
+          '\\frac{1}{8\\pi}',
+          '\\frac{\\pi}{4}',
+        ],
+        correctIndex: 0,
+        explanation:
+          'چگالی‌ها $A = \\frac{2}{\\pi(4+\\alpha^2)}$ و $B = \\frac{\\alpha}{\\pi(4+\\alpha^2)}$ هستند؛ پس $\\int_0^{\\infty}(A^2+B^2)d\\alpha = \\frac{1}{\\pi^2}\\int_0^{\\infty} \\frac{d\\alpha}{4+\\alpha^2} = \\frac{1}{\\pi^2} \\cdot \\frac{\\pi}{4} = \\frac{1}{4\\pi}$. کنترل با سمت چپ اتحاد: $\\frac{1}{\\pi}\\int_0^{\\infty} e^{-4x}dx = \\frac{1}{4\\pi}$ است.',
       },
     ],
   },

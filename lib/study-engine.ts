@@ -433,7 +433,7 @@ export const REQUIREMENTS_SPECIFICATION: RequirementEngineeringItem[] = [
     description:
       'آموزش گام‌به‌گام انتگرال‌گیری جزء‌به‌جزء و جدول DI، اتحادهای مثلثاتی مرزی فوریه $(-1)^n$، فرمول اویلر، توابع هذلولوی و معادله مشخصه مرتبه دوم.',
     acceptanceCriteria:
-      'دارای ۳ زیرآزمایشگاه بصری (دایره واحد، جدول DI، شبیه‌ساز ODE)، ۵ زیرمبحث، ۳ مثال ۵ گامی و ۴ تست خودآزمایی.',
+      'دارای ۳ زیرآزمایشگاه بصری (دایره واحد، جدول DI، شبیه‌ساز ODE)، ۱۱ زیرمبحث (شامل تجزیه به کسرهای جزئی)، ۶ مثال گام‌به‌گام و ۱۲ تست خودآزمایی.',
     targetComponent: 'PrerequisiteStage.tsx + module_0_prerequisites',
     priority: 'حیاتی (Must-Have)',
     implemented: true,

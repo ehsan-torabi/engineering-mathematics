@@ -71,6 +71,7 @@ test('new prerequisite topics exist with key formulas and practice coverage', ()
     'p0_exp_ln',
     'p0_equation_roots',
     'p0_discriminant',
+    'p0_partial_fractions',
   ];
   for (const id of newIds) {
     const sub = mod.subtopics.find((s) => s.id === id);
