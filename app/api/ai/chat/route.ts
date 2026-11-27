@@ -1,4 +1,3 @@
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   AIProviderType,
@@ -100,6 +99,10 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as ChatRequestBody;
     // Default path is the OpenAI-compatible custom provider; Gemini is opt-in.
     const provider: AIProviderType = body.provider || 'openai_compatible';
+    // The @google/genai SDK was dropped: legacy provider:'gemini' requests
+    // run through Google's OpenAI-compatible endpoint, exactly like the
+    // settings-UI Gemini preset.
+    const isLegacyGemini = provider === 'gemini';
     const messages = Array.isArray(body.messages) ? body.messages : [];
 
     if (messages.length === 0) {
@@ -129,13 +132,19 @@ export async function POST(req: NextRequest) {
     );
 
     /* ────────────────────────── OpenAI-Compatible provider ────────────────────────── */
-    if (provider === 'openai_compatible') {
+    if (provider === 'openai_compatible' || isLegacyGemini) {
       const targetBaseUrl =
-        body.customBaseUrl?.trim() ||
+        (isLegacyGemini && !body.customBaseUrl?.trim()
+          ? 'https://generativelanguage.googleapis.com/v1beta/openai'
+          : body.customBaseUrl?.trim()) ||
         process.env.OPENAI_COMPATIBLE_BASE_URL ||
         'https://api.openai.com/v1';
       const endpointUrl = buildOpenAIChatCompletionsUrl(targetBaseUrl);
-      const selectedModel = body.model?.trim() || 'gpt-4o-mini';
+      const selectedModel =
+        (isLegacyGemini && !body.model?.trim()
+          ? 'gemini-3.8-flash'
+          : body.model?.trim()) || 'gpt-4o-mini';
+      const providerUsed = isLegacyGemini ? 'gemini' : 'openai_compatible';
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -184,7 +193,7 @@ export async function POST(req: NextRequest) {
         return sseResponse(async (send) => {
           send({
             type: 'meta',
-            providerUsed: 'openai_compatible',
+            providerUsed,
             modelUsed: selectedModel,
           });
 
@@ -276,108 +285,17 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         text: replyText,
-        providerUsed: 'openai_compatible',
+        providerUsed,
         modelUsed: selectedModel,
         endpointUsed: endpointUrl,
       });
     }
 
-    /* ────────────────────────── Default: Google Gemini ────────────────────────── */
-    const apiKey = body.apiKey?.trim() || process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          error:
-            'کلید GEMINI_API_KEY در سرور یافت نشد. لطفاً در بخش Settings > Secrets کلید را بررسی کنید.',
-        },
-        { status: 500 }
-      );
-    }
-
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
-    });
-
-    const allowedGeminiModels = [
-      'gemini-3.8-flash',
-      'gemini-3.1-flash-lite',
-      'gemini-flash-latest',
-    ];
-    const requestedModel = body.model?.trim() || 'gemini-3.8-flash';
-    const modelName = allowedGeminiModels.includes(requestedModel)
-      ? requestedModel
-      : 'gemini-3.8-flash';
-
-    // Format conversation history into structured contents for multi-turn context
-    const contents = messages.map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }));
-
-    const thinkingLevelMap: Record<ReasoningLevel, ThinkingLevel> = {
-      LOW: ThinkingLevel.LOW,
-      MEDIUM: ThinkingLevel.MEDIUM,
-      HIGH: ThinkingLevel.HIGH,
-    };
-
-    const config: {
-      systemInstruction: string;
-      thinkingConfig?: { thinkingLevel: ThinkingLevel };
-    } = {
-      systemInstruction,
-    };
-
-    if (modelName === 'gemini-3.8-flash' && body.thinkingLevel) {
-      config.thinkingConfig = {
-        thinkingLevel:
-          thinkingLevelMap[body.thinkingLevel] || ThinkingLevel.MEDIUM,
-      };
-    }
-
-    /* ── Streaming path: forward generateContentStream chunks ── */
-    if (body.stream) {
-      return sseResponse(async (send) => {
-        send({
-          type: 'meta',
-          providerUsed: 'gemini',
-          modelUsed: modelName,
-        });
-
-        const response = await ai.models.generateContentStream({
-          model: modelName,
-          contents,
-          config,
-        });
-
-        for await (const chunk of response) {
-          const chunkText =
-            typeof chunk?.text === 'string' ? chunk.text : (chunk?.text ?? '');
-          if (chunkText) {
-            send({ type: 'delta', text: chunkText });
-          }
-        }
-
-        send({ type: 'done' });
-      });
-    }
-
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents,
-      config,
-    });
-
-    const text = response.text ?? '';
-    return NextResponse.json({
-      text,
-      providerUsed: 'gemini',
-      modelUsed: modelName,
-    });
+    // Unreachable with the current AIProviderType union; kept as a guard
+    return NextResponse.json(
+      { error: 'ارائه‌دهنده نامعتبر است.' },
+      { status: 400 }
+    );
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'خطای ناشناخته در سرور هوش مصنوعی';
