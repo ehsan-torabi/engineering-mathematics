@@ -109,6 +109,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{__html: JSON.stringify(siteJsonLd)}}
         />
+        <meta name="google-site-verification" content="PjMNQe2YVWBLM8CM42Y3wFyfHhZxpGN8B7DJZh4WZAo" />
       </head>
       <body className="bg-paper font-sans text-ink antialiased">
         {children}
